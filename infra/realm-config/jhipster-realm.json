@@ -80,9 +80,15 @@
         "description": "${role_default-roles}",
         "composite": true,
         "composites": {
-          "realm": ["offline_access", "uma_authorization"],
+          "realm": [
+            "offline_access",
+            "uma_authorization"
+          ],
           "client": {
-            "account": ["view-profile", "manage-account"]
+            "account": [
+              "view-profile",
+              "manage-account"
+            ]
           }
         },
         "clientRole": false,
@@ -127,7 +133,10 @@
           "composite": true,
           "composites": {
             "client": {
-              "realm-management": ["query-users", "query-groups"]
+              "realm-management": [
+                "query-users",
+                "query-groups"
+              ]
             }
           },
           "clientRole": true,
@@ -264,7 +273,9 @@
           "composite": true,
           "composites": {
             "client": {
-              "realm-management": ["query-clients"]
+              "realm-management": [
+                "query-clients"
+              ]
             }
           },
           "clientRole": true,
@@ -350,7 +361,9 @@
           "composite": true,
           "composites": {
             "client": {
-              "account": ["manage-account-links"]
+              "account": [
+                "manage-account-links"
+              ]
             }
           },
           "clientRole": true,
@@ -373,7 +386,9 @@
           "composite": true,
           "composites": {
             "client": {
-              "account": ["view-consent"]
+              "account": [
+                "view-consent"
+              ]
             }
           },
           "clientRole": true,
@@ -416,7 +431,9 @@
       "name": "Admins",
       "path": "/Admins",
       "attributes": {},
-      "realmRoles": ["ROLE_ADMIN"],
+      "realmRoles": [
+        "ROLE_ADMIN"
+      ],
       "clientRoles": {},
       "subGroups": []
     },
@@ -425,7 +442,9 @@
       "name": "Users",
       "path": "/Users",
       "attributes": {},
-      "realmRoles": ["ROLE_USER"],
+      "realmRoles": [
+        "ROLE_USER"
+      ],
       "clientRoles": {},
       "subGroups": []
     }
@@ -438,8 +457,12 @@
     "clientRole": false,
     "containerId": "jhipster"
   },
-  "requiredCredentials": ["password"],
-  "defaultGroups": ["/Users"],
+  "requiredCredentials": [
+    "password"
+  ],
+  "defaultGroups": [
+    "/Users"
+  ],
   "otpPolicyType": "totp",
   "otpPolicyAlgorithm": "HmacSHA1",
   "otpPolicyInitialCounter": 0,
@@ -454,7 +477,9 @@
   ],
   "localizationTexts": {},
   "webAuthnPolicyRpEntityName": "keycloak",
-  "webAuthnPolicySignatureAlgorithms": ["ES256"],
+  "webAuthnPolicySignatureAlgorithms": [
+    "ES256"
+  ],
   "webAuthnPolicyRpId": "",
   "webAuthnPolicyAttestationConveyancePreference": "not specified",
   "webAuthnPolicyAuthenticatorAttachment": "not specified",
@@ -465,7 +490,9 @@
   "webAuthnPolicyAcceptableAaguids": [],
   "webAuthnPolicyExtraOrigins": [],
   "webAuthnPolicyPasswordlessRpEntityName": "keycloak",
-  "webAuthnPolicyPasswordlessSignatureAlgorithms": ["ES256"],
+  "webAuthnPolicyPasswordlessSignatureAlgorithms": [
+    "ES256"
+  ],
   "webAuthnPolicyPasswordlessRpId": "",
   "webAuthnPolicyPasswordlessAttestationConveyancePreference": "not specified",
   "webAuthnPolicyPasswordlessAuthenticatorAttachment": "not specified",
@@ -486,7 +513,9 @@
       "serviceAccountClientId": "internal",
       "disableableCredentialTypes": [],
       "requiredActions": [],
-      "realmRoles": ["default-roles-jhipster"],
+      "realmRoles": [
+        "default-roles-jhipster"
+      ],
       "notBefore": 0,
       "groups": []
     }
@@ -494,14 +523,19 @@
   "scopeMappings": [
     {
       "clientScope": "offline_access",
-      "roles": ["offline_access"]
+      "roles": [
+        "offline_access"
+      ]
     }
   ],
   "clientScopeMappings": {
     "account": [
       {
         "client": "account-console",
-        "roles": ["manage-account", "view-groups"]
+        "roles": [
+          "manage-account",
+          "view-groups"
+        ]
       }
     ]
   },
@@ -517,7 +551,9 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "b6734241-da52-4cc0-8a71-d177133efa15",
-      "redirectUris": ["/realms/jhipster/account/*"],
+      "redirectUris": [
+        "/realms/jhipster/account/*"
+      ],
       "webOrigins": [],
       "notBefore": 0,
       "bearerOnly": false,
@@ -560,7 +596,9 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "9d420ff2-06f6-484b-a368-f5817c16caa5",
-      "redirectUris": ["/realms/jhipster/account/*"],
+      "redirectUris": [
+        "/realms/jhipster/account/*"
+      ],
       "webOrigins": [],
       "notBefore": 0,
       "bearerOnly": false,
@@ -800,9 +838,17 @@
         "http://127.0.0.1:*",
         "http://localhost:*",
         "https://127.0.0.1:*",
-        "https://localhost:*"
+        "https://localhost:*",
+        "https://kafdrop.appf4s.io.vn/oauth2/callback",
+        "https://consul.appf4s.io.vn/oauth2/callback",
+        "https://redisinsiight.appf4s.io.vn/oauth2/callback"
       ],
-      "webOrigins": ["*"],
+      "webOrigins": [
+        "*",
+        "https://kafdrop.appf4s.io.vn",
+        "https://consul.appf4s.io.vn",
+        "https://redisinsiight.appf4s.io.vn"
+      ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -899,8 +945,12 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "4f569aee-ef33-40d8-a39e-e01638edfca3",
-      "redirectUris": ["/admin/jhipster/console/*"],
-      "webOrigins": ["+"],
+      "redirectUris": [
+        "/admin/jhipster/console/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -966,6 +1016,9 @@
         "http://localhost:9000/*",
         "http://localhost:8100/*",
         "http://127.0.0.1:8761/*",
+        "https://kafdrop.appf4s.io.vn/oauth2/callback",
+        "https://consul.appf4s.io.vn/oauth2/callback",
+        "https://redisinsiight.appf4s.io.vn/oauth2/callback",
         "dev.localhost.ionic:*"
       ],
       "webOrigins": [
@@ -974,7 +1027,10 @@
         "http://localhost:4200",
         "http://localhost:9000",
         "http://localhost:8100",
-        "http://127.0.0.1:8761"
+        "http://127.0.0.1:8761",
+        "https://kafdrop.appf4s.io.vn",
+        "https://consul.appf4s.io.vn",
+        "https://redisinsiight.appf4s.io.vn"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1612,7 +1668,9 @@
   },
   "smtpServer": {},
   "eventsEnabled": false,
-  "eventsListeners": ["jboss-logging"],
+  "eventsListeners": [
+    "jboss-logging"
+  ],
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
@@ -1646,7 +1704,9 @@
         "subType": "authenticated",
         "subComponents": {},
         "config": {
-          "allow-default-scopes": ["true"]
+          "allow-default-scopes": [
+            "true"
+          ]
         }
       },
       {
@@ -1656,7 +1716,9 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "allow-default-scopes": ["true"]
+          "allow-default-scopes": [
+            "true"
+          ]
         }
       },
       {
@@ -1674,7 +1736,9 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "max-clients": ["200"]
+          "max-clients": [
+            "200"
+          ]
         }
       },
       {
@@ -1684,8 +1748,12 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "host-sending-registration-request-must-match": ["true"],
-          "client-uris-must-match": ["true"]
+          "host-sending-registration-request-must-match": [
+            "true"
+          ],
+          "client-uris-must-match": [
+            "true"
+          ]
         }
       },
       {
@@ -1731,7 +1799,9 @@
         "providerId": "rsa-generated",
         "subComponents": {},
         "config": {
-          "priority": ["100"]
+          "priority": [
+            "100"
+          ]
         }
       },
       {
@@ -1740,8 +1810,12 @@
         "providerId": "hmac-generated",
         "subComponents": {},
         "config": {
-          "priority": ["100"],
-          "algorithm": ["HS256"]
+          "priority": [
+            "100"
+          ],
+          "algorithm": [
+            "HS256"
+          ]
         }
       },
       {
@@ -1750,7 +1824,9 @@
         "providerId": "aes-generated",
         "subComponents": {},
         "config": {
-          "priority": ["100"]
+          "priority": [
+            "100"
+          ]
         }
       }
     ]
@@ -2465,12 +2541,21 @@
       ],
       "disableableCredentialTypes": [],
       "requiredActions": [],
-      "realmRoles": ["offline_access", "uma_authorization"],
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization"
+      ],
       "clientRoles": {
-        "account": ["view-profile", "manage-account"]
+        "account": [
+          "view-profile",
+          "manage-account"
+        ]
       },
       "notBefore": 0,
-      "groups": ["/Admins", "/Users"]
+      "groups": [
+        "/Admins",
+        "/Users"
+      ]
     },
     {
       "id": "c4af4e2f-b432-4c3b-8405-cca86cd5b97b",
@@ -2493,12 +2578,20 @@
       ],
       "disableableCredentialTypes": [],
       "requiredActions": [],
-      "realmRoles": ["offline_access", "uma_authorization"],
+      "realmRoles": [
+        "offline_access",
+        "uma_authorization"
+      ],
       "clientRoles": {
-        "account": ["view-profile", "manage-account"]
+        "account": [
+          "view-profile",
+          "manage-account"
+        ]
       },
       "notBefore": 0,
-      "groups": ["/Users"]
+      "groups": [
+        "/Users"
+      ]
     }
   ]
 }

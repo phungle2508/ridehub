@@ -9,3 +9,47 @@ docker run -it --rm \
   --email shegga9x@gmail.com \
   --agree-tos \
   --non-interactive
+
+
+
+
+# Create private key for CA
+openssl genrsa -out ca-key.pem 2048
+
+# Create self-signed CA certificate (valid for 10 years)
+openssl req -new -x509 -key ca-key.pem -out ca-cert.pem -days 3650 -subj "/CN=Kafka-CA"
+
+# Generate broker private key
+openssl genrsa -out kafka-broker-key.pem 2048
+
+# Generate broker certificate signing request (CSR)
+openssl req -new -key kafka-broker-key.pem -out kafka-broker.csr -subj "/CN=kafka"
+
+# Sign the broker CSR with our CA
+openssl x509 -req -in kafka-broker.csr -CA ca-cert.pem -CAkey ca-key.pem \
+  -CAcreateserial -out kafka-broker-cert.pem -days 3650
+
+keytool -importcert \
+  -alias kafka-ca \
+  -file ca-cert.pem \
+  -keystore kafka.client.truststore.jks \
+  -storepass f4security \
+  -noprompt
+
+# Convert broker key and cert to PKCS12
+openssl pkcs12 -export \
+  -in kafka-broker-cert.pem \
+  -inkey kafka-broker-key.pem \
+  -name kafka-broker \
+  -password pass:f4security \
+  -out kafka.broker.p12
+
+# Import PKCS12 into keystore
+keytool -importkeystore \
+  -deststorepass f4security \
+  -destkeypass f4security \
+  -destkeystore kafka.broker.keystore.jks \
+  -srckeystore kafka.broker.p12 \
+  -srcstoretype PKCS12 \
+  -srcstorepass f4security \
+  -alias kafka-broker

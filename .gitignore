@@ -1,2 +1,3 @@
 /infra/nginx/letsencrypt
 infra/.env
+infra/kafka/ssl/*
