@@ -1,0 +1,105 @@
+services:
+  kafka:
+    image: apache/kafka-native:4.0.0
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://localhost:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      #ports:
+      # - 9092:9092 # Uncomment to make Kafka available externally
+  consul:
+    image: docker.io/bitnami/consul:1.21.0
+    ports:
+      - 8300:8300
+      - 8500:8500
+      - 8600:8600
+    command: consul agent -dev -ui -client 0.0.0.0 -log-level=INFO
+  consul-config-loader:
+    image: jhipster/consul-config-loader:v0.4.1
+    volumes:
+      - ./central-server-config:/config
+    environment:
+      - INIT_SLEEP_SECONDS=5
+      - CONSUL_URL=consul
+      - CONSUL_PORT=8500
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.3
+    command: "start-dev --import-realm"
+    volumes:
+      - ./realm-config:/opt/keycloak/data/import
+      - ./realm-config/keycloak-health-check.sh:/opt/keycloak/health-check.sh
+    environment:
+      - KC_DB=dev-file
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_FEATURES=scripts
+      - KC_HTTP_PORT=9080
+      - KC_HTTPS_PORT=9443
+      - KC_HEALTH_ENABLED=true
+      - KC_HTTP_MANAGEMENT_PORT=9990
+    ports:
+      - 9080:9080
+      - 9443:9443
+    healthcheck:
+      test: "bash /opt/keycloak/health-check.sh"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  prometheus:
+    image: prom/prometheus:v3.3.1
+    volumes:
+      - ./prometheus-conf/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    ports:
+      - 9093:9093
+    volumes:
+      - ./alertmanager-conf/:/etc/alertmanager/
+    command:
+      - "--config.file=/etc/alertmanager/config.yml"
+      - "--storage.path=/alertmanager"
+
+  grafana:
+    image: grafana/grafana:12.0.0
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+  nginx:
+    build: ./script/
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/letsencrypt:/etc/letsencrypt
+      - ./nginx/www:/var/www/html
+      - ./nginx/log:/var/log/nginx
+      - ./lua/validate_token.lua:/etc/nginx/validate_token.lua # Mount the Lua script
+      - ./lua:/etc/nginx/lua
+    command: ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
+
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
