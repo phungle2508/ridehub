@@ -1,0 +1,25 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 4,
+    "applicationType": "microservice",
+    "authenticationType": "oauth2",
+    "baseName": "ms_booking",
+    "cacheProvider": "redis",
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "enableSwaggerCodegen": true,
+    "entities": ["Booking"],
+    "gatewayServerPort": "8080",
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "NzU3YTdkODRjMGNmYjk0N2Y3NjkzZTkzMjQzNzg5OTNjOGIxZjkxYzk0Yjc4NTE5MTI0MDlhMGI5YmY0N2QzOTMxYjIzYjE0MWMyZjk4NzA4M2YyNDMzOTIxNjE0MjVmYjFmNzEzZDJhMzBiYzRkNDk0N2I3NzQ2N2Y3MDQ1MWE=",
+    "languages": ["en"],
+    "lastLiquibaseTimestamp": 1756513060000,
+    "nativeLanguage": "en",
+    "packageName": "com.ticketsystem.booking",
+    "prodDatabaseType": "mysql",
+    "serverPort": "8084",
+    "serviceDiscoveryType": "consul",
+    "skipClient": true,
+    "skipUserManagement": true
+  }
+}
