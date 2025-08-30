@@ -1,0 +1,25 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 6,
+    "applicationType": "microservice",
+    "authenticationType": "oauth2",
+    "baseName": "ms_notification",
+    "cacheProvider": "redis",
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "enableSwaggerCodegen": true,
+    "entities": ["Notification"],
+    "gatewayServerPort": "8080",
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "Y2Q0NWJkMmRhMmFhMzdhM2NjMzBlM2JiOTk0YzVlZjEzNzA3MGIxNjUzNDBhNTA0OTM3OGY1NGFjNWY3MWYxYjk0MDI3MjljYjFhNTY1YTRjZWIxYjc0YTM1YzE4YzIyN2NhMDkyOGMxYjNiNTdhYTQ4MjE2MjRhY2NmMzQ3NGU=",
+    "languages": ["en"],
+    "lastLiquibaseTimestamp": 1756513060000,
+    "nativeLanguage": "en",
+    "packageName": "com.ticketsystem.notification",
+    "prodDatabaseType": "mysql",
+    "serverPort": "8086",
+    "serviceDiscoveryType": "consul",
+    "skipClient": true,
+    "skipUserManagement": true
+  }
+}
