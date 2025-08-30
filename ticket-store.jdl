@@ -1,0 +1,310 @@
+// =======================================
+// 🚌🚂 Train & Bus Ticket Selling System
+// =======================================
+enum TicketStatus {
+  AVAILABLE, BOOKED, CANCELLED, EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING, COMPLETED, FAILED, REFUNDED
+}
+
+enum TransportType {
+  TRAIN, BUS
+}
+
+enum SeatType {
+  ECONOMY, BUSINESS, FIRST_CLASS, VIP
+}
+
+enum BookingStatus {
+  PENDING, CONFIRMED, CANCELLED, COMPLETED
+}
+
+// =======================================
+// 🔐 Gateway Application
+// =======================================
+application {
+  config {
+    baseName gateway
+    packageName com.ticketsystem.gateway
+    applicationType gateway
+    authenticationType oauth2
+    databaseType no
+    serverPort 8080
+    serviceDiscoveryType consul
+    enableSwaggerCodegen true
+  }
+  entities User, KeycloakUser, Route, Schedule, Ticket, Booking, Payment, Notification
+}
+
+// =======================================
+// 👤 User Management Microservice
+// =======================================
+application {
+  config {
+    baseName ms_user
+    packageName com.ticketsystem.user
+    applicationType microservice
+    authenticationType oauth2
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    serverPort 8081
+    serviceDiscoveryType consul
+    enableSwaggerCodegen true
+    cacheProvider redis
+  }
+  entities User, KeycloakUser
+}
+
+// =======================================
+// 🛤️ Route Management Microservice
+// =======================================
+application {
+  config {
+    baseName ms_route
+    packageName com.ticketsystem.route
+    applicationType microservice
+    authenticationType oauth2
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    serverPort 8082
+    serviceDiscoveryType consul
+    searchEngine elasticsearch
+    enableSwaggerCodegen true
+    cacheProvider redis
+  }
+  entities Route, Schedule
+}
+
+// =======================================
+// 🎫 Ticket Management Microservice
+// =======================================
+application {
+  config {
+    baseName ms_ticket
+    packageName com.ticketsystem.ticket
+    applicationType microservice
+    authenticationType oauth2
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    serverPort 8083
+    serviceDiscoveryType consul
+    enableSwaggerCodegen true
+    cacheProvider redis
+  }
+  entities Ticket
+}
+
+// =======================================
+// 📋 Booking Management Microservice
+// =======================================
+application {
+  config {
+    baseName ms_booking
+    packageName com.ticketsystem.booking
+    applicationType microservice
+    authenticationType oauth2
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    serverPort 8084
+    serviceDiscoveryType consul
+    enableSwaggerCodegen true
+    cacheProvider redis
+  }
+  entities Booking
+}
+
+// =======================================
+// 💳 Payment Microservice
+// =======================================
+application {
+  config {
+    baseName ms_payment
+    packageName com.ticketsystem.payment
+    applicationType microservice
+    authenticationType oauth2
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    serverPort 8085
+    serviceDiscoveryType consul
+    enableSwaggerCodegen true
+  }
+  entities Payment
+}
+
+// =======================================
+// 🔔 Notification Microservice
+// =======================================
+application {
+  config {
+    baseName ms_notification
+    packageName com.ticketsystem.notification
+    applicationType microservice
+    authenticationType oauth2
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    serverPort 8086
+    serviceDiscoveryType consul
+    enableSwaggerCodegen true
+    cacheProvider redis
+  }
+  entities Notification
+}
+
+// =======================================
+// 📦 Entities
+// =======================================
+
+// User entities
+entity User {
+  id UUID required
+  username String required unique
+  email String required unique
+  passwordHash String required
+  firstName String required
+  lastName String required
+  phoneNumber String required
+  dateOfBirth LocalDate
+  createdAt Instant required
+  updatedAt Instant required
+  keycloakUserId UUID required
+  userAvatar String
+  isActive Boolean required
+}
+
+entity KeycloakUser {
+  id UUID required
+  username String required unique
+  email String required unique
+  realmId UUID required
+  userId UUID required
+}
+
+// Route and Schedule entities
+entity Route {
+  id UUID required
+  routeName String required
+  origin String required
+  destination String required
+  distance Double required
+  estimatedDuration Integer required // in minutes
+  transportType TransportType required
+  isActive Boolean required
+  createdAt Instant required
+  updatedAt Instant required
+}
+
+entity Schedule {
+  id UUID required
+  routeId UUID required
+  departureTime Instant required
+  arrivalTime Instant required
+  totalSeats Integer required
+  availableSeats Integer required
+  basePrice BigDecimal required
+  isActive Boolean required
+  createdAt Instant required
+  updatedAt Instant required
+}
+
+// Ticket entity
+entity Ticket {
+  id UUID required
+  scheduleId UUID required
+  seatNumber String required
+  seatType SeatType required
+  price BigDecimal required
+  status TicketStatus required
+  reservedUntil Instant
+  createdAt Instant required
+  updatedAt Instant required
+}
+
+// Booking entity
+entity Booking {
+  id UUID required
+  userId UUID required
+  scheduleId UUID required
+  ticketIds TextBlob required // JSON array of ticket IDs
+  totalAmount BigDecimal required
+  status BookingStatus required
+  passengerDetails TextBlob required // JSON array of passenger info
+  contactEmail String required
+  contactPhone String required
+  bookingReference String required unique
+  createdAt Instant required
+  updatedAt Instant required
+  expiresAt Instant required
+}
+
+// Payment entity
+entity Payment {
+  id UUID required
+  bookingId UUID required
+  userId UUID required
+  amount BigDecimal required
+  currency String required
+  paymentMethod String required
+  status PaymentStatus required
+  transactionId String unique
+  paymentGatewayResponse TextBlob
+  createdAt Instant required
+  updatedAt Instant required
+}
+
+// Notification entity
+entity Notification {
+  id UUID required
+  recipientId UUID required
+  type String required
+  title String required
+  message TextBlob required
+  isRead Boolean required
+  relatedEntityType String
+  relatedEntityId UUID
+  createdAt Instant required
+  scheduledAt Instant
+}
+
+// =======================================
+// 🔗 Relationships (Within Same Microservices Only)
+// =======================================
+relationship OneToMany {
+  Route to Schedule{route}
+}
+
+// =======================================
+// ⚙️ Entity-to-Microservice Mapping
+// =======================================
+microservice User, KeycloakUser with ms_user
+microservice Route, Schedule with ms_route
+microservice Ticket with ms_ticket
+microservice Booking with ms_booking
+microservice Payment with ms_payment
+microservice Notification with ms_notification
+
+// =======================================
+// 🔁 Global Options
+// =======================================
+dto * with mapstruct
+service * with serviceImpl
+paginate Route, Schedule, Ticket, Booking, Payment, Notification with infinite-scroll
+search Route, Schedule with elasticsearch
+
+// =======================================
+// 🚀 Deployment Configuration
+// =======================================
+deployment {
+  deploymentType docker-compose
+  serviceDiscoveryType consul
+  appsFolders [gateway, ms_user, ms_route, ms_ticket, ms_booking, ms_payment, ms_notification]
+  dockerRepositoryName "ticketsystem"
+  monitoring prometheus
+}

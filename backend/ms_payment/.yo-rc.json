@@ -1,0 +1,26 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 5,
+    "applicationType": "microservice",
+    "authenticationType": "oauth2",
+    "baseName": "ms_payment",
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "enableSwaggerCodegen": true,
+    "entities": ["Payment"],
+    "gatewayServerPort": "8080",
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "NzY5NjRjZTRjYTFlM2RjYzRlMzdmMTc1NGFkMzQyMDVjYzBkZjA0YjVkN2I3OTQ5MDFhMTU1ODk3OWRiMzRkMDNjNTM5OTc0NWRlYmU2M2U5YjQ2MDY2MzdhOTI1Mjg4NzM3NTk1YjcxYTViY2U3ZTQ2ZDJkZjlhNzg3MmVjZDc=",
+    "languages": ["en"],
+    "lastLiquibaseTimestamp": 1756513246000,
+    "monorepository": true,
+    "nativeLanguage": "en",
+    "packageName": "com.ticketsystem.payment",
+    "prodDatabaseType": "mysql",
+    "serverPort": "8085",
+    "serviceDiscoveryType": "consul",
+    "skipClient": true,
+    "skipCommitHook": true,
+    "skipUserManagement": true
+  }
+}

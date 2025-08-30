@@ -1,0 +1,28 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 2,
+    "applicationType": "microservice",
+    "authenticationType": "oauth2",
+    "baseName": "ms_route",
+    "cacheProvider": "redis",
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "enableSwaggerCodegen": true,
+    "entities": ["Route", "Schedule"],
+    "gatewayServerPort": "8080",
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "OWJlOTFlNjU3OTRjMmViNjAyNzViZTcwMmFmZDc2MWM4NjQ2NmJjZjhjM2UwMWM1YWUzN2Q3MTlhODUzMTc1NDQxNWVkNGVmMDViZjZhZmRhNjZjY2U2MWQxYTIzOWJhNDE1ZjhiYmU1YmM1NWU3NDQzOWNlMzgyNGZmZDU5YmQ=",
+    "languages": ["en"],
+    "lastLiquibaseTimestamp": 1756513306000,
+    "monorepository": true,
+    "nativeLanguage": "en",
+    "packageName": "com.ticketsystem.route",
+    "prodDatabaseType": "mysql",
+    "searchEngine": "elasticsearch",
+    "serverPort": "8082",
+    "serviceDiscoveryType": "consul",
+    "skipClient": true,
+    "skipCommitHook": true,
+    "skipUserManagement": true
+  }
+}

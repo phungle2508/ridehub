@@ -1,0 +1,22 @@
+{
+  "generator-jhipster": {
+    "appsFolders": [
+      "gateway",
+      "ms_user",
+      "ms_route",
+      "ms_ticket",
+      "ms_booking",
+      "ms_payment",
+      "ms_notification"
+    ],
+    "clusteredDbApps": [],
+    "deploymentType": "docker-compose",
+    "directoryPath": "../",
+    "dockerRepositoryName": "ticketsystem",
+    "gatewayType": "SpringCloudGateway",
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "YjNmYWNmNzdhZGQ1MGVkOWI2ZGQwZDQ4NWViNzRjMGE3MGE2ZTg4N2VkNDJjYzI0MThmZGI1M2Q3NWQ2MjU3MmM1NTA1OWMxYmI0OGFlYmZiMzVkNTMwMGFhZTUwZmQ5ODFlNw==",
+    "monitoring": "prometheus",
+    "serviceDiscoveryType": "consul"
+  }
+}
