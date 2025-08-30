@@ -1,9 +1,9 @@
 {
   "annotations": {
-    "changelogDate": "20250830002446"
+    "changelogDate": "20250830005831"
   },
-  "applications": ["gateway", "ms_ticket"],
-  "clientRootFolder": "ms_ticket",
+  "applications": ["gateway", "ms_booking"],
+  "clientRootFolder": "ms_booking",
   "databaseType": "no",
   "dto": "mapstruct",
   "fields": [
@@ -54,7 +54,7 @@
       "fieldValidateRules": ["required"]
     }
   ],
-  "microserviceName": "ms_ticket",
+  "microserviceName": "ms_booking",
   "name": "Ticket",
   "pagination": "infinite-scroll",
   "relationships": [],

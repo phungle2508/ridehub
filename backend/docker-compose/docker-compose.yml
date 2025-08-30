@@ -88,6 +88,7 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
       - SPRING_ELASTICSEARCH_URIS=http://ms_route-elasticsearch:9200
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
     healthcheck:
       test:
         - CMD
@@ -137,53 +138,6 @@ services:
   ms_route-redis:
     image: redis:8.0.0
 
-  ms_ticket:
-    image: ms_ticket
-    environment:
-      - _JAVA_OPTIONS=-Xmx512m -Xms256m
-      - SPRING_PROFILES_ACTIVE=prod,api-docs
-      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
-      - SPRING_CLOUD_CONSUL_HOST=consul
-      - SPRING_CLOUD_CONSUL_PORT=8500
-      - SPRING_DATASOURCE_URL=jdbc:mysql://ms_ticket-mysql:3306/ms_ticket?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-      - SPRING_LIQUIBASE_URL=jdbc:mysql://ms_ticket-mysql:3306/ms_ticket?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-      - JHIPSTER_CACHE_REDIS_SERVER=redis://ms_ticket-redis:6379
-      - JHIPSTER_CACHE_REDIS_CLUSTER=false
-      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
-    healthcheck:
-      test:
-        - CMD
-        - curl
-        - -f
-        - http://localhost:8083/management/health
-      interval: 5s
-      timeout: 5s
-      retries: 40
-    depends_on:
-      ms_ticket-mysql:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
-  ms_ticket-mysql:
-    image: mysql:9.2.0
-    volumes:
-      - ./config/mysql:/etc/mysql/conf.d
-    environment:
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_DATABASE=ms_ticket
-    command: mysqld --lower_case_table_names=1 --skip-mysqlx --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - mysql -e "SHOW DATABASES;" && sleep 5
-      interval: 5s
-      timeout: 10s
-      retries: 10
-  ms_ticket-redis:
-    image: redis:8.0.0
-
   ms_booking:
     image: ms_booking
     environment:
@@ -199,12 +153,13 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
     healthcheck:
       test:
         - CMD
         - curl
         - -f
-        - http://localhost:8084/management/health
+        - http://localhost:8083/management/health
       interval: 5s
       timeout: 5s
       retries: 40
@@ -244,12 +199,13 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
     healthcheck:
       test:
         - CMD
         - curl
         - -f
-        - http://localhost:8085/management/health
+        - http://localhost:8084/management/health
       interval: 5s
       timeout: 5s
       retries: 40
@@ -289,12 +245,13 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
     healthcheck:
       test:
         - CMD
         - curl
         - -f
-        - http://localhost:8086/management/health
+        - http://localhost:8085/management/health
       interval: 5s
       timeout: 5s
       retries: 40
@@ -321,6 +278,19 @@ services:
   ms_notification-redis:
     image: redis:8.0.0
 
+  kafka:
+    image: apache/kafka-native:4.0.0
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://localhost:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      #ports:
+      # - 9092:9092 # Uncomment to make Kafka available externally
   consul:
     image: docker.io/bitnami/consul:1.21.0
     ports:

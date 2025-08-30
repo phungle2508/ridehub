@@ -2,6 +2,7 @@ package com.ticketsystem.route;
 
 import com.ticketsystem.route.config.AsyncSyncConfiguration;
 import com.ticketsystem.route.config.EmbeddedElasticsearch;
+import com.ticketsystem.route.config.EmbeddedKafka;
 import com.ticketsystem.route.config.EmbeddedRedis;
 import com.ticketsystem.route.config.EmbeddedSQL;
 import com.ticketsystem.route.config.JacksonConfiguration;
@@ -21,5 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @EmbeddedRedis
 @EmbeddedElasticsearch
 @EmbeddedSQL
+@EmbeddedKafka
 public @interface IntegrationTest {
 }

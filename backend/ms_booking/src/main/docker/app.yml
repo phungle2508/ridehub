@@ -16,12 +16,13 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
     healthcheck:
       test:
         - CMD
         - curl
         - -f
-        - http://localhost:8084/management/health
+        - http://localhost:8083/management/health
       interval: 5s
       timeout: 5s
       retries: 40
@@ -50,3 +51,7 @@ services:
     extends:
       file: ./consul.yml
       service: consul-config-loader
+  kafka:
+    extends:
+      file: ./kafka.yml
+      service: kafka

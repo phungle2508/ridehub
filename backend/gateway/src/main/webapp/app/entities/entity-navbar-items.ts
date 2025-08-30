@@ -24,7 +24,7 @@ export const EntityNavbarItems: NavbarItem[] = [
   {
     name: 'Ticket',
     route: '/ticket',
-    translationKey: 'global.menu.entities.msTicketTicket',
+    translationKey: 'global.menu.entities.msBookingTicket',
   },
   {
     name: 'Booking',

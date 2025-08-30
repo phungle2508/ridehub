@@ -23,8 +23,8 @@ const routes: Routes = [
   },
   {
     path: 'ticket',
-    data: { pageTitle: 'gatewayApp.msTicketTicket.home.title' },
-    loadChildren: () => import('./ms_ticket/ticket/ticket.routes'),
+    data: { pageTitle: 'gatewayApp.msBookingTicket.home.title' },
+    loadChildren: () => import('./ms_booking/ticket/ticket.routes'),
   },
   {
     path: 'booking',

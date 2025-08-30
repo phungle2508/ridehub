@@ -17,6 +17,7 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
       - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
     healthcheck:
       test:
         - CMD
@@ -57,3 +58,7 @@ services:
     extends:
       file: ./consul.yml
       service: consul-config-loader
+  kafka:
+    extends:
+      file: ./kafka.yml
+      service: kafka

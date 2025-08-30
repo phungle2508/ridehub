@@ -1,6 +1,7 @@
 package com.ticketsystem.payment;
 
 import com.ticketsystem.payment.config.AsyncSyncConfiguration;
+import com.ticketsystem.payment.config.EmbeddedKafka;
 import com.ticketsystem.payment.config.EmbeddedSQL;
 import com.ticketsystem.payment.config.JacksonConfiguration;
 import com.ticketsystem.payment.config.TestSecurityConfiguration;
@@ -17,5 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest(classes = { MsPaymentApp.class, JacksonConfiguration.class, AsyncSyncConfiguration.class, TestSecurityConfiguration.class })
 @EmbeddedSQL
+@EmbeddedKafka
 public @interface IntegrationTest {
 }

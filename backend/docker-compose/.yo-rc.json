@@ -4,7 +4,6 @@
       "gateway",
       "ms_user",
       "ms_route",
-      "ms_ticket",
       "ms_booking",
       "ms_payment",
       "ms_notification"
@@ -15,7 +14,7 @@
     "dockerRepositoryName": "ticketsystem",
     "gatewayType": "SpringCloudGateway",
     "jhipsterVersion": "8.11.0",
-    "jwtSecretKey": "YjNmYWNmNzdhZGQ1MGVkOWI2ZGQwZDQ4NWViNzRjMGE3MGE2ZTg4N2VkNDJjYzI0MThmZGI1M2Q3NWQ2MjU3MmM1NTA1OWMxYmI0OGFlYmZiMzVkNTMwMGFhZTUwZmQ5ODFlNw==",
+    "jwtSecretKey": "NWJmZDlhZGJiOGVkOGE2ZjE5ZWM2ZTVjMDhmNjczODQ2OGRhYzUxOWU0MTc4ZWI3ODNhM2JkNzRkNWExZWY3ZWYyZDljZmJhNjc4NzM5NDAxYzRmMWI0YTYxZjBjYWQ0MzQ4Ng==",
     "monitoring": "prometheus",
     "serviceDiscoveryType": "consul"
   }

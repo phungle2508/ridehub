@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250830002746"
+    "changelogDate": "20250830010131"
   },
   "applications": ["gateway", "ms_notification"],
   "clientRootFolder": "ms_notification",

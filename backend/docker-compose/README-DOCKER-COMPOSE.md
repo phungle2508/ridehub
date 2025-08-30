@@ -19,8 +19,6 @@ Launch all your infrastructure by running: `docker compose up -d`.
 - ms_route (microservice application)
 - ms_route's mysql database
 - ms_route's elasticsearch search engine
-- ms_ticket (microservice application)
-- ms_ticket's mysql database
 - ms_booking (microservice application)
 - ms_booking's mysql database
 - ms_payment (microservice application)
@@ -30,6 +28,7 @@ Launch all your infrastructure by running: `docker compose up -d`.
 
 ### Additional Services:
 
+- Kafka
 - [Prometheus server](http://localhost:9090)
 - [Prometheus Alertmanager](http://localhost:9093)
 - [Grafana](http://localhost:3000)

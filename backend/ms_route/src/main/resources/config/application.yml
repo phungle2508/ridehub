@@ -99,6 +99,8 @@ management:
       application: ${spring.application.name}
 
 spring:
+  autoconfigure:
+    exclude: org.springframework.boot.actuate.autoconfigure.metrics.jdbc.DataSourcePoolMetricsAutoConfiguration
   application:
     name: ms_route
   cloud:
@@ -110,6 +112,25 @@ spring:
       config:
         watch:
           enabled: false
+    function:
+      definition: kafkaConsumer;kafkaProducer
+    stream:
+      kafka:
+        binder:
+          replicationFactor: 1
+          auto-create-topics: true
+          brokers: localhost:9092
+      bindings:
+        binding-out-0:
+          content-type: text/plain
+          group: ms-route
+        kafkaConsumer-in-0:
+          destination: sse-topic
+          content-type: text/plain
+          group: ms-route
+        kafkaProducer-out-0:
+          content-type: text/plain
+          group: ms-route
   docker:
     compose:
       enabled: true

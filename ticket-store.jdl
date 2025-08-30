@@ -39,7 +39,7 @@ application {
 }
 
 // =======================================
-// 👤 User Management Microservice
+// 👤 User Microservice
 // =======================================
 application {
   config {
@@ -59,7 +59,7 @@ application {
 }
 
 // =======================================
-// 🛤️ Route Management Microservice
+// 🛤️ Route & Schedule Microservice
 // =======================================
 application {
   config {
@@ -71,6 +71,7 @@ application {
     devDatabaseType mysql
     prodDatabaseType mysql
     serverPort 8082
+    messageBroker kafka
     serviceDiscoveryType consul
     searchEngine elasticsearch
     enableSwaggerCodegen true
@@ -80,27 +81,7 @@ application {
 }
 
 // =======================================
-// 🎫 Ticket Management Microservice
-// =======================================
-application {
-  config {
-    baseName ms_ticket
-    packageName com.ticketsystem.ticket
-    applicationType microservice
-    authenticationType oauth2
-    databaseType sql
-    devDatabaseType mysql
-    prodDatabaseType mysql
-    serverPort 8083
-    serviceDiscoveryType consul
-    enableSwaggerCodegen true
-    cacheProvider redis
-  }
-  entities Ticket
-}
-
-// =======================================
-// 📋 Booking Management Microservice
+// 🎫 Ticket & Booking Microservice
 // =======================================
 application {
   config {
@@ -111,12 +92,13 @@ application {
     databaseType sql
     devDatabaseType mysql
     prodDatabaseType mysql
-    serverPort 8084
+    serverPort 8083
+    messageBroker kafka
     serviceDiscoveryType consul
     enableSwaggerCodegen true
     cacheProvider redis
   }
-  entities Booking
+  entities Ticket, Booking
 }
 
 // =======================================
@@ -131,7 +113,8 @@ application {
     databaseType sql
     devDatabaseType mysql
     prodDatabaseType mysql
-    serverPort 8085
+    serverPort 8084
+    messageBroker kafka
     serviceDiscoveryType consul
     enableSwaggerCodegen true
   }
@@ -150,7 +133,8 @@ application {
     databaseType sql
     devDatabaseType mysql
     prodDatabaseType mysql
-    serverPort 8086
+    serverPort 8085
+    messageBroker kafka
     serviceDiscoveryType consul
     enableSwaggerCodegen true
     cacheProvider redis
@@ -161,8 +145,6 @@ application {
 // =======================================
 // 📦 Entities
 // =======================================
-
-// User entities
 entity User {
   id UUID required
   username String required unique
@@ -187,7 +169,6 @@ entity KeycloakUser {
   userId UUID required
 }
 
-// Route and Schedule entities
 entity Route {
   id UUID required
   routeName String required
@@ -214,7 +195,6 @@ entity Schedule {
   updatedAt Instant required
 }
 
-// Ticket entity
 entity Ticket {
   id UUID required
   scheduleId UUID required
@@ -227,7 +207,6 @@ entity Ticket {
   updatedAt Instant required
 }
 
-// Booking entity
 entity Booking {
   id UUID required
   userId UUID required
@@ -244,7 +223,6 @@ entity Booking {
   expiresAt Instant required
 }
 
-// Payment entity
 entity Payment {
   id UUID required
   bookingId UUID required
@@ -259,7 +237,6 @@ entity Payment {
   updatedAt Instant required
 }
 
-// Notification entity
 entity Notification {
   id UUID required
   recipientId UUID required
@@ -285,8 +262,7 @@ relationship OneToMany {
 // =======================================
 microservice User, KeycloakUser with ms_user
 microservice Route, Schedule with ms_route
-microservice Ticket with ms_ticket
-microservice Booking with ms_booking
+microservice Ticket, Booking with ms_booking
 microservice Payment with ms_payment
 microservice Notification with ms_notification
 
@@ -299,12 +275,142 @@ paginate Route, Schedule, Ticket, Booking, Payment, Notification with infinite-s
 search Route, Schedule with elasticsearch
 
 // =======================================
-// 🚀 Deployment Configuration
+// 🚀 Deployment Config
 // =======================================
 deployment {
   deploymentType docker-compose
   serviceDiscoveryType consul
-  appsFolders [gateway, ms_user, ms_route, ms_ticket, ms_booking, ms_payment, ms_notification]
+  appsFolders [gateway, ms_user, ms_route, ms_booking, ms_payment, ms_notification]
   dockerRepositoryName "ticketsystem"
   monitoring prometheus
 }
+
+// =======================================
+// 📝 Kafka Integration Configuration
+// =======================================
+/*
+KAFKA SETUP INSTRUCTIONS:
+
+1. Add to docker-compose.yml:
+   zookeeper:
+     image: confluentinc/cp-zookeeper:7.0.1
+     hostname: zookeeper
+     container_name: zookeeper
+     ports:
+       - "2181:2181"
+     environment:
+       ZOOKEEPER_CLIENT_PORT: 2181
+       ZOOKEEPER_TICK_TIME: 2000
+
+   kafka:
+     image: confluentinc/cp-kafka:7.0.1
+     hostname: kafka
+     container_name: kafka
+     depends_on:
+       - zookeeper
+     ports:
+       - "29092:29092"
+       - "9092:9092"
+       - "9101:9101"
+     environment:
+       KAFKA_BROKER_ID: 1
+       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+       KAFKA_JMX_PORT: 9101
+       KAFKA_JMX_HOSTNAME: localhost
+
+2. Add Kafka dependencies to each microservice pom.xml:
+   <dependency>
+     <groupId>org.springframework.kafka</groupId>
+     <artifactId>spring-kafka</artifactId>
+   </dependency>
+
+3. Add Kafka configuration to application.yml for each microservice:
+   spring:
+     kafka:
+       bootstrap-servers: localhost:9092
+       consumer:
+         bootstrap-servers: localhost:9092
+         group-id: ${spring.application.name}
+         auto-offset-reset: earliest
+         key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+         value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+         properties:
+           spring.json.trusted.packages: "*"
+       producer:
+         bootstrap-servers: localhost:9092
+         key-serializer: org.apache.kafka.common.serialization.StringSerializer
+         value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+KAFKA TOPICS & EVENT FLOWS:
+
+Topic: user-events
+- Events: USER_CREATED, USER_UPDATED, USER_DELETED
+- Producers: ms_user
+- Consumers: ms_notification
+
+Topic: booking-events  
+- Events: BOOKING_CREATED, BOOKING_CONFIRMED, BOOKING_CANCELLED, BOOKING_EXPIRED
+- Producers: ms_booking
+- Consumers: ms_payment, ms_notification
+
+Topic: payment-events
+- Events: PAYMENT_INITIATED, PAYMENT_COMPLETED, PAYMENT_FAILED, PAYMENT_REFUNDED  
+- Producers: ms_payment
+- Consumers: ms_booking, ms_notification
+
+Topic: ticket-events
+- Events: TICKET_RESERVED, TICKET_BOOKED, TICKET_CANCELLED, TICKET_RELEASED
+- Producers: ms_booking
+- Consumers: ms_route (for seat availability updates)
+
+Topic: schedule-events
+- Events: SCHEDULE_CREATED, SCHEDULE_UPDATED, SEATS_UPDATED
+- Producers: ms_route  
+- Consumers: ms_booking
+
+EVENT FLOW EXAMPLES:
+
+1. Booking Flow:
+   User creates booking → ms_booking publishes BOOKING_CREATED to booking-events
+   → ms_payment receives event and initiates payment
+   → Payment completed → ms_payment publishes PAYMENT_COMPLETED to payment-events  
+   → ms_booking receives event and confirms booking
+   → ms_booking publishes BOOKING_CONFIRMED to booking-events
+   → ms_notification receives event and sends confirmation email
+
+2. Seat Management:
+   Ticket booked → ms_booking publishes TICKET_BOOKED to ticket-events
+   → ms_route receives event and updates available seats
+   → ms_route publishes SEATS_UPDATED to schedule-events
+
+3. Cancellation Flow:
+   User cancels booking → ms_booking publishes BOOKING_CANCELLED to booking-events
+   → ms_payment receives event and processes refund  
+   → ms_booking publishes TICKET_RELEASED to ticket-events
+   → ms_route updates seat availability
+   → ms_notification sends cancellation confirmation
+
+IMPLEMENTATION EXAMPLE:
+
+@Component
+public class BookingEventProducer {
+    
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
+    
+    public void publishBookingCreated(BookingCreatedEvent event) {
+        kafkaTemplate.send("booking-events", event);
+    }
+}
+
+@KafkaListener(topics = "booking-events", groupId = "payment-service")
+public void handleBookingEvent(BookingCreatedEvent event) {
+    // Process booking event in payment service
+}
+*/

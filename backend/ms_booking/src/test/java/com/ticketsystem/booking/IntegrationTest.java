@@ -1,6 +1,7 @@
 package com.ticketsystem.booking;
 
 import com.ticketsystem.booking.config.AsyncSyncConfiguration;
+import com.ticketsystem.booking.config.EmbeddedKafka;
 import com.ticketsystem.booking.config.EmbeddedRedis;
 import com.ticketsystem.booking.config.EmbeddedSQL;
 import com.ticketsystem.booking.config.JacksonConfiguration;
@@ -19,5 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest(classes = { MsBookingApp.class, JacksonConfiguration.class, AsyncSyncConfiguration.class, TestSecurityConfiguration.class })
 @EmbeddedRedis
 @EmbeddedSQL
+@EmbeddedKafka
 public @interface IntegrationTest {
 }

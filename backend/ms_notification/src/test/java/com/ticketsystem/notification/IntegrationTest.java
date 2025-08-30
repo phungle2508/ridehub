@@ -1,6 +1,7 @@
 package com.ticketsystem.notification;
 
 import com.ticketsystem.notification.config.AsyncSyncConfiguration;
+import com.ticketsystem.notification.config.EmbeddedKafka;
 import com.ticketsystem.notification.config.EmbeddedRedis;
 import com.ticketsystem.notification.config.EmbeddedSQL;
 import com.ticketsystem.notification.config.JacksonConfiguration;
@@ -21,5 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 )
 @EmbeddedRedis
 @EmbeddedSQL
+@EmbeddedKafka
 public @interface IntegrationTest {
 }

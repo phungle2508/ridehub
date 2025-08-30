@@ -10,8 +10,8 @@ export const sampleWithRequiredData: IPayment = {
   currency: 'psst',
   paymentMethod: 'even',
   status: 'REFUNDED',
-  createdAt: dayjs('2025-08-29T01:23'),
-  updatedAt: dayjs('2025-08-29T08:27'),
+  createdAt: dayjs('2025-08-29T01:56'),
+  updatedAt: dayjs('2025-08-29T09:01'),
 };
 
 export const sampleWithPartialData: IPayment = {
@@ -23,8 +23,8 @@ export const sampleWithPartialData: IPayment = {
   paymentMethod: 'lest',
   status: 'REFUNDED',
   paymentGatewayResponse: '../fake-data/blob/hipster.txt',
-  createdAt: dayjs('2025-08-29T17:22'),
-  updatedAt: dayjs('2025-08-29T09:58'),
+  createdAt: dayjs('2025-08-29T17:56'),
+  updatedAt: dayjs('2025-08-29T10:32'),
 };
 
 export const sampleWithFullData: IPayment = {
@@ -37,8 +37,8 @@ export const sampleWithFullData: IPayment = {
   status: 'PENDING',
   transactionId: 'provided overconfidently',
   paymentGatewayResponse: '../fake-data/blob/hipster.txt',
-  createdAt: dayjs('2025-08-29T02:57'),
-  updatedAt: dayjs('2025-08-29T06:17'),
+  createdAt: dayjs('2025-08-29T03:30'),
+  updatedAt: dayjs('2025-08-29T06:51'),
 };
 
 export const sampleWithNewData: NewPayment = {
@@ -48,8 +48,8 @@ export const sampleWithNewData: NewPayment = {
   currency: 'of',
   paymentMethod: 'skean gently conservation',
   status: 'FAILED',
-  createdAt: dayjs('2025-08-29T10:27'),
-  updatedAt: dayjs('2025-08-29T15:05'),
+  createdAt: dayjs('2025-08-29T11:01'),
+  updatedAt: dayjs('2025-08-29T15:39'),
   id: null,
 };
 
