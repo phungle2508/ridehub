@@ -7,39 +7,33 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity Booking.
+        Added the entity User.
     -->
-    <changeSet id="20250830005531-1" author="jhipster">
-        <createTable tableName="booking">
+    <changeSet id="20250830133241-1" author="jhipster">
+        <createTable tableName="user">
             <column name="id" type="${uuidType}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="user_id" type="${uuidType}">
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_user__username" />
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_user__email" />
+            </column>
+            <column name="password_hash" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="schedule_id" type="${uuidType}">
+            <column name="first_name" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="ticket_ids" type="${clobType}">
+            <column name="last_name" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="total_amount" type="decimal(21,2)">
+            <column name="phone_number" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="status" type="varchar(255)">
-                <constraints nullable="false" />
-            </column>
-            <column name="passenger_details" type="${clobType}">
-                <constraints nullable="false" />
-            </column>
-            <column name="contact_email" type="varchar(255)">
-                <constraints nullable="false" />
-            </column>
-            <column name="contact_phone" type="varchar(255)">
-                <constraints nullable="false" />
-            </column>
-            <column name="booking_reference" type="varchar(255)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="ux_booking__booking_reference" />
+            <column name="date_of_birth" type="date">
+                <constraints nullable="true" />
             </column>
             <column name="created_at" type="${datetimeType}">
                 <constraints nullable="false" />
@@ -47,14 +41,19 @@
             <column name="updated_at" type="${datetimeType}">
                 <constraints nullable="false" />
             </column>
-            <column name="expires_at" type="${datetimeType}">
+            <column name="keycloak_user_id" type="${uuidType}">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_avatar" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="is_active" type="boolean">
                 <constraints nullable="false" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="booking" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="booking" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="booking" columnName="expires_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="user" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="user" columnName="updated_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -67,25 +66,25 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250830005531-1-data" author="jhipster" context="faker">
+    <changeSet id="20250830133241-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/booking.csv"
+                  file="config/liquibase/fake-data/user.csv"
                   separator=";"
-                  tableName="booking"
+                  tableName="user"
                   usePreparedStatements="true">
             <column name="id" type="string"/>
-            <column name="user_id" type="string"/>
-            <column name="schedule_id" type="string"/>
-            <column name="ticket_ids" type="clob"/>
-            <column name="total_amount" type="numeric"/>
-            <column name="status" type="string"/>
-            <column name="passenger_details" type="clob"/>
-            <column name="contact_email" type="string"/>
-            <column name="contact_phone" type="string"/>
-            <column name="booking_reference" type="string"/>
+            <column name="username" type="string"/>
+            <column name="email" type="string"/>
+            <column name="password_hash" type="string"/>
+            <column name="first_name" type="string"/>
+            <column name="last_name" type="string"/>
+            <column name="phone_number" type="string"/>
+            <column name="date_of_birth" type="date"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
-            <column name="expires_at" type="date"/>
+            <column name="keycloak_user_id" type="string"/>
+            <column name="user_avatar" type="string"/>
+            <column name="is_active" type="boolean"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>

@@ -9,8 +9,8 @@ export const sampleWithRequiredData: ITicket = {
   seatType: 'FIRST_CLASS',
   price: 29866.34,
   status: 'EXPIRED',
-  createdAt: dayjs('2025-08-29T21:54'),
-  updatedAt: dayjs('2025-08-29T03:37'),
+  createdAt: dayjs('2025-08-30T10:32'),
+  updatedAt: dayjs('2025-08-29T16:15'),
 };
 
 export const sampleWithPartialData: ITicket = {
@@ -20,9 +20,9 @@ export const sampleWithPartialData: ITicket = {
   seatType: 'FIRST_CLASS',
   price: 30556.66,
   status: 'CANCELLED',
-  reservedUntil: dayjs('2025-08-29T08:01'),
-  createdAt: dayjs('2025-08-29T03:44'),
-  updatedAt: dayjs('2025-08-29T04:25'),
+  reservedUntil: dayjs('2025-08-29T20:39'),
+  createdAt: dayjs('2025-08-29T16:22'),
+  updatedAt: dayjs('2025-08-29T17:04'),
 };
 
 export const sampleWithFullData: ITicket = {
@@ -32,9 +32,9 @@ export const sampleWithFullData: ITicket = {
   seatType: 'ECONOMY',
   price: 22086.89,
   status: 'EXPIRED',
-  reservedUntil: dayjs('2025-08-29T21:07'),
-  createdAt: dayjs('2025-08-29T06:24'),
-  updatedAt: dayjs('2025-08-29T03:19'),
+  reservedUntil: dayjs('2025-08-30T09:45'),
+  createdAt: dayjs('2025-08-29T19:03'),
+  updatedAt: dayjs('2025-08-29T15:57'),
 };
 
 export const sampleWithNewData: NewTicket = {
@@ -43,8 +43,8 @@ export const sampleWithNewData: NewTicket = {
   seatType: 'BUSINESS',
   price: 11316.97,
   status: 'EXPIRED',
-  createdAt: dayjs('2025-08-29T06:58'),
-  updatedAt: dayjs('2025-08-29T13:09'),
+  createdAt: dayjs('2025-08-29T19:36'),
+  updatedAt: dayjs('2025-08-30T01:47'),
   id: null,
 };
 

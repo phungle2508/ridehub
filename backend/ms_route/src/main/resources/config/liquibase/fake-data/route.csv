@@ -1,11 +1,11 @@
 id;route_name;origin;destination;distance;estimated_duration;transport_type;is_active;created_at;updated_at
-83410c08-e031-4bd8-a232-b36c86508a70;greedily meaningfully cruelly;consequently;goat;9725.22;32555;BUS;true;2025-08-29T16:30:04;2025-08-29T23:11:38
-55954541-0180-4ce0-a4ed-6a41216412a7;allocation simple equate;failing overproduce;orderly;3052.08;7682;BUS;true;2025-08-29T21:13:27;2025-08-29T14:36:07
-3b03f1c9-9876-4bc7-9532-db384e6b3491;quickly;incidentally;indeed giant;31127.72;1799;TRAIN;false;2025-08-29T01:56:40;2025-08-29T22:57:06
-999d6bca-ec1a-4e47-b40d-111d54f9af12;lest;after;diligently bran calmly;28471.14;11060;BUS;false;2025-08-29T04:53:26;2025-08-29T18:50:44
-e44fe3aa-0f79-4398-ad46-0d3eeb28639f;represent broken;vacantly yet absent;obediently border;28299.79;15936;BUS;false;2025-08-29T21:39:38;2025-08-29T01:42:15
-ffac2dfd-6d66-4cf3-b5a2-6294c61887fb;questionably cultivated;blindly optimal e-mail;urgently;9153.98;11784;BUS;true;2025-08-29T18:11:10;2025-08-29T01:17:54
-18aade68-9849-4451-bc0e-9808dfce2bf9;what critical;since;ugh oh free;5550.21;2886;TRAIN;true;2025-08-29T23:52:04;2025-08-29T02:56:12
-35aa0ae3-b45c-49bc-babb-0a0aeac27d57;highly similar;instead;than rusty;14060.05;27774;TRAIN;false;2025-08-29T17:39:36;2025-08-29T09:51:37
-8e1baef9-eb23-433e-86dd-6b6996fc677a;ick;those fall;aged;6879.48;25452;BUS;true;2025-08-29T19:44:40;2025-08-30T00:00:34
-abd8d782-b461-4744-af4a-260fa0796be3;quantify less striking;hole greatly;form;4438.15;19956;TRAIN;false;2025-08-29T15:04:07;2025-08-29T16:07:12
+83410c08-e031-4bd8-a232-b36c86508a70;greedily meaningfully cruelly;consequently;goat;9725.22;32555;BUS;true;2025-08-30T05:08:14;2025-08-30T11:49:48
+55954541-0180-4ce0-a4ed-6a41216412a7;allocation simple equate;failing overproduce;orderly;3052.08;7682;BUS;true;2025-08-30T09:51:37;2025-08-30T03:14:17
+3b03f1c9-9876-4bc7-9532-db384e6b3491;quickly;incidentally;indeed giant;31127.72;1799;TRAIN;false;2025-08-29T14:34:50;2025-08-30T11:35:16
+999d6bca-ec1a-4e47-b40d-111d54f9af12;lest;after;diligently bran calmly;28471.14;11060;BUS;false;2025-08-29T17:31:36;2025-08-30T07:28:54
+e44fe3aa-0f79-4398-ad46-0d3eeb28639f;represent broken;vacantly yet absent;obediently border;28299.79;15936;BUS;false;2025-08-30T10:17:48;2025-08-29T14:20:25
+ffac2dfd-6d66-4cf3-b5a2-6294c61887fb;questionably cultivated;blindly optimal e-mail;urgently;9153.98;11784;BUS;true;2025-08-30T06:49:20;2025-08-29T13:56:04
+18aade68-9849-4451-bc0e-9808dfce2bf9;what critical;since;ugh oh free;5550.21;2886;TRAIN;true;2025-08-30T12:30:14;2025-08-29T15:34:22
+35aa0ae3-b45c-49bc-babb-0a0aeac27d57;highly similar;instead;than rusty;14060.05;27774;TRAIN;false;2025-08-30T06:17:46;2025-08-29T22:29:47
+8e1baef9-eb23-433e-86dd-6b6996fc677a;ick;those fall;aged;6879.48;25452;BUS;true;2025-08-30T08:22:50;2025-08-30T12:38:44
+abd8d782-b461-4744-af4a-260fa0796be3;quantify less striking;hole greatly;form;4438.15;19956;TRAIN;false;2025-08-30T03:42:17;2025-08-30T04:45:22

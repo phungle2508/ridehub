@@ -7,33 +7,39 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity Schedule.
+        Added the entity Booking.
     -->
-    <changeSet id="20250830005531-1" author="jhipster">
-        <createTable tableName="schedule">
+    <changeSet id="20250830133341-1" author="jhipster">
+        <createTable tableName="booking">
             <column name="id" type="${uuidType}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="route_id" type="${uuidType}">
+            <column name="user_id" type="${uuidType}">
                 <constraints nullable="false" />
             </column>
-            <column name="departure_time" type="${datetimeType}">
+            <column name="schedule_id" type="${uuidType}">
                 <constraints nullable="false" />
             </column>
-            <column name="arrival_time" type="${datetimeType}">
+            <column name="ticket_ids" type="${clobType}">
                 <constraints nullable="false" />
             </column>
-            <column name="total_seats" type="integer">
+            <column name="total_amount" type="decimal(21,2)">
                 <constraints nullable="false" />
             </column>
-            <column name="available_seats" type="integer">
+            <column name="status" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="base_price" type="decimal(21,2)">
+            <column name="passenger_details" type="${clobType}">
                 <constraints nullable="false" />
             </column>
-            <column name="is_active" type="boolean">
+            <column name="contact_email" type="varchar(255)">
                 <constraints nullable="false" />
+            </column>
+            <column name="contact_phone" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="booking_reference" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_booking__booking_reference" />
             </column>
             <column name="created_at" type="${datetimeType}">
                 <constraints nullable="false" />
@@ -41,15 +47,14 @@
             <column name="updated_at" type="${datetimeType}">
                 <constraints nullable="false" />
             </column>
-            <column name="route_id" type="${uuidType}">
-                <constraints nullable="true" />
+            <column name="expires_at" type="${datetimeType}">
+                <constraints nullable="false" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="schedule" columnName="departure_time" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="schedule" columnName="arrival_time" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="schedule" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="schedule" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="booking" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="booking" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="booking" columnName="expires_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -62,22 +67,25 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250830005531-1-data" author="jhipster" context="faker">
+    <changeSet id="20250830133341-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/schedule.csv"
+                  file="config/liquibase/fake-data/booking.csv"
                   separator=";"
-                  tableName="schedule"
+                  tableName="booking"
                   usePreparedStatements="true">
             <column name="id" type="string"/>
-            <column name="route_id" type="string"/>
-            <column name="departure_time" type="date"/>
-            <column name="arrival_time" type="date"/>
-            <column name="total_seats" type="numeric"/>
-            <column name="available_seats" type="numeric"/>
-            <column name="base_price" type="numeric"/>
-            <column name="is_active" type="boolean"/>
+            <column name="user_id" type="string"/>
+            <column name="schedule_id" type="string"/>
+            <column name="ticket_ids" type="clob"/>
+            <column name="total_amount" type="numeric"/>
+            <column name="status" type="string"/>
+            <column name="passenger_details" type="clob"/>
+            <column name="contact_email" type="string"/>
+            <column name="contact_phone" type="string"/>
+            <column name="booking_reference" type="string"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
+            <column name="expires_at" type="date"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
