@@ -28,29 +28,38 @@ services:
       - CONSUL_URL=consul
       - CONSUL_PORT=8500
   keycloak:
-    image: quay.io/keycloak/keycloak:26.2.3
-    command: "start-dev --import-realm"
+    image: quay.io/keycloak/keycloak:26.1.1
+    command:
+      - "start-dev"
+      - "--import-realm"
+      - "--proxy=edge"
+      - "--hostname=https://keycloak.appf4s.io.vn"
+      - "--hostname-admin=https://keycloak.appf4s.io.vn"
+      - "--hostname-strict=true"
     volumes:
       - ./realm-config:/opt/keycloak/data/import
       - ./realm-config/keycloak-health-check.sh:/opt/keycloak/health-check.sh
     environment:
       - KC_DB=dev-file
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
       - KC_FEATURES=scripts
       - KC_HTTP_PORT=9080
       - KC_HTTPS_PORT=9443
       - KC_HEALTH_ENABLED=true
       - KC_HTTP_MANAGEMENT_PORT=9990
-    ports:
-      - 9080:9080
-      - 9443:9443
+      - KC_HOSTNAME_PORT=443
+      - KC_FRONTEND_URL=https://keycloak.appf4s.io.vn
+      - KC_HOSTNAME_STRICT_HTTPS=true
+      - KC_HTTP_ENABLED=true
+    # remove the "127.0.0.1:" prefix
     healthcheck:
-      test: "bash /opt/keycloak/health-check.sh"
+      test: 'bash /opt/keycloak/health-check.sh'
       interval: 5s
       timeout: 5s
-      retries: 20
-
+      # Increased retries due to slow Keycloak startup in GitHub Actions using MacOS
+      retries: 50
+      start_period: 10s
   prometheus:
     image: prom/prometheus:v3.3.1
     volumes:
@@ -80,7 +89,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
   nginx:
-    build: ./script/
+    build: ./nginx/
     container_name: nginx
     restart: unless-stopped
     depends_on:
@@ -90,15 +99,14 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/letsencrypt:/etc/letsencrypt
       - ./nginx/www:/var/www/html
       - ./nginx/log:/var/log/nginx
       - ./lua/validate_token.lua:/etc/nginx/validate_token.lua # Mount the Lua script
       - ./lua:/etc/nginx/lua
-    command: ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
-
+    command: [ "/usr/local/openresty/bin/openresty", "-g", "daemon off;" ]
 
 volumes:
   prometheus_data: {}
