@@ -147,7 +147,7 @@ services:
         - CMD
         - curl
         - -f
-        - http://elasticsearch:9200/_cluster/health?wait_for_status=green&timeout=10s
+        - http://localhost:9200/_cluster/health?wait_for_status=green&timeout=10s
       interval: 5s
       timeout: 10s
       retries: 10
