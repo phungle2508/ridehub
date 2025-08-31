@@ -1,7 +1,9 @@
 package com.ticketsystem.route.web.rest;
 
 import com.ticketsystem.route.repository.ScheduleRepository;
+import com.ticketsystem.route.service.ScheduleQueryService;
 import com.ticketsystem.route.service.ScheduleService;
+import com.ticketsystem.route.service.criteria.ScheduleCriteria;
 import com.ticketsystem.route.service.dto.ScheduleDTO;
 import com.ticketsystem.route.web.rest.errors.BadRequestAlertException;
 import com.ticketsystem.route.web.rest.errors.ElasticsearchExceptionMapper;
@@ -44,9 +46,16 @@ public class ScheduleResource {
 
     private final ScheduleRepository scheduleRepository;
 
-    public ScheduleResource(ScheduleService scheduleService, ScheduleRepository scheduleRepository) {
+    private final ScheduleQueryService scheduleQueryService;
+
+    public ScheduleResource(
+        ScheduleService scheduleService,
+        ScheduleRepository scheduleRepository,
+        ScheduleQueryService scheduleQueryService
+    ) {
         this.scheduleService = scheduleService;
         this.scheduleRepository = scheduleRepository;
+        this.scheduleQueryService = scheduleQueryService;
     }
 
     /**
@@ -141,14 +150,31 @@ public class ScheduleResource {
      * {@code GET  /schedules} : get all the schedules.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of schedules in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<ScheduleDTO>> getAllSchedules(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of Schedules");
-        Page<ScheduleDTO> page = scheduleService.findAll(pageable);
+    public ResponseEntity<List<ScheduleDTO>> getAllSchedules(
+        ScheduleCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Schedules by criteria: {}", criteria);
+
+        Page<ScheduleDTO> page = scheduleQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /schedules/count} : count all the schedules.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countSchedules(ScheduleCriteria criteria) {
+        LOG.debug("REST request to count Schedules by criteria: {}", criteria);
+        return ResponseEntity.ok().body(scheduleQueryService.countByCriteria(criteria));
     }
 
     /**

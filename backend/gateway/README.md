@@ -1,6 +1,6 @@
 # gateway
 
-This application was generated using JHipster 8.11.0, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.11.0](https://www.jhipster.tech/documentation-archive/v8.11.0).
+This application was generated using JHipster 8.10.0, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.10.0](https://www.jhipster.tech/documentation-archive/v8.10.0).
 
 This is a "gateway" application intended to be part of a microservice architecture, please refer to the [Doing microservices with JHipster][] page of the documentation for more information.
 
@@ -405,23 +405,23 @@ For more information refer to [Using Docker and Docker-Compose][], this page als
 To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
 
 [JHipster Homepage and latest documentation]: https://www.jhipster.tech
-[JHipster 8.11.0 archive]: https://www.jhipster.tech/documentation-archive/v8.11.0
-[Doing microservices with JHipster]: https://www.jhipster.tech/documentation-archive/v8.11.0/microservices-architecture/
-[Using JHipster in development]: https://www.jhipster.tech/documentation-archive/v8.11.0/development/
-[Service Discovery and Configuration with Consul]: https://www.jhipster.tech/documentation-archive/v8.11.0/microservices-architecture/#consul
-[Using Docker and Docker-Compose]: https://www.jhipster.tech/documentation-archive/v8.11.0/docker-compose
-[Using JHipster in production]: https://www.jhipster.tech/documentation-archive/v8.11.0/production/
-[Running tests page]: https://www.jhipster.tech/documentation-archive/v8.11.0/running-tests/
-[Code quality page]: https://www.jhipster.tech/documentation-archive/v8.11.0/code-quality/
-[Setting up Continuous Integration]: https://www.jhipster.tech/documentation-archive/v8.11.0/setting-up-ci/
+[JHipster 8.10.0 archive]: https://www.jhipster.tech/documentation-archive/v8.10.0
+[Doing microservices with JHipster]: https://www.jhipster.tech/documentation-archive/v8.10.0/microservices-architecture/
+[Using JHipster in development]: https://www.jhipster.tech/documentation-archive/v8.10.0/development/
+[Service Discovery and Configuration with Consul]: https://www.jhipster.tech/documentation-archive/v8.10.0/microservices-architecture/#consul
+[Using Docker and Docker-Compose]: https://www.jhipster.tech/documentation-archive/v8.10.0/docker-compose
+[Using JHipster in production]: https://www.jhipster.tech/documentation-archive/v8.10.0/production/
+[Running tests page]: https://www.jhipster.tech/documentation-archive/v8.10.0/running-tests/
+[Code quality page]: https://www.jhipster.tech/documentation-archive/v8.10.0/code-quality/
+[Setting up Continuous Integration]: https://www.jhipster.tech/documentation-archive/v8.10.0/setting-up-ci/
 [Node.js]: https://nodejs.org/
 [NPM]: https://www.npmjs.com/
 [OpenAPI-Generator]: https://openapi-generator.tech
 [Swagger-Editor]: https://editor.swagger.io
-[Doing API-First development]: https://www.jhipster.tech/documentation-archive/v8.11.0/doing-api-first-development/
+[Doing API-First development]: https://www.jhipster.tech/documentation-archive/v8.10.0/doing-api-first-development/
 [Webpack]: https://webpack.github.io/
 [BrowserSync]: https://www.browsersync.io/
 [Jest]: https://jestjs.io
 [Leaflet]: https://leafletjs.com/
 [DefinitelyTyped]: https://definitelytyped.org/
-[Angular CLI]: https://angular.dev/tools/cli
+[Angular CLI]: https://cli.angular.io/

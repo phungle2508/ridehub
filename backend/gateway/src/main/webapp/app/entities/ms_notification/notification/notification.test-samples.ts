@@ -9,7 +9,7 @@ export const sampleWithRequiredData: INotification = {
   title: 'quickly longingly',
   message: '../fake-data/blob/hipster.txt',
   isRead: true,
-  createdAt: dayjs('2025-08-30T18:45'),
+  createdAt: dayjs('2025-08-31T00:50'),
 };
 
 export const sampleWithPartialData: INotification = {
@@ -19,8 +19,8 @@ export const sampleWithPartialData: INotification = {
   title: 'whereas loyally meaty',
   message: '../fake-data/blob/hipster.txt',
   isRead: false,
-  createdAt: dayjs('2025-08-31T06:01'),
-  scheduledAt: dayjs('2025-08-30T23:37'),
+  createdAt: dayjs('2025-08-31T12:07'),
+  scheduledAt: dayjs('2025-08-31T05:43'),
 };
 
 export const sampleWithFullData: INotification = {
@@ -32,8 +32,8 @@ export const sampleWithFullData: INotification = {
   isRead: true,
   relatedEntityType: 'victoriously throughout abnormally',
   relatedEntityId: '7ab1b649-1055-4e53-8268-d02cf359b308',
-  createdAt: dayjs('2025-08-30T22:09'),
-  scheduledAt: dayjs('2025-08-31T00:48'),
+  createdAt: dayjs('2025-08-31T04:14'),
+  scheduledAt: dayjs('2025-08-31T06:54'),
 };
 
 export const sampleWithNewData: NewNotification = {
@@ -42,7 +42,7 @@ export const sampleWithNewData: NewNotification = {
   title: 'qua when',
   message: '../fake-data/blob/hipster.txt',
   isRead: false,
-  createdAt: dayjs('2025-08-30T12:54'),
+  createdAt: dayjs('2025-08-30T19:00'),
   id: null,
 };
 

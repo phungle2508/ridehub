@@ -1,7 +1,9 @@
 package com.ticketsystem.notification.web.rest;
 
 import com.ticketsystem.notification.repository.NotificationRepository;
+import com.ticketsystem.notification.service.NotificationQueryService;
 import com.ticketsystem.notification.service.NotificationService;
+import com.ticketsystem.notification.service.criteria.NotificationCriteria;
 import com.ticketsystem.notification.service.dto.NotificationDTO;
 import com.ticketsystem.notification.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -43,9 +45,16 @@ public class NotificationResource {
 
     private final NotificationRepository notificationRepository;
 
-    public NotificationResource(NotificationService notificationService, NotificationRepository notificationRepository) {
+    private final NotificationQueryService notificationQueryService;
+
+    public NotificationResource(
+        NotificationService notificationService,
+        NotificationRepository notificationRepository,
+        NotificationQueryService notificationQueryService
+    ) {
         this.notificationService = notificationService;
         this.notificationRepository = notificationRepository;
+        this.notificationQueryService = notificationQueryService;
     }
 
     /**
@@ -141,14 +150,31 @@ public class NotificationResource {
      * {@code GET  /notifications} : get all the notifications.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of notifications in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<NotificationDTO>> getAllNotifications(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of Notifications");
-        Page<NotificationDTO> page = notificationService.findAll(pageable);
+    public ResponseEntity<List<NotificationDTO>> getAllNotifications(
+        NotificationCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Notifications by criteria: {}", criteria);
+
+        Page<NotificationDTO> page = notificationQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /notifications/count} : count all the notifications.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countNotifications(NotificationCriteria criteria) {
+        LOG.debug("REST request to count Notifications by criteria: {}", criteria);
+        return ResponseEntity.ok().body(notificationQueryService.countByCriteria(criteria));
     }
 
     /**

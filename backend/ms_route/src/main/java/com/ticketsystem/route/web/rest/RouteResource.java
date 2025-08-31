@@ -1,7 +1,9 @@
 package com.ticketsystem.route.web.rest;
 
 import com.ticketsystem.route.repository.RouteRepository;
+import com.ticketsystem.route.service.RouteQueryService;
 import com.ticketsystem.route.service.RouteService;
+import com.ticketsystem.route.service.criteria.RouteCriteria;
 import com.ticketsystem.route.service.dto.RouteDTO;
 import com.ticketsystem.route.web.rest.errors.BadRequestAlertException;
 import com.ticketsystem.route.web.rest.errors.ElasticsearchExceptionMapper;
@@ -44,9 +46,12 @@ public class RouteResource {
 
     private final RouteRepository routeRepository;
 
-    public RouteResource(RouteService routeService, RouteRepository routeRepository) {
+    private final RouteQueryService routeQueryService;
+
+    public RouteResource(RouteService routeService, RouteRepository routeRepository, RouteQueryService routeQueryService) {
         this.routeService = routeService;
         this.routeRepository = routeRepository;
+        this.routeQueryService = routeQueryService;
     }
 
     /**
@@ -141,14 +146,31 @@ public class RouteResource {
      * {@code GET  /routes} : get all the routes.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of routes in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<RouteDTO>> getAllRoutes(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of Routes");
-        Page<RouteDTO> page = routeService.findAll(pageable);
+    public ResponseEntity<List<RouteDTO>> getAllRoutes(
+        RouteCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Routes by criteria: {}", criteria);
+
+        Page<RouteDTO> page = routeQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /routes/count} : count all the routes.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countRoutes(RouteCriteria criteria) {
+        LOG.debug("REST request to count Routes by criteria: {}", criteria);
+        return ResponseEntity.ok().body(routeQueryService.countByCriteria(criteria));
     }
 
     /**

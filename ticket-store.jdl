@@ -244,7 +244,7 @@ dto * with mapstruct
 service * with serviceImpl
 paginate Route, Schedule, Ticket, Booking, Payment, Notification with infinite-scroll
 search Route, Schedule with elasticsearch
-
+filter User, Route, Schedule, Ticket, Booking, Payment, Notification
 // =======================
 // Deployment
 // =======================

@@ -3,8 +3,6 @@ package com.ticketsystem.notification.service;
 import com.ticketsystem.notification.service.dto.NotificationDTO;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ticketsystem.notification.domain.Notification}.
@@ -33,14 +31,6 @@ public interface NotificationService {
      * @return the persisted entity.
      */
     Optional<NotificationDTO> partialUpdate(NotificationDTO notificationDTO);
-
-    /**
-     * Get all the notifications.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<NotificationDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" notification.

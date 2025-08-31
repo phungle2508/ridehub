@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250831103633"
+    "changelogDate": "20250831164012"
   },
   "applications": ["gateway", "ms_route"],
   "clientRootFolder": "ms_route",
@@ -53,6 +53,7 @@
       "fieldValidateRules": ["required"]
     }
   ],
+  "jpaMetamodelFiltering": true,
   "microserviceName": "ms_route",
   "name": "Schedule",
   "pagination": "infinite-scroll",

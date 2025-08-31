@@ -79,13 +79,6 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ScheduleDTO> findAll(Pageable pageable) {
-        LOG.debug("Request to get all Schedules");
-        return scheduleRepository.findAll(pageable).map(scheduleMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<ScheduleDTO> findOne(UUID id) {
         LOG.debug("Request to get Schedule : {}", id);
         return scheduleRepository.findById(id).map(scheduleMapper::toDto);

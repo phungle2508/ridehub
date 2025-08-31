@@ -13,9 +13,9 @@ export const sampleWithRequiredData: IBooking = {
   contactEmail: 'who schlep',
   contactPhone: 'misreport psst',
   bookingReference: 'really meh',
-  createdAt: dayjs('2025-08-31T00:12'),
-  updatedAt: dayjs('2025-08-31T08:23'),
-  expiresAt: dayjs('2025-08-31T00:30'),
+  createdAt: dayjs('2025-08-31T06:17'),
+  updatedAt: dayjs('2025-08-31T14:29'),
+  expiresAt: dayjs('2025-08-31T06:35'),
 };
 
 export const sampleWithPartialData: IBooking = {
@@ -29,9 +29,9 @@ export const sampleWithPartialData: IBooking = {
   contactEmail: 'noisily fully snoopy',
   contactPhone: 'athwart',
   bookingReference: 'icebreaker next',
-  createdAt: dayjs('2025-08-31T08:59'),
-  updatedAt: dayjs('2025-08-30T22:02'),
-  expiresAt: dayjs('2025-08-31T03:13'),
+  createdAt: dayjs('2025-08-31T15:05'),
+  updatedAt: dayjs('2025-08-31T04:08'),
+  expiresAt: dayjs('2025-08-31T09:19'),
 };
 
 export const sampleWithFullData: IBooking = {
@@ -45,9 +45,9 @@ export const sampleWithFullData: IBooking = {
   contactEmail: 'super going',
   contactPhone: 'yum profitable',
   bookingReference: 'within',
-  createdAt: dayjs('2025-08-30T19:18'),
-  updatedAt: dayjs('2025-08-31T05:47'),
-  expiresAt: dayjs('2025-08-30T18:13'),
+  createdAt: dayjs('2025-08-31T01:24'),
+  updatedAt: dayjs('2025-08-31T11:53'),
+  expiresAt: dayjs('2025-08-31T00:19'),
 };
 
 export const sampleWithNewData: NewBooking = {
@@ -60,9 +60,9 @@ export const sampleWithNewData: NewBooking = {
   contactEmail: 'fat direct likewise',
   contactPhone: 'outsource',
   bookingReference: 'stunning cone step',
-  createdAt: dayjs('2025-08-30T20:08'),
-  updatedAt: dayjs('2025-08-31T02:31'),
-  expiresAt: dayjs('2025-08-30T22:54'),
+  createdAt: dayjs('2025-08-31T02:14'),
+  updatedAt: dayjs('2025-08-31T08:37'),
+  expiresAt: dayjs('2025-08-31T04:59'),
   id: null,
 };
 

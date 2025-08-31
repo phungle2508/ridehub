@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250831103333"
+    "changelogDate": "20250831163912"
   },
   "applications": ["gateway", "ms_user"],
   "clientRootFolder": "ms_user",
@@ -71,6 +71,7 @@
       "fieldValidateRules": ["required"]
     }
   ],
+  "jpaMetamodelFiltering": true,
   "microserviceName": "ms_user",
   "name": "User",
   "relationships": [],

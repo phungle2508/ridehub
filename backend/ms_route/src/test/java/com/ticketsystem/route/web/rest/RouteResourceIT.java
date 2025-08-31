@@ -55,9 +55,11 @@ class RouteResourceIT {
 
     private static final Double DEFAULT_DISTANCE = 1D;
     private static final Double UPDATED_DISTANCE = 2D;
+    private static final Double SMALLER_DISTANCE = 1D - 1D;
 
     private static final Integer DEFAULT_ESTIMATED_DURATION = 1;
     private static final Integer UPDATED_ESTIMATED_DURATION = 2;
+    private static final Integer SMALLER_ESTIMATED_DURATION = 1 - 1;
 
     private static final TransportType DEFAULT_TRANSPORT_TYPE = TransportType.TRAIN;
     private static final TransportType UPDATED_TRANSPORT_TYPE = TransportType.BUS;
@@ -435,6 +437,499 @@ class RouteResourceIT {
             .andExpect(jsonPath("$.isActive").value(DEFAULT_IS_ACTIVE))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()));
+    }
+
+    @Test
+    @Transactional
+    void getRoutesByIdFiltering() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        UUID id = route.getId();
+
+        defaultRouteFiltering("id.equals=" + id, "id.notEquals=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByRouteNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where routeName equals to
+        defaultRouteFiltering("routeName.equals=" + DEFAULT_ROUTE_NAME, "routeName.equals=" + UPDATED_ROUTE_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByRouteNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where routeName in
+        defaultRouteFiltering("routeName.in=" + DEFAULT_ROUTE_NAME + "," + UPDATED_ROUTE_NAME, "routeName.in=" + UPDATED_ROUTE_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByRouteNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where routeName is not null
+        defaultRouteFiltering("routeName.specified=true", "routeName.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByRouteNameContainsSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where routeName contains
+        defaultRouteFiltering("routeName.contains=" + DEFAULT_ROUTE_NAME, "routeName.contains=" + UPDATED_ROUTE_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByRouteNameNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where routeName does not contain
+        defaultRouteFiltering("routeName.doesNotContain=" + UPDATED_ROUTE_NAME, "routeName.doesNotContain=" + DEFAULT_ROUTE_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByOriginIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where origin equals to
+        defaultRouteFiltering("origin.equals=" + DEFAULT_ORIGIN, "origin.equals=" + UPDATED_ORIGIN);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByOriginIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where origin in
+        defaultRouteFiltering("origin.in=" + DEFAULT_ORIGIN + "," + UPDATED_ORIGIN, "origin.in=" + UPDATED_ORIGIN);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByOriginIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where origin is not null
+        defaultRouteFiltering("origin.specified=true", "origin.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByOriginContainsSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where origin contains
+        defaultRouteFiltering("origin.contains=" + DEFAULT_ORIGIN, "origin.contains=" + UPDATED_ORIGIN);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByOriginNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where origin does not contain
+        defaultRouteFiltering("origin.doesNotContain=" + UPDATED_ORIGIN, "origin.doesNotContain=" + DEFAULT_ORIGIN);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDestinationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where destination equals to
+        defaultRouteFiltering("destination.equals=" + DEFAULT_DESTINATION, "destination.equals=" + UPDATED_DESTINATION);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDestinationIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where destination in
+        defaultRouteFiltering("destination.in=" + DEFAULT_DESTINATION + "," + UPDATED_DESTINATION, "destination.in=" + UPDATED_DESTINATION);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDestinationIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where destination is not null
+        defaultRouteFiltering("destination.specified=true", "destination.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDestinationContainsSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where destination contains
+        defaultRouteFiltering("destination.contains=" + DEFAULT_DESTINATION, "destination.contains=" + UPDATED_DESTINATION);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDestinationNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where destination does not contain
+        defaultRouteFiltering("destination.doesNotContain=" + UPDATED_DESTINATION, "destination.doesNotContain=" + DEFAULT_DESTINATION);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDistanceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where distance equals to
+        defaultRouteFiltering("distance.equals=" + DEFAULT_DISTANCE, "distance.equals=" + UPDATED_DISTANCE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDistanceIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where distance in
+        defaultRouteFiltering("distance.in=" + DEFAULT_DISTANCE + "," + UPDATED_DISTANCE, "distance.in=" + UPDATED_DISTANCE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDistanceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where distance is not null
+        defaultRouteFiltering("distance.specified=true", "distance.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDistanceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where distance is greater than or equal to
+        defaultRouteFiltering("distance.greaterThanOrEqual=" + DEFAULT_DISTANCE, "distance.greaterThanOrEqual=" + UPDATED_DISTANCE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDistanceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where distance is less than or equal to
+        defaultRouteFiltering("distance.lessThanOrEqual=" + DEFAULT_DISTANCE, "distance.lessThanOrEqual=" + SMALLER_DISTANCE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDistanceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where distance is less than
+        defaultRouteFiltering("distance.lessThan=" + UPDATED_DISTANCE, "distance.lessThan=" + DEFAULT_DISTANCE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByDistanceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where distance is greater than
+        defaultRouteFiltering("distance.greaterThan=" + SMALLER_DISTANCE, "distance.greaterThan=" + DEFAULT_DISTANCE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByEstimatedDurationIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where estimatedDuration equals to
+        defaultRouteFiltering(
+            "estimatedDuration.equals=" + DEFAULT_ESTIMATED_DURATION,
+            "estimatedDuration.equals=" + UPDATED_ESTIMATED_DURATION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByEstimatedDurationIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where estimatedDuration in
+        defaultRouteFiltering(
+            "estimatedDuration.in=" + DEFAULT_ESTIMATED_DURATION + "," + UPDATED_ESTIMATED_DURATION,
+            "estimatedDuration.in=" + UPDATED_ESTIMATED_DURATION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByEstimatedDurationIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where estimatedDuration is not null
+        defaultRouteFiltering("estimatedDuration.specified=true", "estimatedDuration.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByEstimatedDurationIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where estimatedDuration is greater than or equal to
+        defaultRouteFiltering(
+            "estimatedDuration.greaterThanOrEqual=" + DEFAULT_ESTIMATED_DURATION,
+            "estimatedDuration.greaterThanOrEqual=" + UPDATED_ESTIMATED_DURATION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByEstimatedDurationIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where estimatedDuration is less than or equal to
+        defaultRouteFiltering(
+            "estimatedDuration.lessThanOrEqual=" + DEFAULT_ESTIMATED_DURATION,
+            "estimatedDuration.lessThanOrEqual=" + SMALLER_ESTIMATED_DURATION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByEstimatedDurationIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where estimatedDuration is less than
+        defaultRouteFiltering(
+            "estimatedDuration.lessThan=" + UPDATED_ESTIMATED_DURATION,
+            "estimatedDuration.lessThan=" + DEFAULT_ESTIMATED_DURATION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByEstimatedDurationIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where estimatedDuration is greater than
+        defaultRouteFiltering(
+            "estimatedDuration.greaterThan=" + SMALLER_ESTIMATED_DURATION,
+            "estimatedDuration.greaterThan=" + DEFAULT_ESTIMATED_DURATION
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByTransportTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where transportType equals to
+        defaultRouteFiltering("transportType.equals=" + DEFAULT_TRANSPORT_TYPE, "transportType.equals=" + UPDATED_TRANSPORT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByTransportTypeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where transportType in
+        defaultRouteFiltering(
+            "transportType.in=" + DEFAULT_TRANSPORT_TYPE + "," + UPDATED_TRANSPORT_TYPE,
+            "transportType.in=" + UPDATED_TRANSPORT_TYPE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByTransportTypeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where transportType is not null
+        defaultRouteFiltering("transportType.specified=true", "transportType.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByIsActiveIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where isActive equals to
+        defaultRouteFiltering("isActive.equals=" + DEFAULT_IS_ACTIVE, "isActive.equals=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByIsActiveIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where isActive in
+        defaultRouteFiltering("isActive.in=" + DEFAULT_IS_ACTIVE + "," + UPDATED_IS_ACTIVE, "isActive.in=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByIsActiveIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where isActive is not null
+        defaultRouteFiltering("isActive.specified=true", "isActive.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByCreatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where createdAt equals to
+        defaultRouteFiltering("createdAt.equals=" + DEFAULT_CREATED_AT, "createdAt.equals=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByCreatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where createdAt in
+        defaultRouteFiltering("createdAt.in=" + DEFAULT_CREATED_AT + "," + UPDATED_CREATED_AT, "createdAt.in=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByCreatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where createdAt is not null
+        defaultRouteFiltering("createdAt.specified=true", "createdAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByUpdatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where updatedAt equals to
+        defaultRouteFiltering("updatedAt.equals=" + DEFAULT_UPDATED_AT, "updatedAt.equals=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByUpdatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where updatedAt in
+        defaultRouteFiltering("updatedAt.in=" + DEFAULT_UPDATED_AT + "," + UPDATED_UPDATED_AT, "updatedAt.in=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllRoutesByUpdatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedRoute = routeRepository.saveAndFlush(route);
+
+        // Get all the routeList where updatedAt is not null
+        defaultRouteFiltering("updatedAt.specified=true", "updatedAt.specified=false");
+    }
+
+    private void defaultRouteFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
+        defaultRouteShouldBeFound(shouldBeFound);
+        defaultRouteShouldNotBeFound(shouldNotBeFound);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultRouteShouldBeFound(String filter) throws Exception {
+        restRouteMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(route.getId().toString())))
+            .andExpect(jsonPath("$.[*].routeName").value(hasItem(DEFAULT_ROUTE_NAME)))
+            .andExpect(jsonPath("$.[*].origin").value(hasItem(DEFAULT_ORIGIN)))
+            .andExpect(jsonPath("$.[*].destination").value(hasItem(DEFAULT_DESTINATION)))
+            .andExpect(jsonPath("$.[*].distance").value(hasItem(DEFAULT_DISTANCE)))
+            .andExpect(jsonPath("$.[*].estimatedDuration").value(hasItem(DEFAULT_ESTIMATED_DURATION)))
+            .andExpect(jsonPath("$.[*].transportType").value(hasItem(DEFAULT_TRANSPORT_TYPE.toString())))
+            .andExpect(jsonPath("$.[*].isActive").value(hasItem(DEFAULT_IS_ACTIVE)))
+            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())));
+
+        // Check, that the count call also returns 1
+        restRouteMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultRouteShouldNotBeFound(String filter) throws Exception {
+        restRouteMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restRouteMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
     }
 
     @Test

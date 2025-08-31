@@ -1,7 +1,9 @@
 package com.ticketsystem.booking.web.rest;
 
 import com.ticketsystem.booking.repository.TicketRepository;
+import com.ticketsystem.booking.service.TicketQueryService;
 import com.ticketsystem.booking.service.TicketService;
+import com.ticketsystem.booking.service.criteria.TicketCriteria;
 import com.ticketsystem.booking.service.dto.TicketDTO;
 import com.ticketsystem.booking.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -43,9 +45,12 @@ public class TicketResource {
 
     private final TicketRepository ticketRepository;
 
-    public TicketResource(TicketService ticketService, TicketRepository ticketRepository) {
+    private final TicketQueryService ticketQueryService;
+
+    public TicketResource(TicketService ticketService, TicketRepository ticketRepository, TicketQueryService ticketQueryService) {
         this.ticketService = ticketService;
         this.ticketRepository = ticketRepository;
+        this.ticketQueryService = ticketQueryService;
     }
 
     /**
@@ -140,14 +145,31 @@ public class TicketResource {
      * {@code GET  /tickets} : get all the tickets.
      *
      * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of tickets in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<TicketDTO>> getAllTickets(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of Tickets");
-        Page<TicketDTO> page = ticketService.findAll(pageable);
+    public ResponseEntity<List<TicketDTO>> getAllTickets(
+        TicketCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Tickets by criteria: {}", criteria);
+
+        Page<TicketDTO> page = ticketQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /tickets/count} : count all the tickets.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countTickets(TicketCriteria criteria) {
+        LOG.debug("REST request to count Tickets by criteria: {}", criteria);
+        return ResponseEntity.ok().body(ticketQueryService.countByCriteria(criteria));
     }
 
     /**

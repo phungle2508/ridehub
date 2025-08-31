@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250831103933"
+    "changelogDate": "20250831164512"
   },
   "applications": ["gateway", "ms_payment"],
   "clientRootFolder": "ms_payment",
@@ -63,6 +63,7 @@
       "fieldValidateRules": ["required"]
     }
   ],
+  "jpaMetamodelFiltering": true,
   "microserviceName": "ms_payment",
   "name": "Payment",
   "pagination": "infinite-scroll",

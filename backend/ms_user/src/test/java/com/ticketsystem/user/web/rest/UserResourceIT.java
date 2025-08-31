@@ -58,6 +58,7 @@ class UserResourceIT {
 
     private static final LocalDate DEFAULT_DATE_OF_BIRTH = LocalDate.ofEpochDay(0L);
     private static final LocalDate UPDATED_DATE_OF_BIRTH = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDate SMALLER_DATE_OF_BIRTH = LocalDate.ofEpochDay(-1L);
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -415,6 +416,632 @@ class UserResourceIT {
             .andExpect(jsonPath("$.keycloakUserId").value(DEFAULT_KEYCLOAK_USER_ID.toString()))
             .andExpect(jsonPath("$.userAvatar").value(DEFAULT_USER_AVATAR))
             .andExpect(jsonPath("$.isActive").value(DEFAULT_IS_ACTIVE));
+    }
+
+    @Test
+    @Transactional
+    void getUsersByIdFiltering() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        UUID id = user.getId();
+
+        defaultUserFiltering("id.equals=" + id, "id.notEquals=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUsernameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where username equals to
+        defaultUserFiltering("username.equals=" + DEFAULT_USERNAME, "username.equals=" + UPDATED_USERNAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUsernameIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where username in
+        defaultUserFiltering("username.in=" + DEFAULT_USERNAME + "," + UPDATED_USERNAME, "username.in=" + UPDATED_USERNAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUsernameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where username is not null
+        defaultUserFiltering("username.specified=true", "username.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUsernameContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where username contains
+        defaultUserFiltering("username.contains=" + DEFAULT_USERNAME, "username.contains=" + UPDATED_USERNAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUsernameNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where username does not contain
+        defaultUserFiltering("username.doesNotContain=" + UPDATED_USERNAME, "username.doesNotContain=" + DEFAULT_USERNAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByEmailIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where email equals to
+        defaultUserFiltering("email.equals=" + DEFAULT_EMAIL, "email.equals=" + UPDATED_EMAIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByEmailIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where email in
+        defaultUserFiltering("email.in=" + DEFAULT_EMAIL + "," + UPDATED_EMAIL, "email.in=" + UPDATED_EMAIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByEmailIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where email is not null
+        defaultUserFiltering("email.specified=true", "email.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByEmailContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where email contains
+        defaultUserFiltering("email.contains=" + DEFAULT_EMAIL, "email.contains=" + UPDATED_EMAIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByEmailNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where email does not contain
+        defaultUserFiltering("email.doesNotContain=" + UPDATED_EMAIL, "email.doesNotContain=" + DEFAULT_EMAIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPasswordHashIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where passwordHash equals to
+        defaultUserFiltering("passwordHash.equals=" + DEFAULT_PASSWORD_HASH, "passwordHash.equals=" + UPDATED_PASSWORD_HASH);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPasswordHashIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where passwordHash in
+        defaultUserFiltering(
+            "passwordHash.in=" + DEFAULT_PASSWORD_HASH + "," + UPDATED_PASSWORD_HASH,
+            "passwordHash.in=" + UPDATED_PASSWORD_HASH
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPasswordHashIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where passwordHash is not null
+        defaultUserFiltering("passwordHash.specified=true", "passwordHash.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPasswordHashContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where passwordHash contains
+        defaultUserFiltering("passwordHash.contains=" + DEFAULT_PASSWORD_HASH, "passwordHash.contains=" + UPDATED_PASSWORD_HASH);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPasswordHashNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where passwordHash does not contain
+        defaultUserFiltering(
+            "passwordHash.doesNotContain=" + UPDATED_PASSWORD_HASH,
+            "passwordHash.doesNotContain=" + DEFAULT_PASSWORD_HASH
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByFirstNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where firstName equals to
+        defaultUserFiltering("firstName.equals=" + DEFAULT_FIRST_NAME, "firstName.equals=" + UPDATED_FIRST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByFirstNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where firstName in
+        defaultUserFiltering("firstName.in=" + DEFAULT_FIRST_NAME + "," + UPDATED_FIRST_NAME, "firstName.in=" + UPDATED_FIRST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByFirstNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where firstName is not null
+        defaultUserFiltering("firstName.specified=true", "firstName.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByFirstNameContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where firstName contains
+        defaultUserFiltering("firstName.contains=" + DEFAULT_FIRST_NAME, "firstName.contains=" + UPDATED_FIRST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByFirstNameNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where firstName does not contain
+        defaultUserFiltering("firstName.doesNotContain=" + UPDATED_FIRST_NAME, "firstName.doesNotContain=" + DEFAULT_FIRST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByLastNameIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where lastName equals to
+        defaultUserFiltering("lastName.equals=" + DEFAULT_LAST_NAME, "lastName.equals=" + UPDATED_LAST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByLastNameIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where lastName in
+        defaultUserFiltering("lastName.in=" + DEFAULT_LAST_NAME + "," + UPDATED_LAST_NAME, "lastName.in=" + UPDATED_LAST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByLastNameIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where lastName is not null
+        defaultUserFiltering("lastName.specified=true", "lastName.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByLastNameContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where lastName contains
+        defaultUserFiltering("lastName.contains=" + DEFAULT_LAST_NAME, "lastName.contains=" + UPDATED_LAST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByLastNameNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where lastName does not contain
+        defaultUserFiltering("lastName.doesNotContain=" + UPDATED_LAST_NAME, "lastName.doesNotContain=" + DEFAULT_LAST_NAME);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPhoneNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where phoneNumber equals to
+        defaultUserFiltering("phoneNumber.equals=" + DEFAULT_PHONE_NUMBER, "phoneNumber.equals=" + UPDATED_PHONE_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPhoneNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where phoneNumber in
+        defaultUserFiltering(
+            "phoneNumber.in=" + DEFAULT_PHONE_NUMBER + "," + UPDATED_PHONE_NUMBER,
+            "phoneNumber.in=" + UPDATED_PHONE_NUMBER
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPhoneNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where phoneNumber is not null
+        defaultUserFiltering("phoneNumber.specified=true", "phoneNumber.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPhoneNumberContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where phoneNumber contains
+        defaultUserFiltering("phoneNumber.contains=" + DEFAULT_PHONE_NUMBER, "phoneNumber.contains=" + UPDATED_PHONE_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByPhoneNumberNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where phoneNumber does not contain
+        defaultUserFiltering("phoneNumber.doesNotContain=" + UPDATED_PHONE_NUMBER, "phoneNumber.doesNotContain=" + DEFAULT_PHONE_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByDateOfBirthIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where dateOfBirth equals to
+        defaultUserFiltering("dateOfBirth.equals=" + DEFAULT_DATE_OF_BIRTH, "dateOfBirth.equals=" + UPDATED_DATE_OF_BIRTH);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByDateOfBirthIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where dateOfBirth in
+        defaultUserFiltering(
+            "dateOfBirth.in=" + DEFAULT_DATE_OF_BIRTH + "," + UPDATED_DATE_OF_BIRTH,
+            "dateOfBirth.in=" + UPDATED_DATE_OF_BIRTH
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByDateOfBirthIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where dateOfBirth is not null
+        defaultUserFiltering("dateOfBirth.specified=true", "dateOfBirth.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByDateOfBirthIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where dateOfBirth is greater than or equal to
+        defaultUserFiltering(
+            "dateOfBirth.greaterThanOrEqual=" + DEFAULT_DATE_OF_BIRTH,
+            "dateOfBirth.greaterThanOrEqual=" + UPDATED_DATE_OF_BIRTH
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByDateOfBirthIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where dateOfBirth is less than or equal to
+        defaultUserFiltering(
+            "dateOfBirth.lessThanOrEqual=" + DEFAULT_DATE_OF_BIRTH,
+            "dateOfBirth.lessThanOrEqual=" + SMALLER_DATE_OF_BIRTH
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByDateOfBirthIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where dateOfBirth is less than
+        defaultUserFiltering("dateOfBirth.lessThan=" + UPDATED_DATE_OF_BIRTH, "dateOfBirth.lessThan=" + DEFAULT_DATE_OF_BIRTH);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByDateOfBirthIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where dateOfBirth is greater than
+        defaultUserFiltering("dateOfBirth.greaterThan=" + SMALLER_DATE_OF_BIRTH, "dateOfBirth.greaterThan=" + DEFAULT_DATE_OF_BIRTH);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByCreatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where createdAt equals to
+        defaultUserFiltering("createdAt.equals=" + DEFAULT_CREATED_AT, "createdAt.equals=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByCreatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where createdAt in
+        defaultUserFiltering("createdAt.in=" + DEFAULT_CREATED_AT + "," + UPDATED_CREATED_AT, "createdAt.in=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByCreatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where createdAt is not null
+        defaultUserFiltering("createdAt.specified=true", "createdAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUpdatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where updatedAt equals to
+        defaultUserFiltering("updatedAt.equals=" + DEFAULT_UPDATED_AT, "updatedAt.equals=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUpdatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where updatedAt in
+        defaultUserFiltering("updatedAt.in=" + DEFAULT_UPDATED_AT + "," + UPDATED_UPDATED_AT, "updatedAt.in=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUpdatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where updatedAt is not null
+        defaultUserFiltering("updatedAt.specified=true", "updatedAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByKeycloakUserIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where keycloakUserId equals to
+        defaultUserFiltering("keycloakUserId.equals=" + DEFAULT_KEYCLOAK_USER_ID, "keycloakUserId.equals=" + UPDATED_KEYCLOAK_USER_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByKeycloakUserIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where keycloakUserId in
+        defaultUserFiltering(
+            "keycloakUserId.in=" + DEFAULT_KEYCLOAK_USER_ID + "," + UPDATED_KEYCLOAK_USER_ID,
+            "keycloakUserId.in=" + UPDATED_KEYCLOAK_USER_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByKeycloakUserIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where keycloakUserId is not null
+        defaultUserFiltering("keycloakUserId.specified=true", "keycloakUserId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUserAvatarIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where userAvatar equals to
+        defaultUserFiltering("userAvatar.equals=" + DEFAULT_USER_AVATAR, "userAvatar.equals=" + UPDATED_USER_AVATAR);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUserAvatarIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where userAvatar in
+        defaultUserFiltering("userAvatar.in=" + DEFAULT_USER_AVATAR + "," + UPDATED_USER_AVATAR, "userAvatar.in=" + UPDATED_USER_AVATAR);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUserAvatarIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where userAvatar is not null
+        defaultUserFiltering("userAvatar.specified=true", "userAvatar.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUserAvatarContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where userAvatar contains
+        defaultUserFiltering("userAvatar.contains=" + DEFAULT_USER_AVATAR, "userAvatar.contains=" + UPDATED_USER_AVATAR);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByUserAvatarNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where userAvatar does not contain
+        defaultUserFiltering("userAvatar.doesNotContain=" + UPDATED_USER_AVATAR, "userAvatar.doesNotContain=" + DEFAULT_USER_AVATAR);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByIsActiveIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where isActive equals to
+        defaultUserFiltering("isActive.equals=" + DEFAULT_IS_ACTIVE, "isActive.equals=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByIsActiveIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where isActive in
+        defaultUserFiltering("isActive.in=" + DEFAULT_IS_ACTIVE + "," + UPDATED_IS_ACTIVE, "isActive.in=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllUsersByIsActiveIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedUser = userRepository.saveAndFlush(user);
+
+        // Get all the userList where isActive is not null
+        defaultUserFiltering("isActive.specified=true", "isActive.specified=false");
+    }
+
+    private void defaultUserFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
+        defaultUserShouldBeFound(shouldBeFound);
+        defaultUserShouldNotBeFound(shouldNotBeFound);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultUserShouldBeFound(String filter) throws Exception {
+        restUserMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(user.getId().toString())))
+            .andExpect(jsonPath("$.[*].username").value(hasItem(DEFAULT_USERNAME)))
+            .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)))
+            .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH)))
+            .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRST_NAME)))
+            .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LAST_NAME)))
+            .andExpect(jsonPath("$.[*].phoneNumber").value(hasItem(DEFAULT_PHONE_NUMBER)))
+            .andExpect(jsonPath("$.[*].dateOfBirth").value(hasItem(DEFAULT_DATE_OF_BIRTH.toString())))
+            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].keycloakUserId").value(hasItem(DEFAULT_KEYCLOAK_USER_ID.toString())))
+            .andExpect(jsonPath("$.[*].userAvatar").value(hasItem(DEFAULT_USER_AVATAR)))
+            .andExpect(jsonPath("$.[*].isActive").value(hasItem(DEFAULT_IS_ACTIVE)));
+
+        // Check, that the count call also returns 1
+        restUserMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultUserShouldNotBeFound(String filter) throws Exception {
+        restUserMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restUserMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
     }
 
     @Test

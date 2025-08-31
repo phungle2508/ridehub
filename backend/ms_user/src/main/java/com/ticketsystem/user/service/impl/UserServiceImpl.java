@@ -5,11 +5,8 @@ import com.ticketsystem.user.repository.UserRepository;
 import com.ticketsystem.user.service.UserService;
 import com.ticketsystem.user.service.dto.UserDTO;
 import com.ticketsystem.user.service.mapper.UserMapper;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -62,13 +59,6 @@ public class UserServiceImpl implements UserService {
             })
             .map(userRepository::save)
             .map(userMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserDTO> findAll() {
-        LOG.debug("Request to get all Users");
-        return userRepository.findAll().stream().map(userMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override

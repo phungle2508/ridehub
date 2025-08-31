@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250831103733"
+    "changelogDate": "20250831163912"
   },
   "applications": ["gateway", "ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -54,6 +54,7 @@
       "fieldValidateRules": ["required"]
     }
   ],
+  "jpaMetamodelFiltering": true,
   "microserviceName": "ms_booking",
   "name": "Ticket",
   "pagination": "infinite-scroll",

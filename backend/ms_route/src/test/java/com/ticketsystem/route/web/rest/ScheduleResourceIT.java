@@ -54,12 +54,15 @@ class ScheduleResourceIT {
 
     private static final Integer DEFAULT_TOTAL_SEATS = 1;
     private static final Integer UPDATED_TOTAL_SEATS = 2;
+    private static final Integer SMALLER_TOTAL_SEATS = 1 - 1;
 
     private static final Integer DEFAULT_AVAILABLE_SEATS = 1;
     private static final Integer UPDATED_AVAILABLE_SEATS = 2;
+    private static final Integer SMALLER_AVAILABLE_SEATS = 1 - 1;
 
     private static final BigDecimal DEFAULT_BASE_PRICE = new BigDecimal(1);
     private static final BigDecimal UPDATED_BASE_PRICE = new BigDecimal(2);
+    private static final BigDecimal SMALLER_BASE_PRICE = new BigDecimal(1 - 1);
 
     private static final Boolean DEFAULT_IS_ACTIVE = false;
     private static final Boolean UPDATED_IS_ACTIVE = true;
@@ -433,6 +436,479 @@ class ScheduleResourceIT {
             .andExpect(jsonPath("$.isActive").value(DEFAULT_IS_ACTIVE))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()));
+    }
+
+    @Test
+    @Transactional
+    void getSchedulesByIdFiltering() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        UUID id = schedule.getId();
+
+        defaultScheduleFiltering("id.equals=" + id, "id.notEquals=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByDepartureTimeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where departureTime equals to
+        defaultScheduleFiltering("departureTime.equals=" + DEFAULT_DEPARTURE_TIME, "departureTime.equals=" + UPDATED_DEPARTURE_TIME);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByDepartureTimeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where departureTime in
+        defaultScheduleFiltering(
+            "departureTime.in=" + DEFAULT_DEPARTURE_TIME + "," + UPDATED_DEPARTURE_TIME,
+            "departureTime.in=" + UPDATED_DEPARTURE_TIME
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByDepartureTimeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where departureTime is not null
+        defaultScheduleFiltering("departureTime.specified=true", "departureTime.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByArrivalTimeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where arrivalTime equals to
+        defaultScheduleFiltering("arrivalTime.equals=" + DEFAULT_ARRIVAL_TIME, "arrivalTime.equals=" + UPDATED_ARRIVAL_TIME);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByArrivalTimeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where arrivalTime in
+        defaultScheduleFiltering(
+            "arrivalTime.in=" + DEFAULT_ARRIVAL_TIME + "," + UPDATED_ARRIVAL_TIME,
+            "arrivalTime.in=" + UPDATED_ARRIVAL_TIME
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByArrivalTimeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where arrivalTime is not null
+        defaultScheduleFiltering("arrivalTime.specified=true", "arrivalTime.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByTotalSeatsIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where totalSeats equals to
+        defaultScheduleFiltering("totalSeats.equals=" + DEFAULT_TOTAL_SEATS, "totalSeats.equals=" + UPDATED_TOTAL_SEATS);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByTotalSeatsIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where totalSeats in
+        defaultScheduleFiltering(
+            "totalSeats.in=" + DEFAULT_TOTAL_SEATS + "," + UPDATED_TOTAL_SEATS,
+            "totalSeats.in=" + UPDATED_TOTAL_SEATS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByTotalSeatsIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where totalSeats is not null
+        defaultScheduleFiltering("totalSeats.specified=true", "totalSeats.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByTotalSeatsIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where totalSeats is greater than or equal to
+        defaultScheduleFiltering(
+            "totalSeats.greaterThanOrEqual=" + DEFAULT_TOTAL_SEATS,
+            "totalSeats.greaterThanOrEqual=" + UPDATED_TOTAL_SEATS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByTotalSeatsIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where totalSeats is less than or equal to
+        defaultScheduleFiltering("totalSeats.lessThanOrEqual=" + DEFAULT_TOTAL_SEATS, "totalSeats.lessThanOrEqual=" + SMALLER_TOTAL_SEATS);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByTotalSeatsIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where totalSeats is less than
+        defaultScheduleFiltering("totalSeats.lessThan=" + UPDATED_TOTAL_SEATS, "totalSeats.lessThan=" + DEFAULT_TOTAL_SEATS);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByTotalSeatsIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where totalSeats is greater than
+        defaultScheduleFiltering("totalSeats.greaterThan=" + SMALLER_TOTAL_SEATS, "totalSeats.greaterThan=" + DEFAULT_TOTAL_SEATS);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByAvailableSeatsIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where availableSeats equals to
+        defaultScheduleFiltering("availableSeats.equals=" + DEFAULT_AVAILABLE_SEATS, "availableSeats.equals=" + UPDATED_AVAILABLE_SEATS);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByAvailableSeatsIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where availableSeats in
+        defaultScheduleFiltering(
+            "availableSeats.in=" + DEFAULT_AVAILABLE_SEATS + "," + UPDATED_AVAILABLE_SEATS,
+            "availableSeats.in=" + UPDATED_AVAILABLE_SEATS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByAvailableSeatsIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where availableSeats is not null
+        defaultScheduleFiltering("availableSeats.specified=true", "availableSeats.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByAvailableSeatsIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where availableSeats is greater than or equal to
+        defaultScheduleFiltering(
+            "availableSeats.greaterThanOrEqual=" + DEFAULT_AVAILABLE_SEATS,
+            "availableSeats.greaterThanOrEqual=" + UPDATED_AVAILABLE_SEATS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByAvailableSeatsIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where availableSeats is less than or equal to
+        defaultScheduleFiltering(
+            "availableSeats.lessThanOrEqual=" + DEFAULT_AVAILABLE_SEATS,
+            "availableSeats.lessThanOrEqual=" + SMALLER_AVAILABLE_SEATS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByAvailableSeatsIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where availableSeats is less than
+        defaultScheduleFiltering(
+            "availableSeats.lessThan=" + UPDATED_AVAILABLE_SEATS,
+            "availableSeats.lessThan=" + DEFAULT_AVAILABLE_SEATS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByAvailableSeatsIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where availableSeats is greater than
+        defaultScheduleFiltering(
+            "availableSeats.greaterThan=" + SMALLER_AVAILABLE_SEATS,
+            "availableSeats.greaterThan=" + DEFAULT_AVAILABLE_SEATS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByBasePriceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where basePrice equals to
+        defaultScheduleFiltering("basePrice.equals=" + DEFAULT_BASE_PRICE, "basePrice.equals=" + UPDATED_BASE_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByBasePriceIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where basePrice in
+        defaultScheduleFiltering("basePrice.in=" + DEFAULT_BASE_PRICE + "," + UPDATED_BASE_PRICE, "basePrice.in=" + UPDATED_BASE_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByBasePriceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where basePrice is not null
+        defaultScheduleFiltering("basePrice.specified=true", "basePrice.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByBasePriceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where basePrice is greater than or equal to
+        defaultScheduleFiltering(
+            "basePrice.greaterThanOrEqual=" + DEFAULT_BASE_PRICE,
+            "basePrice.greaterThanOrEqual=" + UPDATED_BASE_PRICE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByBasePriceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where basePrice is less than or equal to
+        defaultScheduleFiltering("basePrice.lessThanOrEqual=" + DEFAULT_BASE_PRICE, "basePrice.lessThanOrEqual=" + SMALLER_BASE_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByBasePriceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where basePrice is less than
+        defaultScheduleFiltering("basePrice.lessThan=" + UPDATED_BASE_PRICE, "basePrice.lessThan=" + DEFAULT_BASE_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByBasePriceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where basePrice is greater than
+        defaultScheduleFiltering("basePrice.greaterThan=" + SMALLER_BASE_PRICE, "basePrice.greaterThan=" + DEFAULT_BASE_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByIsActiveIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where isActive equals to
+        defaultScheduleFiltering("isActive.equals=" + DEFAULT_IS_ACTIVE, "isActive.equals=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByIsActiveIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where isActive in
+        defaultScheduleFiltering("isActive.in=" + DEFAULT_IS_ACTIVE + "," + UPDATED_IS_ACTIVE, "isActive.in=" + UPDATED_IS_ACTIVE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByIsActiveIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where isActive is not null
+        defaultScheduleFiltering("isActive.specified=true", "isActive.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByCreatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where createdAt equals to
+        defaultScheduleFiltering("createdAt.equals=" + DEFAULT_CREATED_AT, "createdAt.equals=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByCreatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where createdAt in
+        defaultScheduleFiltering("createdAt.in=" + DEFAULT_CREATED_AT + "," + UPDATED_CREATED_AT, "createdAt.in=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByCreatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where createdAt is not null
+        defaultScheduleFiltering("createdAt.specified=true", "createdAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByUpdatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where updatedAt equals to
+        defaultScheduleFiltering("updatedAt.equals=" + DEFAULT_UPDATED_AT, "updatedAt.equals=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByUpdatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where updatedAt in
+        defaultScheduleFiltering("updatedAt.in=" + DEFAULT_UPDATED_AT + "," + UPDATED_UPDATED_AT, "updatedAt.in=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByUpdatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSchedule = scheduleRepository.saveAndFlush(schedule);
+
+        // Get all the scheduleList where updatedAt is not null
+        defaultScheduleFiltering("updatedAt.specified=true", "updatedAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSchedulesByRouteIsEqualToSomething() throws Exception {
+        Route route;
+        if (TestUtil.findAll(em, Route.class).isEmpty()) {
+            scheduleRepository.saveAndFlush(schedule);
+            route = RouteResourceIT.createEntity();
+        } else {
+            route = TestUtil.findAll(em, Route.class).get(0);
+        }
+        em.persist(route);
+        em.flush();
+        schedule.setRoute(route);
+        scheduleRepository.saveAndFlush(schedule);
+        UUID routeId = route.getId();
+        // Get all the scheduleList where route equals to routeId
+        defaultScheduleShouldBeFound("routeId.equals=" + routeId);
+
+        // Get all the scheduleList where route equals to UUID.randomUUID()
+        defaultScheduleShouldNotBeFound("routeId.equals=" + UUID.randomUUID());
+    }
+
+    private void defaultScheduleFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
+        defaultScheduleShouldBeFound(shouldBeFound);
+        defaultScheduleShouldNotBeFound(shouldNotBeFound);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultScheduleShouldBeFound(String filter) throws Exception {
+        restScheduleMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(schedule.getId().toString())))
+            .andExpect(jsonPath("$.[*].departureTime").value(hasItem(DEFAULT_DEPARTURE_TIME.toString())))
+            .andExpect(jsonPath("$.[*].arrivalTime").value(hasItem(DEFAULT_ARRIVAL_TIME.toString())))
+            .andExpect(jsonPath("$.[*].totalSeats").value(hasItem(DEFAULT_TOTAL_SEATS)))
+            .andExpect(jsonPath("$.[*].availableSeats").value(hasItem(DEFAULT_AVAILABLE_SEATS)))
+            .andExpect(jsonPath("$.[*].basePrice").value(hasItem(sameNumber(DEFAULT_BASE_PRICE))))
+            .andExpect(jsonPath("$.[*].isActive").value(hasItem(DEFAULT_IS_ACTIVE)))
+            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())));
+
+        // Check, that the count call also returns 1
+        restScheduleMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultScheduleShouldNotBeFound(String filter) throws Exception {
+        restScheduleMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restScheduleMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
     }
 
     @Test

@@ -1,7 +1,6 @@
 package com.ticketsystem.user.service;
 
 import com.ticketsystem.user.service.dto.UserDTO;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,13 +31,6 @@ public interface UserService {
      * @return the persisted entity.
      */
     Optional<UserDTO> partialUpdate(UserDTO userDTO);
-
-    /**
-     * Get all the users.
-     *
-     * @return the list of entities.
-     */
-    List<UserDTO> findAll();
 
     /**
      * Get the "id" user.

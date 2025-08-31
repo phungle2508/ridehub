@@ -35,14 +35,6 @@ public interface ScheduleService {
     Optional<ScheduleDTO> partialUpdate(ScheduleDTO scheduleDTO);
 
     /**
-     * Get all the schedules.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<ScheduleDTO> findAll(Pageable pageable);
-
-    /**
      * Get the "id" schedule.
      *
      * @param id the id of the entity.

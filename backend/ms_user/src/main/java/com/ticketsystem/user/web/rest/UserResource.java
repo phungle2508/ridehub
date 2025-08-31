@@ -1,7 +1,9 @@
 package com.ticketsystem.user.web.rest;
 
 import com.ticketsystem.user.repository.UserRepository;
+import com.ticketsystem.user.service.UserQueryService;
 import com.ticketsystem.user.service.UserService;
+import com.ticketsystem.user.service.criteria.UserCriteria;
 import com.ticketsystem.user.service.dto.UserDTO;
 import com.ticketsystem.user.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -38,9 +40,12 @@ public class UserResource {
 
     private final UserRepository userRepository;
 
-    public UserResource(UserService userService, UserRepository userRepository) {
+    private final UserQueryService userQueryService;
+
+    public UserResource(UserService userService, UserRepository userRepository, UserQueryService userQueryService) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.userQueryService = userQueryService;
     }
 
     /**
@@ -134,12 +139,27 @@ public class UserResource {
     /**
      * {@code GET  /users} : get all the users.
      *
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of users in body.
      */
     @GetMapping("")
-    public List<UserDTO> getAllUsers() {
-        LOG.debug("REST request to get all Users");
-        return userService.findAll();
+    public ResponseEntity<List<UserDTO>> getAllUsers(UserCriteria criteria) {
+        LOG.debug("REST request to get Users by criteria: {}", criteria);
+
+        List<UserDTO> entityList = userQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+     * {@code GET  /users/count} : count all the users.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countUsers(UserCriteria criteria) {
+        LOG.debug("REST request to count Users by criteria: {}", criteria);
+        return ResponseEntity.ok().body(userQueryService.countByCriteria(criteria));
     }
 
     /**

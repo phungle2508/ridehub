@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity Schedule.
     -->
-    <changeSet id="20250831103633-2" author="jhipster">
+    <changeSet id="20250831164012-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="route_id"
                                  baseTableName="schedule"

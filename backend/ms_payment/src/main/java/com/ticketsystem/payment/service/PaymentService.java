@@ -3,8 +3,6 @@ package com.ticketsystem.payment.service;
 import com.ticketsystem.payment.service.dto.PaymentDTO;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ticketsystem.payment.domain.Payment}.
@@ -33,14 +31,6 @@ public interface PaymentService {
      * @return the persisted entity.
      */
     Optional<PaymentDTO> partialUpdate(PaymentDTO paymentDTO);
-
-    /**
-     * Get all the payments.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<PaymentDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" payment.

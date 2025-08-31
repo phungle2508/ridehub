@@ -35,14 +35,6 @@ public interface RouteService {
     Optional<RouteDTO> partialUpdate(RouteDTO routeDTO);
 
     /**
-     * Get all the routes.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<RouteDTO> findAll(Pageable pageable);
-
-    /**
      * Get the "id" route.
      *
      * @param id the id of the entity.

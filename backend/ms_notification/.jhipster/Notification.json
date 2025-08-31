@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250831104033"
+    "changelogDate": "20250831163912"
   },
   "applications": ["gateway", "ms_notification"],
   "clientRootFolder": "ms_notification",
@@ -55,6 +55,7 @@
       "fieldType": "Instant"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "microserviceName": "ms_notification",
   "name": "Notification",
   "pagination": "infinite-scroll",

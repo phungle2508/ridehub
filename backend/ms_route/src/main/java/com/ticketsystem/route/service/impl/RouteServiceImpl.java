@@ -75,13 +75,6 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<RouteDTO> findAll(Pageable pageable) {
-        LOG.debug("Request to get all Routes");
-        return routeRepository.findAll(pageable).map(routeMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<RouteDTO> findOne(UUID id) {
         LOG.debug("Request to get Route : {}", id);
         return routeRepository.findById(id).map(routeMapper::toDto);

@@ -3,8 +3,6 @@ package com.ticketsystem.booking.service;
 import com.ticketsystem.booking.service.dto.TicketDTO;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ticketsystem.booking.domain.Ticket}.
@@ -33,14 +31,6 @@ public interface TicketService {
      * @return the persisted entity.
      */
     Optional<TicketDTO> partialUpdate(TicketDTO ticketDTO);
-
-    /**
-     * Get all the tickets.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<TicketDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" ticket.

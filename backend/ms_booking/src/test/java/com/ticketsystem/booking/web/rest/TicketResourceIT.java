@@ -51,6 +51,7 @@ class TicketResourceIT {
 
     private static final BigDecimal DEFAULT_PRICE = new BigDecimal(1);
     private static final BigDecimal UPDATED_PRICE = new BigDecimal(2);
+    private static final BigDecimal SMALLER_PRICE = new BigDecimal(1 - 1);
 
     private static final TicketStatus DEFAULT_STATUS = TicketStatus.AVAILABLE;
     private static final TicketStatus UPDATED_STATUS = TicketStatus.BOOKED;
@@ -338,6 +339,370 @@ class TicketResourceIT {
             .andExpect(jsonPath("$.reservedUntil").value(DEFAULT_RESERVED_UNTIL.toString()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()));
+    }
+
+    @Test
+    @Transactional
+    void getTicketsByIdFiltering() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        UUID id = ticket.getId();
+
+        defaultTicketFiltering("id.equals=" + id, "id.notEquals=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByScheduleIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where scheduleId equals to
+        defaultTicketFiltering("scheduleId.equals=" + DEFAULT_SCHEDULE_ID, "scheduleId.equals=" + UPDATED_SCHEDULE_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByScheduleIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where scheduleId in
+        defaultTicketFiltering("scheduleId.in=" + DEFAULT_SCHEDULE_ID + "," + UPDATED_SCHEDULE_ID, "scheduleId.in=" + UPDATED_SCHEDULE_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByScheduleIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where scheduleId is not null
+        defaultTicketFiltering("scheduleId.specified=true", "scheduleId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatNumberIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatNumber equals to
+        defaultTicketFiltering("seatNumber.equals=" + DEFAULT_SEAT_NUMBER, "seatNumber.equals=" + UPDATED_SEAT_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatNumberIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatNumber in
+        defaultTicketFiltering("seatNumber.in=" + DEFAULT_SEAT_NUMBER + "," + UPDATED_SEAT_NUMBER, "seatNumber.in=" + UPDATED_SEAT_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatNumberIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatNumber is not null
+        defaultTicketFiltering("seatNumber.specified=true", "seatNumber.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatNumberContainsSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatNumber contains
+        defaultTicketFiltering("seatNumber.contains=" + DEFAULT_SEAT_NUMBER, "seatNumber.contains=" + UPDATED_SEAT_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatNumberNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatNumber does not contain
+        defaultTicketFiltering("seatNumber.doesNotContain=" + UPDATED_SEAT_NUMBER, "seatNumber.doesNotContain=" + DEFAULT_SEAT_NUMBER);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatType equals to
+        defaultTicketFiltering("seatType.equals=" + DEFAULT_SEAT_TYPE, "seatType.equals=" + UPDATED_SEAT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatTypeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatType in
+        defaultTicketFiltering("seatType.in=" + DEFAULT_SEAT_TYPE + "," + UPDATED_SEAT_TYPE, "seatType.in=" + UPDATED_SEAT_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatTypeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatType is not null
+        defaultTicketFiltering("seatType.specified=true", "seatType.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByPriceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where price equals to
+        defaultTicketFiltering("price.equals=" + DEFAULT_PRICE, "price.equals=" + UPDATED_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByPriceIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where price in
+        defaultTicketFiltering("price.in=" + DEFAULT_PRICE + "," + UPDATED_PRICE, "price.in=" + UPDATED_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByPriceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where price is not null
+        defaultTicketFiltering("price.specified=true", "price.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByPriceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where price is greater than or equal to
+        defaultTicketFiltering("price.greaterThanOrEqual=" + DEFAULT_PRICE, "price.greaterThanOrEqual=" + UPDATED_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByPriceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where price is less than or equal to
+        defaultTicketFiltering("price.lessThanOrEqual=" + DEFAULT_PRICE, "price.lessThanOrEqual=" + SMALLER_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByPriceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where price is less than
+        defaultTicketFiltering("price.lessThan=" + UPDATED_PRICE, "price.lessThan=" + DEFAULT_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByPriceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where price is greater than
+        defaultTicketFiltering("price.greaterThan=" + SMALLER_PRICE, "price.greaterThan=" + DEFAULT_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByStatusIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where status equals to
+        defaultTicketFiltering("status.equals=" + DEFAULT_STATUS, "status.equals=" + UPDATED_STATUS);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByStatusIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where status in
+        defaultTicketFiltering("status.in=" + DEFAULT_STATUS + "," + UPDATED_STATUS, "status.in=" + UPDATED_STATUS);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByStatusIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where status is not null
+        defaultTicketFiltering("status.specified=true", "status.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByReservedUntilIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where reservedUntil equals to
+        defaultTicketFiltering("reservedUntil.equals=" + DEFAULT_RESERVED_UNTIL, "reservedUntil.equals=" + UPDATED_RESERVED_UNTIL);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByReservedUntilIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where reservedUntil in
+        defaultTicketFiltering(
+            "reservedUntil.in=" + DEFAULT_RESERVED_UNTIL + "," + UPDATED_RESERVED_UNTIL,
+            "reservedUntil.in=" + UPDATED_RESERVED_UNTIL
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByReservedUntilIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where reservedUntil is not null
+        defaultTicketFiltering("reservedUntil.specified=true", "reservedUntil.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByCreatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where createdAt equals to
+        defaultTicketFiltering("createdAt.equals=" + DEFAULT_CREATED_AT, "createdAt.equals=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByCreatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where createdAt in
+        defaultTicketFiltering("createdAt.in=" + DEFAULT_CREATED_AT + "," + UPDATED_CREATED_AT, "createdAt.in=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByCreatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where createdAt is not null
+        defaultTicketFiltering("createdAt.specified=true", "createdAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByUpdatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where updatedAt equals to
+        defaultTicketFiltering("updatedAt.equals=" + DEFAULT_UPDATED_AT, "updatedAt.equals=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByUpdatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where updatedAt in
+        defaultTicketFiltering("updatedAt.in=" + DEFAULT_UPDATED_AT + "," + UPDATED_UPDATED_AT, "updatedAt.in=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByUpdatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where updatedAt is not null
+        defaultTicketFiltering("updatedAt.specified=true", "updatedAt.specified=false");
+    }
+
+    private void defaultTicketFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
+        defaultTicketShouldBeFound(shouldBeFound);
+        defaultTicketShouldNotBeFound(shouldNotBeFound);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultTicketShouldBeFound(String filter) throws Exception {
+        restTicketMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(ticket.getId().toString())))
+            .andExpect(jsonPath("$.[*].scheduleId").value(hasItem(DEFAULT_SCHEDULE_ID.toString())))
+            .andExpect(jsonPath("$.[*].seatNumber").value(hasItem(DEFAULT_SEAT_NUMBER)))
+            .andExpect(jsonPath("$.[*].seatType").value(hasItem(DEFAULT_SEAT_TYPE.toString())))
+            .andExpect(jsonPath("$.[*].price").value(hasItem(sameNumber(DEFAULT_PRICE))))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
+            .andExpect(jsonPath("$.[*].reservedUntil").value(hasItem(DEFAULT_RESERVED_UNTIL.toString())))
+            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())));
+
+        // Check, that the count call also returns 1
+        restTicketMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultTicketShouldNotBeFound(String filter) throws Exception {
+        restTicketMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restTicketMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
     }
 
     @Test
