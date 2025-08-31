@@ -92,11 +92,17 @@ services:
       - SPRING_LIQUIBASE_URL=jdbc:mysql://ms_route-mysql:3306/ms_route?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
       - JHIPSTER_CACHE_REDIS_SERVER=redis://:${APP_F4_PASS}@${DOMAIN}:6379
       - JHIPSTER_CACHE_REDIS_CLUSTER=false
-      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak.${DOMAIN}/realms/jhipster
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=https://keycloak.${DOMAIN}/realms/jhipster
       - SPRING_ELASTICSEARCH_URIS=http://${DOMAIN}:9200
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=${DOMAIN}:9092
+      - SPRING_KAFKA_SECURITY_PROTOCOL=SSL
+      - SPRING_KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=""
+      - SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION=/app/config/kafka.truststore.jks
+      - SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD=${APP_F4_PASS}
+      - SPRING_KAFKA_PROPERTIES_SSL_KEYSTORE_LOCATION=/app/config/kafka.keystore.jks
+      - SPRING_KAFKA_PROPERTIES_SSL_KEYSTORE_PASSWORD=${APP_F4_PASS}
+      - SPRING_KAFKA_PROPERTIES_SSL_KEY_PASSWORD=${APP_F4_PASS}
     healthcheck:
       test:
         - CMD
@@ -106,6 +112,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 40
+    volumes:
+      - ./kafka/ssl/kafka.truststore.jks:/app/config/kafka.truststore.jks
+      - ./kafka/ssl/kafka.keystore.jks:/app/config/kafka.keystore.jks
     depends_on:
       ms_route-mysql:
         condition: service_healthy

@@ -9,3 +9,35 @@ docker run -it --rm \
   --email shegga9x@gmail.com \
   --agree-tos \
   --non-interactive
+
+
+./mvnw -Pprod verify jib:dockerBuild -DskipTests
+
+# Ensure you are in the correct directory
+mkdir -p kafka/ssl
+cd kafka/ssl
+
+# 1. Create a Self-Signed Certificate Authority (CA)
+# This CA will be used to sign the certificates for both the server and the clients.
+# A password must be provided for the CA's keystore.
+keytool -genkey -alias CARoot -ext BC=ca:true -keyalg RSA -keysize 2048 -storepass f4security -keypass f4security -dname "CN=Ticket Store CA, OU=Ticket Store, O=F4, L=Ho Chi Minh City, ST=Ho Chi Minh, C=VN" -keystore kafka.ca.keystore.jks
+
+# 2. Create the Kafka Broker Keystore and a Certificate Signing Request (CSR)
+# The keystore holds the broker's private key. The CSR is what the CA will sign.
+keytool -genkey -alias kafka-broker -keyalg RSA -keysize 2048 -storepass f4security -keypass f4security -dname "CN=appf4s.io.vn, OU=Kafka Broker, O=F4, L=Ho Chi Minh City, ST=Ho Chi Minh, C=VN" -keystore kafka.broker.keystore.jks
+
+# 3. Sign the Broker's Certificate with the CA
+# This creates a signed certificate and imports it back into the broker's keystore.
+keytool -certreq -alias kafka-broker -keystore kafka.broker.keystore.jks -storepass f4security | keytool -gencert -ext SAN=DNS:appf4s.io.vn,IP:127.0.0.1 -keystore kafka.ca.keystore.jks -storepass f4security -rfc | keytool -importcert -alias kafka-broker -keystore kafka.broker.keystore.jks -storepass f4security -noprompt
+
+# 4. Create the Client Truststore
+# This truststore is used by the Kafka client (your ms_route service). It must contain the CA's public certificate so it can trust any certificate signed by that CA.
+keytool -exportcert -alias CARoot -keystore kafka.ca.keystore.jks -storepass f4security | keytool -importcert -alias CARoot -keystore kafka.client.truststore.jks -storepass f4security -noprompt
+
+# 5. Export the CA's public certificate to a .pem file
+# This is useful for distributing the CA to clients or for other services that need to trust it.
+keytool -exportcert -alias CARoot -keystore kafka.ca.keystore.jks -storepass f4security -rfc > ca-cert.pem
+
+# 6. Optional: Create the Kafka Broker Truststore
+# The broker needs a truststore to authenticate clients if you enable two-way SSL. This truststore should also contain the CA certificate.
+keytool -importcert -alias CARoot -keystore kafka.broker.truststore.jks -storepass f4security -file ca-cert.pem -noprompt
