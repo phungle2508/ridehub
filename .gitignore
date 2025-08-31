@@ -1,6 +1,6 @@
 /infra/nginx/letsencrypt
 infra/.env
-infra/kafka/ssl/*
+# infra/kafka/ssl/*
 microservices/nginx/log/*
 microservices/nginx/letsencrypt/*
 microservices/kafka/ssl/*

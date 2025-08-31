@@ -139,6 +139,8 @@ services:
       - ES_JAVA_OPTS=-Xms256m -Xmx256m
       - discovery.type=single-node
       - xpack.security.enabled=false
+    ports:
+      - 9200:9200
     healthcheck:
       test:
         - CMD
