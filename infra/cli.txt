@@ -11,32 +11,73 @@ docker run -it --rm \
   --non-interactive
 
 
+export APP_F4_PASS="your_password_here"
+echo $APP_F4_PASS  # Verify it's set
 
-# Ensure you are in the correct directory
+
+# Navigate to SSL directory
 mkdir -p kafka/ssl
-cd kafka/ssl
+cd kafka/ssl/
 
-# 1. Create a Self-Signed Certificate Authority (CA)
-# This CA will be used to sign the certificates for both the server and the clients.
-# A password must be provided for the CA's keystore.
-keytool -genkey -alias CARoot -ext BC=ca:true -keyalg RSA -keysize 2048 -storepass f4security -keypass f4security -dname "CN=Ticket Store CA, OU=Ticket Store, O=F4, L=Ho Chi Minh City, ST=Ho Chi Minh, C=VN" -keystore kafka.ca.keystore.jks
 
-# 2. Create the Kafka Broker Keystore and a Certificate Signing Request (CSR)
-# The keystore holds the broker's private key. The CSR is what the CA will sign.
-keytool -genkey -alias kafka-broker -keyalg RSA -keysize 2048 -storepass f4security -keypass f4security -dname "CN=appf4s.io.vn, OU=Kafka Broker, O=F4, L=Ho Chi Minh City, ST=Ho Chi Minh, C=VN" -keystore kafka.broker.keystore.jks
 
-# 3. Sign the Broker's Certificate with the CA
-# This creates a signed certificate and imports it back into the broker's keystore.
-keytool -certreq -alias kafka-broker -keystore kafka.broker.keystore.jks -storepass f4security | keytool -gencert -ext SAN=DNS:appf4s.io.vn,IP:127.0.0.1 -keystore kafka.ca.keystore.jks -storepass f4security -rfc | keytool -importcert -alias kafka-broker -keystore kafka.broker.keystore.jks -storepass f4security -noprompt
 
-# 4. Create the Client Truststore
-# This truststore is used by the Kafka client (your ms_route service). It must contain the CA's public certificate so it can trust any certificate signed by that CA.
-keytool -exportcert -alias CARoot -keystore kafka.ca.keystore.jks -storepass f4security | keytool -importcert -alias CARoot -keystore kafka.client.truststore.jks -storepass f4security -noprompt
 
-# 5. Export the CA's public certificate to a .pem file
-# This is useful for distributing the CA to clients or for other services that need to trust it.
-keytool -exportcert -alias CARoot -keystore kafka.ca.keystore.jks -storepass f4security -rfc > ca-cert.pem
+# Create the broker configuration file
+cat > kafka-broker.conf << EOF
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
 
-# 6. Optional: Create the Kafka Broker Truststore
-# The broker needs a truststore to authenticate clients if you enable two-way SSL. This truststore should also contain the CA certificate.
-keytool -importcert -alias CARoot -keystore kafka.broker.truststore.jks -storepass f4security -file ca-cert.pem -noprompt
+[req_distinguished_name]
+CN = kafka-broker
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = kafka
+DNS.2 = appf4s.io.vn
+DNS.3 = localhost
+IP.1 = 127.0.0.1
+EOF
+
+# Step 1: Generate CA private key
+openssl genrsa -out ca-key.pem 4096
+
+# Step 2: Generate CA certificate
+openssl req -new -x509 -key ca-key.pem -sha256 -subj "/C=VN/ST=HCMC/L=HCMC/O=F4/CN=kafka-ca" -days 365 -out ca-cert.pem
+
+# Step 3: Generate broker private key
+openssl genrsa -out kafka-broker-key.pem 4096
+
+# Step 4: Generate broker certificate request
+openssl req -new -key kafka-broker-key.pem -out kafka-broker.csr -config kafka-broker.conf
+
+# Step 5: Sign broker certificate with CA
+openssl x509 -req -in kafka-broker.csr -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out kafka-broker-cert.pem -days 365 -extensions v3_req -extfile kafka-broker.conf
+
+# Remove old keystores if they exist
+rm -f kafka.broker.keystore.jks kafka.client.truststore.jks kafka.broker.p12
+
+# Create broker keystore
+openssl pkcs12 -export -in kafka-broker-cert.pem -inkey kafka-broker-key.pem -out kafka.broker.p12 -name kafka-broker -password pass:${APP_F4_PASS}
+
+keytool -importkeystore \
+  -deststorepass ${APP_F4_PASS} \
+  -destkeypass ${APP_F4_PASS} \
+  -destkeystore kafka.broker.keystore.jks \
+  -srckeystore kafka.broker.p12 \
+  -srcstoretype PKCS12 \
+  -srcstorepass ${APP_F4_PASS} \
+  -alias kafka-broker
+
+# Create client truststore
+keytool -import \
+  -trustcacerts \
+  -alias ca-cert \
+  -file ca-cert.pem \
+  -keystore kafka.client.truststore.jks \
+  -storepass ${APP_F4_PASS} \
+  -noprompt
