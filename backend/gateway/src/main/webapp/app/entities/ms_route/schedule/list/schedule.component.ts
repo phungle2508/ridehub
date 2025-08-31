@@ -23,7 +23,7 @@ import { ISchedule } from '../schedule.model';
   imports: [RouterModule, FormsModule, SharedModule, SortDirective, SortByDirective, FormatMediumDatetimePipe, InfiniteScrollDirective],
 })
 export class ScheduleComponent implements OnInit {
-  private static readonly NOT_SORTABLE_FIELDS_AFTER_SEARCH = ['id', 'routeId'];
+  private static readonly NOT_SORTABLE_FIELDS_AFTER_SEARCH = ['id'];
 
   subscription: Subscription | null = null;
   schedules = signal<ISchedule[]>([]);

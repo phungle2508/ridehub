@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250831103433"
+    "changelogDate": "20250831103633"
   },
   "applications": ["gateway", "ms_route"],
   "clientRootFolder": "ms_route",
@@ -9,11 +9,6 @@
   "fields": [
     {
       "fieldName": "id",
-      "fieldType": "UUID",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "routeId",
       "fieldType": "UUID",
       "fieldValidateRules": ["required"]
     },
@@ -64,9 +59,11 @@
   "relationships": [
     {
       "otherEntityName": "route",
+      "otherEntityRelationshipName": "routeName",
       "relationshipName": "route",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "searchEngine": "elasticsearch",

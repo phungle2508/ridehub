@@ -16,7 +16,6 @@
         "title": "Schedule"
       },
       "id": "Id",
-      "routeId": "Route Id",
       "departureTime": "Departure Time",
       "arrivalTime": "Arrival Time",
       "totalSeats": "Total Seats",

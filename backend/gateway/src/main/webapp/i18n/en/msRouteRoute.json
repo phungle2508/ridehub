@@ -25,7 +25,7 @@
       "isActive": "Is Active",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
-      "schedule": "Schedule"
+      "routeName": "Route Name"
     }
   },
   "msRouteApp": {

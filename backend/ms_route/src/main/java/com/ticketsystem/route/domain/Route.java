@@ -80,7 +80,7 @@ public class Route implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @org.springframework.data.annotation.Transient
     @JsonIgnoreProperties(value = { "route" }, allowSetters = true)
-    private Set<Schedule> schedules = new HashSet<>();
+    private Set<Schedule> routeNames = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -214,33 +214,33 @@ public class Route implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public Set<Schedule> getSchedules() {
-        return this.schedules;
+    public Set<Schedule> getRouteNames() {
+        return this.routeNames;
     }
 
-    public void setSchedules(Set<Schedule> schedules) {
-        if (this.schedules != null) {
-            this.schedules.forEach(i -> i.setRoute(null));
+    public void setRouteNames(Set<Schedule> schedules) {
+        if (this.routeNames != null) {
+            this.routeNames.forEach(i -> i.setRoute(null));
         }
         if (schedules != null) {
             schedules.forEach(i -> i.setRoute(this));
         }
-        this.schedules = schedules;
+        this.routeNames = schedules;
     }
 
-    public Route schedules(Set<Schedule> schedules) {
-        this.setSchedules(schedules);
+    public Route routeNames(Set<Schedule> schedules) {
+        this.setRouteNames(schedules);
         return this;
     }
 
-    public Route addSchedule(Schedule schedule) {
-        this.schedules.add(schedule);
+    public Route addRouteName(Schedule schedule) {
+        this.routeNames.add(schedule);
         schedule.setRoute(this);
         return this;
     }
 
-    public Route removeSchedule(Schedule schedule) {
-        this.schedules.remove(schedule);
+    public Route removeRouteName(Schedule schedule) {
+        this.routeNames.remove(schedule);
         schedule.setRoute(null);
         return this;
     }

@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketsystem.route.IntegrationTest;
+import com.ticketsystem.route.domain.Route;
 import com.ticketsystem.route.domain.Schedule;
 import com.ticketsystem.route.repository.ScheduleRepository;
 import com.ticketsystem.route.repository.search.ScheduleSearchRepository;
@@ -44,9 +45,6 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @WithMockUser
 class ScheduleResourceIT {
-
-    private static final UUID DEFAULT_ROUTE_ID = UUID.randomUUID();
-    private static final UUID UPDATED_ROUTE_ID = UUID.randomUUID();
 
     private static final Instant DEFAULT_DEPARTURE_TIME = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_DEPARTURE_TIME = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -104,9 +102,8 @@ class ScheduleResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Schedule createEntity() {
-        return new Schedule()
-            .routeId(DEFAULT_ROUTE_ID)
+    public static Schedule createEntity(EntityManager em) {
+        Schedule schedule = new Schedule()
             .departureTime(DEFAULT_DEPARTURE_TIME)
             .arrivalTime(DEFAULT_ARRIVAL_TIME)
             .totalSeats(DEFAULT_TOTAL_SEATS)
@@ -115,6 +112,17 @@ class ScheduleResourceIT {
             .isActive(DEFAULT_IS_ACTIVE)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT);
+        // Add required entity
+        Route route;
+        if (TestUtil.findAll(em, Route.class).isEmpty()) {
+            route = RouteResourceIT.createEntity();
+            em.persist(route);
+            em.flush();
+        } else {
+            route = TestUtil.findAll(em, Route.class).get(0);
+        }
+        schedule.setRoute(route);
+        return schedule;
     }
 
     /**
@@ -123,9 +131,8 @@ class ScheduleResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Schedule createUpdatedEntity() {
-        return new Schedule()
-            .routeId(UPDATED_ROUTE_ID)
+    public static Schedule createUpdatedEntity(EntityManager em) {
+        Schedule updatedSchedule = new Schedule()
             .departureTime(UPDATED_DEPARTURE_TIME)
             .arrivalTime(UPDATED_ARRIVAL_TIME)
             .totalSeats(UPDATED_TOTAL_SEATS)
@@ -134,11 +141,22 @@ class ScheduleResourceIT {
             .isActive(UPDATED_IS_ACTIVE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT);
+        // Add required entity
+        Route route;
+        if (TestUtil.findAll(em, Route.class).isEmpty()) {
+            route = RouteResourceIT.createUpdatedEntity();
+            em.persist(route);
+            em.flush();
+        } else {
+            route = TestUtil.findAll(em, Route.class).get(0);
+        }
+        updatedSchedule.setRoute(route);
+        return updatedSchedule;
     }
 
     @BeforeEach
     void initTest() {
-        schedule = createEntity();
+        schedule = createEntity(em);
     }
 
     @AfterEach
@@ -201,27 +219,6 @@ class ScheduleResourceIT {
 
         // Validate the Schedule in the database
         assertSameRepositoryCount(databaseSizeBeforeCreate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(scheduleSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
-    }
-
-    @Test
-    @Transactional
-    void checkRouteIdIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(scheduleSearchRepository.findAll());
-        // set the field null
-        schedule.setRouteId(null);
-
-        // Create the Schedule, which fails.
-        ScheduleDTO scheduleDTO = scheduleMapper.toDto(schedule);
-
-        restScheduleMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(scheduleDTO)))
-            .andExpect(status().isBadRequest());
-
-        assertSameRepositoryCount(databaseSizeBeforeTest);
-
         int searchDatabaseSizeAfter = IterableUtil.sizeOf(scheduleSearchRepository.findAll());
         assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
@@ -406,7 +403,6 @@ class ScheduleResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(schedule.getId().toString())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
             .andExpect(jsonPath("$.[*].departureTime").value(hasItem(DEFAULT_DEPARTURE_TIME.toString())))
             .andExpect(jsonPath("$.[*].arrivalTime").value(hasItem(DEFAULT_ARRIVAL_TIME.toString())))
             .andExpect(jsonPath("$.[*].totalSeats").value(hasItem(DEFAULT_TOTAL_SEATS)))
@@ -429,7 +425,6 @@ class ScheduleResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(schedule.getId().toString()))
-            .andExpect(jsonPath("$.routeId").value(DEFAULT_ROUTE_ID.toString()))
             .andExpect(jsonPath("$.departureTime").value(DEFAULT_DEPARTURE_TIME.toString()))
             .andExpect(jsonPath("$.arrivalTime").value(DEFAULT_ARRIVAL_TIME.toString()))
             .andExpect(jsonPath("$.totalSeats").value(DEFAULT_TOTAL_SEATS))
@@ -462,7 +457,6 @@ class ScheduleResourceIT {
         // Disconnect from session so that the updates on updatedSchedule are not directly saved in db
         em.detach(updatedSchedule);
         updatedSchedule
-            .routeId(UPDATED_ROUTE_ID)
             .departureTime(UPDATED_DEPARTURE_TIME)
             .arrivalTime(UPDATED_ARRIVAL_TIME)
             .totalSeats(UPDATED_TOTAL_SEATS)
@@ -584,10 +578,10 @@ class ScheduleResourceIT {
         partialUpdatedSchedule.setId(schedule.getId());
 
         partialUpdatedSchedule
-            .arrivalTime(UPDATED_ARRIVAL_TIME)
-            .availableSeats(UPDATED_AVAILABLE_SEATS)
-            .isActive(UPDATED_IS_ACTIVE)
-            .createdAt(UPDATED_CREATED_AT);
+            .totalSeats(UPDATED_TOTAL_SEATS)
+            .basePrice(UPDATED_BASE_PRICE)
+            .createdAt(UPDATED_CREATED_AT)
+            .updatedAt(UPDATED_UPDATED_AT);
 
         restScheduleMockMvc
             .perform(
@@ -617,7 +611,6 @@ class ScheduleResourceIT {
         partialUpdatedSchedule.setId(schedule.getId());
 
         partialUpdatedSchedule
-            .routeId(UPDATED_ROUTE_ID)
             .departureTime(UPDATED_DEPARTURE_TIME)
             .arrivalTime(UPDATED_ARRIVAL_TIME)
             .totalSeats(UPDATED_TOTAL_SEATS)
@@ -753,7 +746,6 @@ class ScheduleResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(schedule.getId().toString())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
             .andExpect(jsonPath("$.[*].departureTime").value(hasItem(DEFAULT_DEPARTURE_TIME.toString())))
             .andExpect(jsonPath("$.[*].arrivalTime").value(hasItem(DEFAULT_ARRIVAL_TIME.toString())))
             .andExpect(jsonPath("$.[*].totalSeats").value(hasItem(DEFAULT_TOTAL_SEATS)))

@@ -26,24 +26,24 @@ class RouteTest {
     }
 
     @Test
-    void scheduleTest() {
+    void routeNameTest() {
         Route route = getRouteRandomSampleGenerator();
         Schedule scheduleBack = getScheduleRandomSampleGenerator();
 
-        route.addSchedule(scheduleBack);
-        assertThat(route.getSchedules()).containsOnly(scheduleBack);
+        route.addRouteName(scheduleBack);
+        assertThat(route.getRouteNames()).containsOnly(scheduleBack);
         assertThat(scheduleBack.getRoute()).isEqualTo(route);
 
-        route.removeSchedule(scheduleBack);
-        assertThat(route.getSchedules()).doesNotContain(scheduleBack);
+        route.removeRouteName(scheduleBack);
+        assertThat(route.getRouteNames()).doesNotContain(scheduleBack);
         assertThat(scheduleBack.getRoute()).isNull();
 
-        route.schedules(new HashSet<>(Set.of(scheduleBack)));
-        assertThat(route.getSchedules()).containsOnly(scheduleBack);
+        route.routeNames(new HashSet<>(Set.of(scheduleBack)));
+        assertThat(route.getRouteNames()).containsOnly(scheduleBack);
         assertThat(scheduleBack.getRoute()).isEqualTo(route);
 
-        route.setSchedules(new HashSet<>());
-        assertThat(route.getSchedules()).doesNotContain(scheduleBack);
+        route.setRouteNames(new HashSet<>());
+        assertThat(route.getRouteNames()).doesNotContain(scheduleBack);
         assertThat(scheduleBack.getRoute()).isNull();
     }
 }

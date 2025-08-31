@@ -48,7 +48,6 @@ public class ScheduleAsserts {
     public static void assertScheduleUpdatableFieldsEquals(Schedule expected, Schedule actual) {
         assertThat(actual)
             .as("Verify Schedule relevant properties")
-            .satisfies(a -> assertThat(a.getRouteId()).as("check routeId").isEqualTo(expected.getRouteId()))
             .satisfies(a -> assertThat(a.getDepartureTime()).as("check departureTime").isEqualTo(expected.getDepartureTime()))
             .satisfies(a -> assertThat(a.getArrivalTime()).as("check arrivalTime").isEqualTo(expected.getArrivalTime()))
             .satisfies(a -> assertThat(a.getTotalSeats()).as("check totalSeats").isEqualTo(expected.getTotalSeats()))

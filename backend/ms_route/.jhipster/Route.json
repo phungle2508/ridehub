@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250831103333"
+    "changelogDate": "20250831103533"
   },
   "applications": ["gateway", "ms_route"],
   "clientRootFolder": "ms_route",
@@ -66,7 +66,7 @@
     {
       "otherEntityName": "schedule",
       "otherEntityRelationshipName": "route",
-      "relationshipName": "schedule",
+      "relationshipName": "routeName",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     }

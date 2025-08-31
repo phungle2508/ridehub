@@ -79,7 +79,7 @@ public class CacheConfiguration {
     public JCacheManagerCustomizer cacheManagerCustomizer(javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration) {
         return cm -> {
             createCache(cm, com.ticketsystem.route.domain.Route.class.getName(), jcacheConfiguration);
-            createCache(cm, com.ticketsystem.route.domain.Route.class.getName() + ".schedules", jcacheConfiguration);
+            createCache(cm, com.ticketsystem.route.domain.Route.class.getName() + ".routeNames", jcacheConfiguration);
             createCache(cm, com.ticketsystem.route.domain.Schedule.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };

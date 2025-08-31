@@ -23,19 +23,6 @@
           </div>
         }
 
-        @let routeIdRef = editForm.get('routeId')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_routeId" jhiTranslate="gatewayApp.msRouteSchedule.routeId">Route Id</label>
-          <input type="text" class="form-control" name="routeId" id="field_routeId" data-cy="routeId" formControlName="routeId" />
-          @if (routeIdRef.invalid && (routeIdRef.dirty || routeIdRef.touched)) {
-            <div>
-              @if (editForm.get('routeId')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
-              }
-            </div>
-          }
-        </div>
-
         @let departureTimeRef = editForm.get('departureTime')!;
         <div class="mb-3">
           <label class="form-label" for="field_departureTime" jhiTranslate="gatewayApp.msRouteSchedule.departureTime">Departure Time</label>
@@ -241,12 +228,21 @@
         <div class="mb-3">
           <label class="form-label" for="field_route" jhiTranslate="gatewayApp.msRouteSchedule.route">Route</label>
           <select class="form-control" id="field_route" data-cy="route" name="route" formControlName="route" [compareWith]="compareRoute">
-            <option [ngValue]="null"></option>
+            @if (editForm.get(['route'])!.value === null) {
+              <option [ngValue]="null" selected></option>
+            }
             @for (routeOption of routesSharedCollection; track $index) {
               <option [ngValue]="routeOption">{{ routeOption.id }}</option>
             }
           </select>
         </div>
+        @if (editForm.get(['route'])!.invalid && (editForm.get(['route'])!.dirty || editForm.get(['route'])!.touched)) {
+          <div>
+            @if (editForm.get(['route'])?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
+            }
+          </div>
+        }
       </div>
 
       <div>

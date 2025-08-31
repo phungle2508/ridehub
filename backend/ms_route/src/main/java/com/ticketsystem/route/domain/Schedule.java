@@ -32,11 +32,6 @@ public class Schedule implements Serializable {
     private UUID id;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "route_id", length = 36, nullable = false)
-    private UUID routeId;
-
-    @NotNull
     @Column(name = "departure_time", nullable = false)
     private Instant departureTime;
 
@@ -71,8 +66,9 @@ public class Schedule implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "schedules" }, allowSetters = true)
+    @ManyToOne(optional = false)
+    @NotNull
+    @JsonIgnoreProperties(value = { "routeNames" }, allowSetters = true)
     private Route route;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
@@ -88,19 +84,6 @@ public class Schedule implements Serializable {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public UUID getRouteId() {
-        return this.routeId;
-    }
-
-    public Schedule routeId(UUID routeId) {
-        this.setRouteId(routeId);
-        return this;
-    }
-
-    public void setRouteId(UUID routeId) {
-        this.routeId = routeId;
     }
 
     public Instant getDepartureTime() {
@@ -244,7 +227,6 @@ public class Schedule implements Serializable {
     public String toString() {
         return "Schedule{" +
             "id=" + getId() +
-            ", routeId='" + getRouteId() + "'" +
             ", departureTime='" + getDepartureTime() + "'" +
             ", arrivalTime='" + getArrivalTime() + "'" +
             ", totalSeats=" + getTotalSeats() +

@@ -1,29 +1,15 @@
-// =======================================
-// 🚌🚂 Train & Bus Ticket Selling System
-// =======================================
-enum TicketStatus {
-  AVAILABLE, BOOKED, CANCELLED, EXPIRED
-}
+// =======================
+// Enums (giữ nguyên)
+// =======================
+enum TicketStatus { AVAILABLE, BOOKED, CANCELLED, EXPIRED }
+enum PaymentStatus { PENDING, COMPLETED, FAILED, REFUNDED }
+enum TransportType { TRAIN, BUS }
+enum SeatType { ECONOMY, BUSINESS, FIRST_CLASS, VIP }
+enum BookingStatus { PENDING, CONFIRMED, CANCELLED, COMPLETED }
 
-enum PaymentStatus {
-  PENDING, COMPLETED, FAILED, REFUNDED
-}
-
-enum TransportType {
-  TRAIN, BUS
-}
-
-enum SeatType {
-  ECONOMY, BUSINESS, FIRST_CLASS, VIP
-}
-
-enum BookingStatus {
-  PENDING, CONFIRMED, CANCELLED, COMPLETED
-}
-
-// =======================================
-// 🔐 Gateway Application
-// =======================================
+// =======================
+// Ứng dụng (giữ nguyên)
+// =======================
 application {
   config {
     baseName gateway
@@ -38,9 +24,6 @@ application {
   entities User, KeycloakUser, Route, Schedule, Ticket, Booking, Payment, Notification
 }
 
-// =======================================
-// 👤 User Microservice
-// =======================================
 application {
   config {
     baseName ms_user
@@ -58,9 +41,6 @@ application {
   entities User, KeycloakUser
 }
 
-// =======================================
-// 🛤️ Route & Schedule Microservice
-// =======================================
 application {
   config {
     baseName ms_route
@@ -80,9 +60,6 @@ application {
   entities Route, Schedule
 }
 
-// =======================================
-// 🎫 Ticket & Booking Microservice
-// =======================================
 application {
   config {
     baseName ms_booking
@@ -101,9 +78,6 @@ application {
   entities Ticket, Booking
 }
 
-// =======================================
-// 💳 Payment Microservice
-// =======================================
 application {
   config {
     baseName ms_payment
@@ -121,9 +95,6 @@ application {
   entities Payment
 }
 
-// =======================================
-// 🔔 Notification Microservice
-// =======================================
 application {
   config {
     baseName ms_notification
@@ -142,9 +113,9 @@ application {
   entities Notification
 }
 
-// =======================================
-// 📦 Entities
-// =======================================
+// =======================
+// Entities
+// =======================
 entity User {
   id UUID required
   username String required unique
@@ -175,7 +146,7 @@ entity Route {
   origin String required
   destination String required
   distance Double required
-  estimatedDuration Integer required // in minutes
+  estimatedDuration Integer required
   transportType TransportType required
   isActive Boolean required
   createdAt Instant required
@@ -184,7 +155,6 @@ entity Route {
 
 entity Schedule {
   id UUID required
-  routeId UUID required
   departureTime Instant required
   arrivalTime Instant required
   totalSeats Integer required
@@ -197,7 +167,7 @@ entity Schedule {
 
 entity Ticket {
   id UUID required
-  scheduleId UUID required
+  scheduleId UUID required        // khác microservice nên giữ id thô
   seatNumber String required
   seatType SeatType required
   price BigDecimal required
@@ -209,12 +179,12 @@ entity Ticket {
 
 entity Booking {
   id UUID required
-  userId UUID required
-  scheduleId UUID required
-  ticketIds TextBlob required // JSON array of ticket IDs
+  userId UUID required            // khác microservice
+  scheduleId UUID required        // khác microservice
+  ticketIds TextBlob required
   totalAmount BigDecimal required
   status BookingStatus required
-  passengerDetails TextBlob required // JSON array of passenger info
+  passengerDetails TextBlob required
   contactEmail String required
   contactPhone String required
   bookingReference String required unique
@@ -225,8 +195,8 @@ entity Booking {
 
 entity Payment {
   id UUID required
-  bookingId UUID required
-  userId UUID required
+  bookingId UUID required         // khác microservice
+  userId UUID required            // khác microservice
   amount BigDecimal required
   currency String required
   paymentMethod String required
@@ -250,33 +220,34 @@ entity Notification {
   scheduledAt Instant
 }
 
-// =======================================
-// 🔗 Relationships (Within Same Microservices Only)
-// =======================================
+// =======================
+// Relationships (chỉ nội bộ ms_route)
+// =======================
+// Route 1 -- * Schedule: tạo FK route_id trong Schedule
 relationship OneToMany {
-  Route to Schedule{route}
+  Route{routeName} to Schedule{route required}
 }
 
-// =======================================
-// ⚙️ Entity-to-Microservice Mapping
-// =======================================
+// =======================
+// Mapping
+// =======================
 microservice User, KeycloakUser with ms_user
 microservice Route, Schedule with ms_route
 microservice Ticket, Booking with ms_booking
 microservice Payment with ms_payment
 microservice Notification with ms_notification
 
-// =======================================
-// 🔁 Global Options
-// =======================================
+// =======================
+// Global options
+// =======================
 dto * with mapstruct
 service * with serviceImpl
 paginate Route, Schedule, Ticket, Booking, Payment, Notification with infinite-scroll
 search Route, Schedule with elasticsearch
 
-// =======================================
-// 🚀 Deployment Config
-// =======================================
+// =======================
+// Deployment
+// =======================
 deployment {
   deploymentType docker-compose
   serviceDiscoveryType consul
@@ -284,133 +255,3 @@ deployment {
   dockerRepositoryName "ticketsystem"
   monitoring prometheus
 }
-
-// =======================================
-// 📝 Kafka Integration Configuration
-// =======================================
-/*
-KAFKA SETUP INSTRUCTIONS:
-
-1. Add to docker-compose.yml:
-   zookeeper:
-     image: confluentinc/cp-zookeeper:7.0.1
-     hostname: zookeeper
-     container_name: zookeeper
-     ports:
-       - "2181:2181"
-     environment:
-       ZOOKEEPER_CLIENT_PORT: 2181
-       ZOOKEEPER_TICK_TIME: 2000
-
-   kafka:
-     image: confluentinc/cp-kafka:7.0.1
-     hostname: kafka
-     container_name: kafka
-     depends_on:
-       - zookeeper
-     ports:
-       - "29092:29092"
-       - "9092:9092"
-       - "9101:9101"
-     environment:
-       KAFKA_BROKER_ID: 1
-       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-       KAFKA_JMX_PORT: 9101
-       KAFKA_JMX_HOSTNAME: localhost
-
-2. Add Kafka dependencies to each microservice pom.xml:
-   <dependency>
-     <groupId>org.springframework.kafka</groupId>
-     <artifactId>spring-kafka</artifactId>
-   </dependency>
-
-3. Add Kafka configuration to application.yml for each microservice:
-   spring:
-     kafka:
-       bootstrap-servers: localhost:9092
-       consumer:
-         bootstrap-servers: localhost:9092
-         group-id: ${spring.application.name}
-         auto-offset-reset: earliest
-         key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-         value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-         properties:
-           spring.json.trusted.packages: "*"
-       producer:
-         bootstrap-servers: localhost:9092
-         key-serializer: org.apache.kafka.common.serialization.StringSerializer
-         value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
-KAFKA TOPICS & EVENT FLOWS:
-
-Topic: user-events
-- Events: USER_CREATED, USER_UPDATED, USER_DELETED
-- Producers: ms_user
-- Consumers: ms_notification
-
-Topic: booking-events  
-- Events: BOOKING_CREATED, BOOKING_CONFIRMED, BOOKING_CANCELLED, BOOKING_EXPIRED
-- Producers: ms_booking
-- Consumers: ms_payment, ms_notification
-
-Topic: payment-events
-- Events: PAYMENT_INITIATED, PAYMENT_COMPLETED, PAYMENT_FAILED, PAYMENT_REFUNDED  
-- Producers: ms_payment
-- Consumers: ms_booking, ms_notification
-
-Topic: ticket-events
-- Events: TICKET_RESERVED, TICKET_BOOKED, TICKET_CANCELLED, TICKET_RELEASED
-- Producers: ms_booking
-- Consumers: ms_route (for seat availability updates)
-
-Topic: schedule-events
-- Events: SCHEDULE_CREATED, SCHEDULE_UPDATED, SEATS_UPDATED
-- Producers: ms_route  
-- Consumers: ms_booking
-
-EVENT FLOW EXAMPLES:
-
-1. Booking Flow:
-   User creates booking → ms_booking publishes BOOKING_CREATED to booking-events
-   → ms_payment receives event and initiates payment
-   → Payment completed → ms_payment publishes PAYMENT_COMPLETED to payment-events  
-   → ms_booking receives event and confirms booking
-   → ms_booking publishes BOOKING_CONFIRMED to booking-events
-   → ms_notification receives event and sends confirmation email
-
-2. Seat Management:
-   Ticket booked → ms_booking publishes TICKET_BOOKED to ticket-events
-   → ms_route receives event and updates available seats
-   → ms_route publishes SEATS_UPDATED to schedule-events
-
-3. Cancellation Flow:
-   User cancels booking → ms_booking publishes BOOKING_CANCELLED to booking-events
-   → ms_payment receives event and processes refund  
-   → ms_booking publishes TICKET_RELEASED to ticket-events
-   → ms_route updates seat availability
-   → ms_notification sends cancellation confirmation
-
-IMPLEMENTATION EXAMPLE:
-
-@Component
-public class BookingEventProducer {
-    
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
-    
-    public void publishBookingCreated(BookingCreatedEvent event) {
-        kafkaTemplate.send("booking-events", event);
-    }
-}
-
-@KafkaListener(topics = "booking-events", groupId = "payment-service")
-public void handleBookingEvent(BookingCreatedEvent event) {
-    // Process booking event in payment service
-}
-*/

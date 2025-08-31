@@ -34,7 +34,6 @@ type ScheduleFormDefaults = Pick<NewSchedule, 'id' | 'departureTime' | 'arrivalT
 
 type ScheduleFormGroupContent = {
   id: FormControl<ScheduleFormRawValue['id'] | NewSchedule['id']>;
-  routeId: FormControl<ScheduleFormRawValue['routeId']>;
   departureTime: FormControl<ScheduleFormRawValue['departureTime']>;
   arrivalTime: FormControl<ScheduleFormRawValue['arrivalTime']>;
   totalSeats: FormControl<ScheduleFormRawValue['totalSeats']>;
@@ -63,9 +62,6 @@ export class ScheduleFormService {
           validators: [Validators.required],
         },
       ),
-      routeId: new FormControl(scheduleRawValue.routeId, {
-        validators: [Validators.required],
-      }),
       departureTime: new FormControl(scheduleRawValue.departureTime, {
         validators: [Validators.required],
       }),
@@ -90,7 +86,9 @@ export class ScheduleFormService {
       updatedAt: new FormControl(scheduleRawValue.updatedAt, {
         validators: [Validators.required],
       }),
-      route: new FormControl(scheduleRawValue.route),
+      route: new FormControl(scheduleRawValue.route, {
+        validators: [Validators.required],
+      }),
     });
   }
 

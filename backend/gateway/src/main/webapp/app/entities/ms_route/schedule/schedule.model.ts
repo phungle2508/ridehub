@@ -3,7 +3,6 @@ import { IRoute } from 'app/entities/ms_route/route/route.model';
 
 export interface ISchedule {
   id: string;
-  routeId?: string | null;
   departureTime?: dayjs.Dayjs | null;
   arrivalTime?: dayjs.Dayjs | null;
   totalSeats?: number | null;

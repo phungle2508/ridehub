@@ -17,9 +17,6 @@ public class ScheduleDTO implements Serializable {
     private UUID id;
 
     @NotNull
-    private UUID routeId;
-
-    @NotNull
     private Instant departureTime;
 
     @NotNull
@@ -43,6 +40,7 @@ public class ScheduleDTO implements Serializable {
     @NotNull
     private Instant updatedAt;
 
+    @NotNull
     private RouteDTO route;
 
     public UUID getId() {
@@ -51,14 +49,6 @@ public class ScheduleDTO implements Serializable {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public UUID getRouteId() {
-        return routeId;
-    }
-
-    public void setRouteId(UUID routeId) {
-        this.routeId = routeId;
     }
 
     public Instant getDepartureTime() {
@@ -159,7 +149,6 @@ public class ScheduleDTO implements Serializable {
     public String toString() {
         return "ScheduleDTO{" +
             "id='" + getId() + "'" +
-            ", routeId='" + getRouteId() + "'" +
             ", departureTime='" + getDepartureTime() + "'" +
             ", arrivalTime='" + getArrivalTime() + "'" +
             ", totalSeats=" + getTotalSeats() +

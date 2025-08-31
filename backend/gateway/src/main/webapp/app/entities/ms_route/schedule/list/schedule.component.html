@@ -67,14 +67,6 @@
                 }
               </div>
             </th>
-            <th scope="col" jhiSortBy="routeId">
-              <div class="d-flex">
-                <span jhiTranslate="gatewayApp.msRouteSchedule.routeId">Route Id</span>
-                @if (!currentSearch) {
-                  <fa-icon class="p-1" icon="sort"></fa-icon>
-                }
-              </div>
-            </th>
             <th scope="col" jhiSortBy="departureTime">
               <div class="d-flex">
                 <span jhiTranslate="gatewayApp.msRouteSchedule.departureTime">Departure Time</span>
@@ -146,7 +138,6 @@
               <td>
                 <a [routerLink]="['/schedule', schedule.id, 'view']">{{ schedule.id }}</a>
               </td>
-              <td>{{ schedule.routeId }}</td>
               <td>{{ schedule.departureTime | formatMediumDatetime }}</td>
               <td>{{ schedule.arrivalTime | formatMediumDatetime }}</td>
               <td>{{ schedule.totalSeats }}</td>

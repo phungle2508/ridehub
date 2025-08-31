@@ -13,11 +13,6 @@
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "routeId",
-      "fieldType": "UUID",
-      "fieldValidateRules": ["required"]
-    },
-    {
       "fieldName": "departureTime",
       "fieldType": "Instant",
       "fieldValidateRules": ["required"]
@@ -64,9 +59,11 @@
   "relationships": [
     {
       "otherEntityName": "route",
+      "otherEntityRelationshipName": "routeName",
       "relationshipName": "route",
       "relationshipSide": "right",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "searchEngine": "elasticsearch",
