@@ -11,8 +11,8 @@ export const sampleWithRequiredData: IRoute = {
   estimatedDuration: 20261,
   transportType: 'TRAIN',
   isActive: false,
-  createdAt: dayjs('2025-08-29T14:58'),
-  updatedAt: dayjs('2025-08-29T17:38'),
+  createdAt: dayjs('2025-08-30T11:58'),
+  updatedAt: dayjs('2025-08-30T14:39'),
 };
 
 export const sampleWithPartialData: IRoute = {
@@ -24,8 +24,8 @@ export const sampleWithPartialData: IRoute = {
   estimatedDuration: 27262,
   transportType: 'BUS',
   isActive: true,
-  createdAt: dayjs('2025-08-30T07:20'),
-  updatedAt: dayjs('2025-08-30T02:09'),
+  createdAt: dayjs('2025-08-31T04:20'),
+  updatedAt: dayjs('2025-08-30T23:09'),
 };
 
 export const sampleWithFullData: IRoute = {
@@ -37,8 +37,8 @@ export const sampleWithFullData: IRoute = {
   estimatedDuration: 1925,
   transportType: 'TRAIN',
   isActive: false,
-  createdAt: dayjs('2025-08-30T09:43'),
-  updatedAt: dayjs('2025-08-29T20:43'),
+  createdAt: dayjs('2025-08-31T06:44'),
+  updatedAt: dayjs('2025-08-30T17:43'),
 };
 
 export const sampleWithNewData: NewRoute = {
@@ -49,8 +49,8 @@ export const sampleWithNewData: NewRoute = {
   estimatedDuration: 31710,
   transportType: 'TRAIN',
   isActive: true,
-  createdAt: dayjs('2025-08-30T08:56'),
-  updatedAt: dayjs('2025-08-29T19:13'),
+  createdAt: dayjs('2025-08-31T05:56'),
+  updatedAt: dayjs('2025-08-30T16:14'),
   id: null,
 };
 

@@ -12,8 +12,8 @@
     <property name="timeType" value="time(6)" dbms="mysql"/>
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830133241_added_entity_User.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250830133341_added_entity_KeycloakUser.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250831103333_added_entity_User.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250831103433_added_entity_KeycloakUser.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

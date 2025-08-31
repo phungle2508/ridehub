@@ -13,8 +13,8 @@
     "directoryPath": "../",
     "dockerRepositoryName": "ticketsystem",
     "gatewayType": "SpringCloudGateway",
-    "jhipsterVersion": "8.10.0",
-    "jwtSecretKey": "YjcwNmJiNjI4N2E5OWM0YmQ0NjJhNTNiNzUxNzU1ZTA3YzJmMDgzN2NhYzdlYTc5NmY3NGRiYWMzMmM2YmRjNmUyNjhkMGRlYjA3NDMzNzAyNTdjNGZlZTUzNjFmNDBmN2UzNw==",
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "MDQ1YTIyNDRmMGNkNDY2MjQ0MGI1ZGZmZjc2ZjhkZDNiOGFjMTE0ZmY0Y2Y1MzIyMmI0M2Q4OWNmZTFlMWIxZmQ5MTg5Y2JkYmRlNDNiNzk0MGZlZjNhNjE5M2JkMDQ0ZWI2Yg==",
     "monitoring": "prometheus",
     "serviceDiscoveryType": "consul"
   }

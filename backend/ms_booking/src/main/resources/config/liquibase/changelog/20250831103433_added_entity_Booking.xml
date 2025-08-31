@@ -9,7 +9,7 @@
     <!--
         Added the entity Booking.
     -->
-    <changeSet id="20250830133341-1" author="jhipster">
+    <changeSet id="20250831103433-1" author="jhipster">
         <createTable tableName="booking">
             <column name="id" type="${uuidType}">
                 <constraints primaryKey="true" nullable="false"/>
@@ -67,7 +67,7 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250830133341-1-data" author="jhipster" context="faker">
+    <changeSet id="20250831103433-1-data" author="jhipster" context="faker">
         <loadData
                   file="config/liquibase/fake-data/booking.csv"
                   separator=";"
