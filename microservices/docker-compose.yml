@@ -98,9 +98,9 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=${DOMAIN}:9092
       - SPRING_KAFKA_SECURITY_PROTOCOL=SSL
       - SPRING_KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=""
-      - SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION=/app/config/kafka.truststore.jks
+      - SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION=/app/config/kafka.client.truststore.jks
       - SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD=${APP_F4_PASS}
-      - SPRING_KAFKA_PROPERTIES_SSL_KEYSTORE_LOCATION=/app/config/kafka.keystore.jks
+      - SPRING_KAFKA_PROPERTIES_SSL_KEYSTORE_LOCATION=/app/config/kafka.broker.keystore.jks
       - SPRING_KAFKA_PROPERTIES_SSL_KEYSTORE_PASSWORD=${APP_F4_PASS}
       - SPRING_KAFKA_PROPERTIES_SSL_KEY_PASSWORD=${APP_F4_PASS}
     healthcheck:
@@ -113,8 +113,8 @@ services:
       timeout: 5s
       retries: 40
     volumes:
-      - ./kafka/ssl/kafka.truststore.jks:/app/config/kafka.truststore.jks
-      - ./kafka/ssl/kafka.keystore.jks:/app/config/kafka.keystore.jks
+      - ./kafka/ssl/kafka.client.truststore.jks:/app/config/kafka.client.truststore.jks
+      - ./kafka/ssl/kafka.broker.keystore.jks:/app/config/kafka.broker.keystore.jks
     depends_on:
       ms_route-mysql:
         condition: service_healthy
