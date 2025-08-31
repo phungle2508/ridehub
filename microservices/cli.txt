@@ -1,0 +1,11 @@
+docker run -it --rm \
+  -v $(pwd)/nginx/letsencrypt:/etc/letsencrypt \
+  -v $(pwd)/nginx/cloudflare.ini:/cloudflare.ini \
+  certbot/dns-cloudflare certonly \
+  --dns-cloudflare \
+  --dns-cloudflare-credentials /cloudflare.ini \
+  -d '*.microservices.appf4s.io.vn' \
+  -d microservices.appf4s.io.vn \
+  --email shegga9x@gmail.com \
+  --agree-tos \
+  --non-interactive
