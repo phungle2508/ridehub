@@ -25,8 +25,8 @@ DOMAIN="${DOMAIN_INPUT:-$DOMAIN_DEFAULT}"
 echo "Using domain: ${DOMAIN}"
 
 # ---- Prepare dir & permissions ----
-mkdir -p kafka/ssl
-cd kafka/ssl
+mkdir -p ../kafka/ssl
+cd ../kafka/ssl
 umask 077
 
 echo "Cleaning old artifacts..."
@@ -106,6 +106,8 @@ keytool -import \
 # Tighten perms
 chmod 600 kafka.broker.keystore.jks kafka.client.truststore.jks ca-key.pem kafka-broker-key.pem || true
 
+chmod 644 kafka.broker.keystore.jks
+chmod 644 kafka.client.truststore.jks
 echo "=== Verification ==="
 echo "SubjectAltName of broker cert:"
 openssl x509 -in kafka-broker-cert.pem -text -noout | sed -n '/Subject Alternative Name/,+3p' || true
@@ -119,6 +121,7 @@ keytool -list -v -keystore kafka.client.truststore.jks -storepass "${APP_F4_PASS
 echo
 echo "=== Done. Files in $(pwd):"
 ls -l kafka.broker.keystore.jks kafka.client.truststore.jks ca-cert.pem kafka-broker-cert.pem || true
+
 
 cat <<NEXT
 
@@ -151,3 +154,5 @@ Next steps:
 
 Nếu bạn muốn mTLS (client cert), mình bổ sung thêm bước tạo client keystore.
 NEXT
+
+
