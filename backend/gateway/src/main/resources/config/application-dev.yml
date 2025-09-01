@@ -82,23 +82,7 @@ spring:
             ssl.keystore.location: classpath:config/tls/kafka.broker.keystore.jks
             ssl.keystore.password: ${tunnel.app-f4-pass}
             ssl.key.password: ${tunnel.app-f4-pass}
-    consul:
-      host: consul.${tunnel.vps-host}
-      port: 443
-      scheme: https
-      discovery:
-        enabled: true
-        service-name: ${server.name}DEV
-        prefer-ip-address: true
-        ip-address: ${tunnel.vps-host}
-        scheme: http
-        health-check-path: /management/health
-        health-check-interval: 15s
-        health-check-tls-skip-verify: true
-      service-registry:
-        auto-registration:
-          enabled: true
- 
+
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:mysql://${tunnel.sql-host}:${tunnel.sql-port}/${server.name}?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true

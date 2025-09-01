@@ -22,11 +22,11 @@ spring:
         profile-separator: "-"
       discovery:
         enabled: true
-        service-name: gatewayDEV
+        service-name: gateway
         prefer-ip-address: true
         ip-address: appf4s.io.vn
         scheme: http
-        port: 9080
+        port: 8500
         health-check-path: /management/health
         health-check-interval: 15s
   docker:
