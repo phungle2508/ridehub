@@ -28,7 +28,7 @@
     -->
 
     <logger name="com.ticketsystem.gateway" level="INFO"/>
-
+    <logger name="io.undertow.request" level="ERROR"/>
     <logger name="angus.activation" level="WARN"/>
     <logger name="jakarta.activation" level="WARN"/>
     <logger name="jakarta.mail" level="WARN"/>

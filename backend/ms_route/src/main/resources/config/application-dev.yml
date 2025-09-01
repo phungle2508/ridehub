@@ -13,6 +13,19 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
+server:
+  name: ms_route
+  port: 8082
+  forward-headers-strategy: native
+
+tunnel:
+  vps-host: appf4s.io.vn
+  vps-user: root
+  vps-password: ledinhde788De
+  app-f4-pass: f4security
+  sql-host: sql.microservices.appf4s.io.vn
+  sql-port: 3307
+
 logging:
   level:
     ROOT: DEBUG
@@ -24,9 +37,10 @@ management:
   health:
     elasticsearch:
       enabled: false
-  zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
+  zipkin:
+    # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
     tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+      endpoint: http://${tunnel.vps-host}:9411/api/v2/spans
   tracing:
     sampling:
       probability: 1.0 # report 100% of traces
@@ -42,24 +56,54 @@ spring:
     serialization:
       indent-output: true
   cloud:
+    stream:
+      defaultBinder: kafka
+      bindings:
+        # PRODUCER (writes to sse-topic)
+        kafkaProducer-out-0:
+          destination: sse-topic
+          contentType: text/plain
+        # CONSUMER (reads from sse-topic)
+        kafkaConsumer-in-0:
+          destination: sse-topic
+          group: ${server.name}
+          contentType: text/plain
+      kafka:
+        binder:
+          brokers: ${tunnel.vps-host}:9092
+          autoCreateTopics: true
+          replicationFactor: 1
+          # AdminClient needs the same SSL props:
+          configuration:
+            security.protocol: SSL
+            ssl.endpoint.identification.algorithm: ""
+            ssl.truststore.location: classpath:config/tls/kafka.client.truststore.jks
+            ssl.truststore.password: ${tunnel.app-f4-pass}
+            ssl.keystore.location: classpath:config/tls/kafka.broker.keystore.jks
+            ssl.keystore.password: ${tunnel.app-f4-pass}
+            ssl.key.password: ${tunnel.app-f4-pass}
     consul:
+      host: consul.${tunnel.vps-host}
+      port: 443
+      scheme: https
       config:
-        fail-fast: false # if not in "prod" profile, do not force to use Spring Cloud Config
+        fail-fast: false
         format: yaml
-        profile-separator: '-'
       discovery:
+        enabled: true
+        service-name: ${server.name}DEV
         prefer-ip-address: true
-        tags:
-          - profile=${spring.profiles.active}
-          - version='@project.version@'
-          - git-version=${git.commit.id.describe:}
-          - git-commit=${git.commit.id.abbrev:}
-          - git-branch=${git.branch:}
-      host: localhost
-      port: 8500
+        ip-address: ${tunnel.vps-host}
+        scheme: http
+        health-check-path: /management/health
+        health-check-interval: 15s
+        health-check-tls-skip-verify: true
+      service-registry:
+        auto-registration:
+          enabled: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/ms_route?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+    url: jdbc:mysql://${tunnel.sql-host}:${tunnel.sql-port}/${server.name}?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
     username: root
     password:
     hikari:
@@ -71,7 +115,7 @@ spring:
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
   elasticsearch:
-    uris: http://localhost:9200
+    uris: http://${tunnel.vps-host}:9200
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
@@ -79,11 +123,27 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
-
-server:
-  port: 8082
-  # make sure requests the proxy uri instead of the server one
-  forward-headers-strategy: native
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc:
+            issuer-uri: https://keycloak.${tunnel.vps-host}/realms/jhipster
+  kafka:
+    bootstrap-servers: ${tunnel.vps-host}:9092
+    security-protocol: SSL
+    ssl:
+      endpoint-identification-algorithm: ""
+      properties:
+        ssl:
+          truststore:
+            location: classpath:config/tls/kafka.client.truststore.jks
+            password: ${tunnel.app-f4-pass}
+          keystore:
+            location: classpath:config/tls/kafka.broker.keystore.jks
+            password: ${tunnel.app-f4-pass}
+          key:
+            password: ${tunnel.app-f4-pass}
 
 # ===================================================================
 # JHipster specific properties
@@ -92,10 +152,12 @@ server:
 # ===================================================================
 
 jhipster:
-  cache: # Cache configuration
-    redis: # Redis configuration
+  cache:
+    # Cache configuration
+    redis:
+      # Redis configuration
       expiration: 3600 # By default objects stay 1 hour (in seconds) in the cache
-      server: redis://localhost:6379
+      server: redis://:${tunnel.app-f4-pass}@${tunnel.vps-host}:6379
       cluster: false
       # server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
       # cluster: true
@@ -110,9 +172,10 @@ jhipster:
   #   max-age: 1800
   logging:
     use-json-format: false # By default, logs are not in Json format
-    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+    logstash:
+      # Forward logs to logstash over a socket, used by LoggingConfiguration
       enabled: false
-      host: localhost
+      host: ${tunnel.vps-host}
       port: 5000
       ring-buffer-size: 512
 # ===================================================================

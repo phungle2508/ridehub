@@ -12,24 +12,25 @@ spring:
     # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
     active: '@spring.profiles.active@'
   cloud:
-    consul:
+   consul:
+      host: consul.appf4s.io.vn
+      port: 443
+      scheme: https
       config:
-        fail-fast: false # if not in "prod" profile, do not force to use Spring Cloud Config
+        fail-fast: false
         format: yaml
-        profile-separator: '-'
+        profile-separator: "-"
       discovery:
-        tags:
-          - profile=${spring.profiles.active}
-          - version='@project.version@'
-          - git-version=${git.commit.id.describe:}
-          - git-commit=${git.commit.id.abbrev:}
-          - git-branch=${git.branch:}
-          - context-path=${server.servlet.context-path:}
-
-      host: localhost
-      port: 8500
+        enabled: true
+        service-name: gatewayDEV
+        prefer-ip-address: true
+        ip-address: appf4s.io.vn
+        scheme: http
+        port: 9080
+        health-check-path: /management/health
+        health-check-interval: 15s
   docker:
     compose:
       enabled: true
       lifecycle-management: start-only
-      file: src/main/docker/services.yml
+      file: src/main/docker/mysql.yml
