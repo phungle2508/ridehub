@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.consul.serviceregistry.ConsulRegistrationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@Profile("dev") // Only activate this configuration in dev profile
 public class ConsulSSHTunnel {
     private static final Logger log = LoggerFactory.getLogger(ConsulSSHTunnel.class);
     private Session session;
@@ -100,6 +102,7 @@ public class ConsulSSHTunnel {
     }
 
     @Bean
+    @Profile("dev") // Only activate this configuration in dev profile
     ConsulRegistrationCustomizer portCustomizer() {
         return registration -> {
             registration.getService().setAddress(vpsHost);
