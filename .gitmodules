@@ -2,3 +2,8 @@
 	path = backend/ticket-store-central-config
 	url = https://github.com/phungle2508/ticket-store-central-config
 	branch = main
+	
+[submodule "backend/ticketsystem-avro"]
+	path = backend/ticketsystem-avro
+	url = git@github.com:phungle2508/ticket-store-avro.git
+	branch = main
