@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "com.ticketsystem.avro.user",
+  "namespace": "com.ticketstore.avro.user",
   "name": "User",
   "fields": [
     { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },

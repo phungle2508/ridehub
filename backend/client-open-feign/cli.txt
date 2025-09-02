@@ -1,0 +1,3 @@
+export KEYCLOAK_USERNAME='admin'
+export KEYCLOAK_PASSWORD='admin'
+mvn -U clean verify

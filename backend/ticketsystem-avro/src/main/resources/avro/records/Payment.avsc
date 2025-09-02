@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "com.ticketsystem.avro.payment",
+  "namespace": "com.ticketstore.avro.payment",
   "name": "Payment",
   "fields": [
     { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },
@@ -9,7 +9,7 @@
     { "name": "amount", "type": { "type": "bytes", "logicalType": "decimal", "precision": 18, "scale": 2 } },
     { "name": "currency", "type": "string" },
     { "name": "paymentMethod", "type": "string" },
-    { "name": "status", "type": "com.ticketsystem.avro.enums.PaymentStatus" },
+    { "name": "status", "type": "com.ticketstore.avro.enums.PaymentStatus" },
     { "name": "transactionId", "type": [ "null", "string" ], "default": null },
     { "name": "paymentGatewayResponse", "type": [ "null", "string" ], "default": null },
     { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },

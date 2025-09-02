@@ -1,14 +1,14 @@
 {
   "type": "record",
-  "namespace": "com.ticketsystem.avro.booking",
+  "namespace": "com.ticketstore.avro.booking",
   "name": "Ticket",
   "fields": [
     { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },
     { "name": "scheduleId", "type": { "type": "string", "logicalType": "uuid" } },
     { "name": "seatNumber", "type": "string" },
-    { "name": "seatType", "type": "com.ticketsystem.avro.enums.SeatType" },
+    { "name": "seatType", "type": "com.ticketstore.avro.enums.SeatType" },
     { "name": "price", "type": { "type": "bytes", "logicalType": "decimal", "precision": 18, "scale": 2 } },
-    { "name": "status", "type": "com.ticketsystem.avro.enums.TicketStatus" },
+    { "name": "status", "type": "com.ticketstore.avro.enums.TicketStatus" },
     { "name": "reservedUntil", "type": [ "null", { "type": "long", "logicalType": "timestamp-millis" } ], "default": null },
     { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },
     { "name": "updatedAt", "type": { "type": "long", "logicalType": "timestamp-millis" } }

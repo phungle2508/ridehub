@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "com.ticketsystem.avro.common",
+  "namespace": "com.ticketstore.avro.common",
   "name": "EventHeader",
   "doc": "Standard event envelope header for all domain events.",
   "fields": [

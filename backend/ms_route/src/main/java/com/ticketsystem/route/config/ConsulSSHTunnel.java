@@ -103,7 +103,8 @@ public class ConsulSSHTunnel {
     ConsulRegistrationCustomizer portCustomizer() {
         return registration -> {
             registration.getService().setAddress(vpsHost);
-            registration.getService().setName(appName + "DEV");
+            registration.getService().setId("msroute" + "dev");
+            registration.getService().setName("msroute" + "dev");
             registration.getService().setPort(localPort + 1000);
             log.info("Consul registration customized: address={}, name={}, port={}",
                     vpsHost, appName + "DEV", localPort + 1000);

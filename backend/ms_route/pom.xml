@@ -74,6 +74,19 @@
         <spring.profiles.active>dev</spring.profiles.active>
         <springdoc-openapi-starter-webmvc-api.version>2.8.6</springdoc-openapi-starter-webmvc-api.version>
     </properties>
+    <!-- QUAN TRỌNG: Giữ Maven Central + thêm GitHub Packages với ID RIÊNG -->
+    <repositories>
+        <!-- Central: thường mặc định đã có, nhưng khai báo rõ để tránh bị mirror override -->
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <!-- GitHub Packages chỉ cho ticket-store-avro -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -87,9 +100,9 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>com.ticketsystem</groupId>
-            <artifactId>ticketsystem-avro</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <groupId>com.github.phungle2508</groupId>
+            <artifactId>ticket-store-avro</artifactId>
+            <version>v0.1.0</version>
         </dependency>
         <!-- Avro runtime (if not already present transitively) -->
         <dependency>

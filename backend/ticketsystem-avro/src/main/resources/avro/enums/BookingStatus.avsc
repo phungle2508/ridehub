@@ -1,6 +1,6 @@
 {
   "type": "enum",
-  "namespace": "com.ticketsystem.avro.enums",
+  "namespace": "com.ticketstore.avro.enums",
   "name": "BookingStatus",
   "symbols": ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"]
 }

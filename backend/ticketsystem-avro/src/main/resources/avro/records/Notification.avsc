@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "com.ticketsystem.avro.notification",
+  "namespace": "com.ticketstore.avro.notification",
   "name": "Notification",
   "fields": [
     { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },

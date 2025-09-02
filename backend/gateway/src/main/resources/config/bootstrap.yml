@@ -29,8 +29,8 @@ spring:
         port: 8500
         health-check-path: /management/health
         health-check-interval: 15s
-  docker:
-    compose:
-      enabled: true
-      lifecycle-management: start-only
-      file: src/main/docker/mysql.yml
+  # docker:
+  #   compose:
+  #     enabled: true
+  #     lifecycle-management: start-only
+  #     file: src/main/docker/mysql.yml

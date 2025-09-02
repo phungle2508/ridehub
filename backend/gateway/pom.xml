@@ -831,7 +831,7 @@
                 </dependency>
             </dependencies>
         </profile>
-        <profile>
+        <!-- <profile>
             <id>docker-compose</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -843,7 +843,7 @@
                     <optional>true</optional>
                 </dependency>
             </dependencies>
-        </profile>
+        </profile> -->
         <profile>
             <!-- This is automatically activated when working in Eclipse -->
             <id>eclipse</id>
