@@ -1,0 +1,20 @@
+{
+  "type": "record",
+  "namespace": "com.ticketsystem.avro.booking",
+  "name": "Booking",
+  "fields": [
+    { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "userId", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "scheduleId", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "ticketIds", "type": "string", "doc": "TextBlob in JDL; serialized list of UUIDs" },
+    { "name": "totalAmount", "type": { "type": "bytes", "logicalType": "decimal", "precision": 18, "scale": 2 } },
+    { "name": "status", "type": "com.ticketsystem.avro.enums.BookingStatus" },
+    { "name": "passengerDetails", "type": "string" },
+    { "name": "contactEmail", "type": "string" },
+    { "name": "contactPhone", "type": "string" },
+    { "name": "bookingReference", "type": "string" },
+    { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "updatedAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "expiresAt", "type": { "type": "long", "logicalType": "timestamp-millis" } }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "namespace": "com.ticketsystem.avro.route",
+  "name": "Route",
+  "fields": [
+    { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "routeName", "type": "string" },
+    { "name": "origin", "type": "string" },
+    { "name": "destination", "type": "string" },
+    { "name": "distance", "type": "double" },
+    { "name": "estimatedDuration", "type": "int", "doc": "minutes" },
+    { "name": "transportType", "type": "com.ticketsystem.avro.enums.TransportType" },
+    { "name": "isActive", "type": "boolean" },
+    { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "updatedAt", "type": { "type": "long", "logicalType": "timestamp-millis" } }
+  ]
+}

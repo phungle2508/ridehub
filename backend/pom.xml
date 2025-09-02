@@ -1,0 +1,15 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.ticketsystem</groupId>
+  <artifactId>backend</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>ticketsystem-avro</module>
+    <module>gateway</module>
+    <module>ms_booking</module>
+    <module>ms_payment</module>
+    <module>ms_route</module>
+  </modules>
+</project>

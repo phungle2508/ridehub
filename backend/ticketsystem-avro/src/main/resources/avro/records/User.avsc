@@ -1,0 +1,20 @@
+{
+  "type": "record",
+  "namespace": "com.ticketsystem.avro.user",
+  "name": "User",
+  "fields": [
+    { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "username", "type": "string" },
+    { "name": "email", "type": "string" },
+    { "name": "passwordHash", "type": "string" },
+    { "name": "firstName", "type": "string" },
+    { "name": "lastName", "type": "string" },
+    { "name": "phoneNumber", "type": "string" },
+    { "name": "dateOfBirth", "type": [ "null", { "type": "int", "logicalType": "date" } ], "default": null },
+    { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "updatedAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "keycloakUserId", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "userAvatar", "type": [ "null", "string" ], "default": null },
+    { "name": "isActive", "type": "boolean" }
+  ]
+}
