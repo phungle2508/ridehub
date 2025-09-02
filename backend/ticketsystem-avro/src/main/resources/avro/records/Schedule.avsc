@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "com.ticketstore.avro.route",
+  "namespace": "com.ticketsystem.avro.route",
   "name": "Schedule",
   "fields": [
     { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },

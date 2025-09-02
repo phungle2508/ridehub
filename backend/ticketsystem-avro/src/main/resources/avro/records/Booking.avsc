@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "com.ticketstore.avro.booking",
+  "namespace": "com.ticketsystem.avro.booking",
   "name": "Booking",
   "fields": [
     { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },
@@ -8,7 +8,7 @@
     { "name": "scheduleId", "type": { "type": "string", "logicalType": "uuid" } },
     { "name": "ticketIds", "type": "string", "doc": "TextBlob in JDL; serialized list of UUIDs" },
     { "name": "totalAmount", "type": { "type": "bytes", "logicalType": "decimal", "precision": 18, "scale": 2 } },
-    { "name": "status", "type": "com.ticketstore.avro.enums.BookingStatus" },
+    { "name": "status", "type": "com.ticketsystem.avro.enums.BookingStatus" },
     { "name": "passengerDetails", "type": "string" },
     { "name": "contactEmail", "type": "string" },
     { "name": "contactPhone", "type": "string" },

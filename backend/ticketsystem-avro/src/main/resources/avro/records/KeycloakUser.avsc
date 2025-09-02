@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "com.ticketstore.avro.keycloak",
+  "namespace": "com.ticketsystem.avro.keycloak",
   "name": "KeycloakUser",
   "fields": [
     { "name": "id", "type": { "type": "string", "logicalType": "uuid" } },

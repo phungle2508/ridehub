@@ -1,2 +1,5 @@
+export KEYCLOAK_USERNAME=''
+export KEYCLOAK_PASSWORD=''
+
 mvn clean package
 

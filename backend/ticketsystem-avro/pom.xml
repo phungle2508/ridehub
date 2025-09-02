@@ -1,35 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Standalone coordinates -->
-  <groupId>com.ticketsystem</groupId>
-  <artifactId>ticket-store-avro</artifactId>
-  <version>0.1.0</version>
-  <packaging>jar</packaging>
-  <name>ticket-store-avro</name>
+  <!-- Spring Boot parent (manages plugin/dependency versions) -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.4.4</version>
+    <relativePath/>
+  </parent>
 
-  <url>https://github.com/phungle2508/ticket-store-avro</url>
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-    </license>
-  </licenses>
-  <scm>
-    <url>https://github.com/phungle2508/ticket-store-avro</url>
-    <connection>scm:git:https://github.com/phungle2508/ticket-store-avro.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/phungle2508/ticket-store-avro.git</developerConnection>
-  </scm>
+  <groupId>com.ticketsystem.clients</groupId>
+  <artifactId>client-open-feign-avro</artifactId>
+  <version>0.1.0</version>
+  <name>client-open-feign-avro</name>
+  <packaging>jar</packaging>
 
   <properties>
+    <java.version>17</java.version>
+    <openapi.generator.version>7.12.0</openapi.generator.version>
+    <spring-cloud.version>2024.0.1</spring-cloud.version>
+
+    <!-- ===== Keycloak creds (from env) ===== -->
+    <keycloak.token.url>https://keycloak.appf4s.io.vn/realms/jhipster/protocol/openid-connect/token</keycloak.token.url>
+    <keycloak.clientId>web_app</keycloak.clientId>
+    <keycloak.username>${env.KEYCLOAK_USERNAME}</keycloak.username>
+    <keycloak.password>${env.KEYCLOAK_PASSWORD}</keycloak.password>
+
+    <!-- ===== Consul + Gateway ===== -->
+    <consul.url>https://consul.appf4s.io.vn</consul.url>
+    <gateway.url>https://gateway.microservices.appf4s.io.vn</gateway.url>
+
+    <!-- ===== OpenAPI multi-service cache/outputs ===== -->
+    <openapi.auth.file>${project.build.directory}/openapi-auth.properties</openapi.auth.file>
+    <openapi.dir>${project.build.directory}/openapi</openapi.dir>
+    <openapi.generated.dir>${project.build.directory}/generated-sources</openapi.generated.dir>
+
+    <!-- Only pick microservices -->
+    <service.name.pattern>^ms[-_]?.*</service.name.pattern>
+
+    <!-- ===== Avro ===== -->
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <avro.version>1.12.0</avro.version>
+    <avro.source.dir>${project.basedir}/src/main/resources/avro</avro.source.dir>
+    <avro.out.dir>${project.build.directory}/generated-sources/avro</avro.out.dir>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
+    <!-- OpenFeign -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
+    <!-- Swagger/OpenAPI compile-time annotations (optional) -->
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>2.2.22</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>0.2.6</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Bean Validation used by generated interfaces -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- Avro runtime -->
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
@@ -39,7 +98,111 @@
 
   <build>
     <plugins>
-      <!-- Use stable plugin 1.11.3 even if runtime is 1.12.0 -->
+      <!-- ========================= -->
+      <!-- Feign: Token + Discovery + Generation (via scripts) -->
+      <!-- ========================= -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <!-- 1) Fetch Keycloak token early -->
+          <execution>
+            <id>fetch-token</id>
+            <phase>validate</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>bash</executable>
+              <arguments>
+                <argument>${project.basedir}/scripts/fetch-token.sh</argument>
+                <argument>${keycloak.token.url}</argument>
+                <argument>${keycloak.clientId}</argument>
+                <argument>${keycloak.username}</argument>
+                <argument>${keycloak.password}</argument>
+                <argument>${openapi.auth.file}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+
+          <!-- 2) Discover all services & download all specs -->
+          <execution>
+            <id>download-all-openapis</id>
+            <phase>generate-sources</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>bash</executable>
+              <arguments>
+                <argument>${project.basedir}/scripts/consul-download-openapis.sh</argument>
+                <argument>${openapi.auth.file}</argument>
+                <argument>${consul.url}</argument>
+                <argument>${gateway.url}</argument>
+                <argument>${openapi.dir}</argument>
+                <argument>${service.name.pattern}</argument>
+                <argument>gateway</argument> <!-- or 'direct' -->
+              </arguments>
+            </configuration>
+          </execution>
+
+          <!-- 3) Generate Feign clients (CLI jar; unique packages per service) -->
+          <execution>
+            <id>generate-all-clients</id>
+            <phase>generate-sources</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>bash</executable>
+              <arguments>
+                <argument>${project.basedir}/scripts/generate-clients.sh</argument>
+                <argument>${openapi.dir}</argument>
+                <argument>${openapi.generated.dir}</argument>
+                <argument>${openapi.generator.version}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Load token property file (if you reference ${access.token} anywhere) -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <id>load-token</id>
+            <phase>initialize</phase>
+            <goals><goal>read-project-properties</goal></goals>
+            <configuration>
+              <files>
+                <file>${openapi.auth.file}</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Include all generated sources (Feign) -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>add-all-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals><goal>add-source</goal></goals>
+            <configuration>
+              <sources>
+                <source>${openapi.generated.dir}</source>
+                <source>${avro.out.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- ========================= -->
+      <!-- Avro code generation -->
+      <!-- ========================= -->
       <plugin>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-maven-plugin</artifactId>
@@ -50,44 +213,39 @@
             <phase>generate-sources</phase>
             <goals><goal>schema</goal></goals>
             <configuration>
-              <sourceDirectory>${project.basedir}/src/main/resources/avro</sourceDirectory>
-              <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
+              <sourceDirectory>${avro.source.dir}</sourceDirectory>
+              <outputDirectory>${avro.out.dir}</outputDirectory>
               <stringType>String</stringType>
               <createSetters>false</createSetters>
               <enableDecimalLogicalType>true</enableDecimalLogicalType>
-              <includes><include>**/*.avsc</include></includes>
+              <includes>
+                <include>**/*.avsc</include>
+              </includes>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
+      <!-- Compiler sees Avro generated sources -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.11.0</version>
         <configuration>
-          <generatedSourcesDirectory>${project.build.directory}/generated-sources/avro</generatedSourcesDirectory>
+          <release>${java.version}</release>
+          <generatedSourcesDirectory>${avro.out.dir}</generatedSourcesDirectory>
         </configuration>
       </plugin>
     </plugins>
 
+    <!-- Make .avsc files available as resources (optional) -->
     <resources>
       <resource>
         <directory>src/main/resources</directory>
-        <includes><include>**/*.avsc</include></includes>
+        <includes>
+          <include>**/*.avsc</include>
+        </includes>
       </resource>
     </resources>
   </build>
 
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/phungle2508/ticket-store-avro</url>
-    </repository>
-    <snapshotRepository>
-      <id>github</id>
-      <name>GitHub Packages - Snapshots</name>
-      <url>https://maven.pkg.github.com/phungle2508/ticket-store-avro</url>
-    </snapshotRepository>
-  </distributionManagement>
 </project>

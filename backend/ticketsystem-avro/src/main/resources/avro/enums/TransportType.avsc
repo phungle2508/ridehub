@@ -1,6 +1,6 @@
 {
   "type": "enum",
-  "namespace": "com.ticketstore.avro.enums",
+  "namespace": "com.ticketsystem.avro.enums",
   "name": "TransportType",
   "symbols": ["TRAIN", "BUS"]
 }
