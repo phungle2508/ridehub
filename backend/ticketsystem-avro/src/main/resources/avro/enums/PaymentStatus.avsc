@@ -1,6 +1,0 @@
-{
-  "type": "enum",
-  "namespace": "com.ticketsystem.avro.enums",
-  "name": "PaymentStatus",
-  "symbols": ["PENDING", "COMPLETED", "FAILED", "REFUNDED"]
-}

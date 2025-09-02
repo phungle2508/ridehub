@@ -1,6 +1,0 @@
-{
-  "type": "enum",
-  "namespace": "com.ticketsystem.avro.enums",
-  "name": "SeatType",
-  "symbols": ["ECONOMY", "BUSINESS", "FIRST_CLASS", "VIP"]
-}
