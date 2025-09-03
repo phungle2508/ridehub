@@ -6,4 +6,4 @@
 [submodule "backend/ticketsystem-avro"]
 	path = backend/ticketsystem-avro
 	url = https://github.com/phungle2508/ticket-store-avro
-	branch = main
+	branch = master
