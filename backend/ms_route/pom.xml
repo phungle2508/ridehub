@@ -102,7 +102,7 @@
         <dependency>
             <groupId>com.github.phungle2508</groupId>
             <artifactId>ticket-store-avro</artifactId>
-            <version>3b0861aa4a</version>
+            <version>master-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>
