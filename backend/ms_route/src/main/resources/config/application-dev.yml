@@ -14,10 +14,11 @@
 # ===================================================================
 
 server:
-  name: ms_route
+  name: ms_routeDEV
   port: 8082
   forward-headers-strategy: native
   sql-port: 3307
+  sql-name: ms_route
 
 spring:
   config:
@@ -25,3 +26,29 @@ spring:
       # Import shared config first
       - "optional:file:/home/phungvip/Desktop/work-space/ticket-store/backend/ticket-store-central-config/application-dev.yml"
       # Then service-specific config (will override shared)
+  # ===================================================================
+  # DEV profile - fixed and tidied
+  # ===================================================================
+  cloud:
+    function:
+      definition: kafkaProducer;kafkaConsumer
+    stream:
+      bindings:
+        kafkaConsumer-in-0:
+          destination: ${server.name}.events
+          content-type: application/*+avro
+          group: ${kafka.utility.service-name:${server.name}}-route-group
+          consumer:
+            use-native-decoding: true
+            max-attempts: 3
+            back-off-initial-interval: 1000
+            back-off-multiplier: 2.0
+            back-off-max-interval: 10000
+            concurrency: 2
+            enable-dlq: true
+            dlq-name: ${spring.cloud.stream.bindings.routeConsumer-in-0.destination}.dlq
+        kafkaProducer-out-0:
+          destination: ${server.name}.events
+          contentType: application/*+avro
+          producer:
+            useNativeEncoding: true

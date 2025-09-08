@@ -86,6 +86,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
     </repositories>
     <dependencyManagement>
         <dependencies>
@@ -100,9 +104,15 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>com.github.phungle2508</groupId>
-            <artifactId>ticket-store-avro</artifactId>
-            <version>master-SNAPSHOT</version>
+            <groupId>com.ticketsystem.clients</groupId>
+            <artifactId>client-open-feign-avro</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer -->
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <version>8.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>

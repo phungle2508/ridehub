@@ -3,7 +3,6 @@ package com.ticketsystem.route.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ticketsystem.msroute.client.api.RouteResourceMsrouteApi;
-import com.ticketsystem.msroutedev.client.api.RouteResourceMsroutedevApi;
 
 import feign.Feign;
 import feign.Logger;
