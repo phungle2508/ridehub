@@ -3,6 +3,8 @@ package com.ticketsystem.route.service.event;
 import com.ticketsystem.kafka.handler.EventHandler;
 import com.ticketsystem.route.service.RouteService;
 import com.ticketsystem.route.service.dto.RouteDTO;
+
+import org.apache.kafka.common.KafkaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -81,6 +83,8 @@ class RouteUpdatedEventHandler implements EventHandler<RouteDTO> {
             LOG.error("Error processing route updated event: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to process route updated event", e);
         }
+        throw new KafkaException();
+
     }
 
     private void handleRouteUpdated(RouteDTO payload) {

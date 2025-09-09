@@ -7,6 +7,8 @@ import com.ticketsystem.kafka.service.KafkaUtilityService;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.common.KafkaException;
+import org.apache.kafka.common.errors.RetriableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -88,7 +90,6 @@ public class MsRouteKafkaResource {
     @PostMapping("/publish/route-updated")
     public ResponseEntity<Map<String, String>> publishRouteUpdated(@RequestBody RouteDTO routeDTO) {
         LOG.debug("REST request to queue route updated event for: {}", routeDTO);
-
         try {
             String messageKey = kafkaProducer.send("route.updated", routeDTO);
             if (messageKey == null) {
@@ -107,6 +108,7 @@ public class MsRouteKafkaResource {
             error.put("error", "Failed to queue route updated event: " + e.getMessage());
             return ResponseEntity.internalServerError().body(error);
         }
+
     }
 
     /**
