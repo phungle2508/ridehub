@@ -23,7 +23,7 @@ server:
 spring:
   config:
     # Import shared config first
-    import: optional:file:/D:/VsCode-WordSpace/ticket-store/backend/ticket-store-central-config/application-dev.yml
+    import: optional:file:/home/phungvip/Desktop/work-space/ticket-store/backend/ticket-store-central-config/application-dev.yml
     # Then service-specific config (will override shared)
   # ===================================================================
   # DEV profile - fixed and tidied
