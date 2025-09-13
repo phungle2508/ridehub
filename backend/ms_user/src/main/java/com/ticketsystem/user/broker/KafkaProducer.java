@@ -1,4 +1,4 @@
-package com.ticketsystem.payment.broker;
+package com.ticketsystem.user.broker;
 
 import com.ticketsystem.avro.common.EventEnvelope;
 import com.ticketsystem.kafka.broker.GenericKafkaProducer;
@@ -10,7 +10,7 @@ import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
 /**
- * Payment-specific producer using Supplier pattern only.
+ * User-specific producer using Supplier pattern only.
  * Exposes only get() and send(...).
  */
 @Component("kafkaProducer")
@@ -26,17 +26,17 @@ public class KafkaProducer extends GenericKafkaProducer {
     public Message<EventEnvelope> get() {
         Message<EventEnvelope> message = super.get();
         if (message != null) {
-            LOG.info("PaymentKafkaProducer: Supplying payment event to kafkaProducer-out-0 binding");
+            LOG.info("UserKafkaProducer: Supplying user event to kafkaProducer-out-0 binding");
         }
         return message;
     }
 
     /**
-     * Generic send for any payment-related event.
+     * Generic send for any user-related event.
      * (Queues to Supplier; no direct StreamBridge or destination logic.)
      */
     public String send(String eventName, Object payload) {
-        LOG.info("KafkaProducer: Queueing payment event: {}", eventName);
+        LOG.info("KafkaProducer: Queueing user event: {}", eventName);
         return queueEvent(eventName, payload, null);
     }
 }

@@ -1,7 +1,7 @@
-package com.ticketsystem.notification.web.rest;
+package com.ticketsystem.user.web.rest;
 
-import com.ticketsystem.notification.broker.KafkaProducer;
-import com.ticketsystem.notification.service.dto.NotificationDTO;
+import com.ticketsystem.user.broker.KafkaProducer;
+import com.ticketsystem.user.service.dto.UserDTO;
 import com.ticketsystem.kafka.service.KafkaUtilityService;
 
 import java.util.HashMap;
@@ -15,15 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/ms-notification-kafka")
-public class MsNotificationKafkaResource {
+@RequestMapping("/api/ms-user-kafka")
+public class MsUserKafkaResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MsNotificationKafkaResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MsUserKafkaResource.class);
 
     private final KafkaProducer kafkaProducer; // now only has get() + send()
     private final KafkaUtilityService kafkaUtilityService;
 
-    public MsNotificationKafkaResource(
+    public MsUserKafkaResource(
             KafkaProducer kafkaProducer,
             KafkaUtilityService kafkaUtilityService) {
         this.kafkaProducer = kafkaProducer;
@@ -38,7 +38,7 @@ public class MsNotificationKafkaResource {
         LOG.debug("REST request to send simple message: {} to Kafka via Supplier", message);
 
         try {
-            String messageKey = kafkaProducer.send("notification.test", message);
+            String messageKey = kafkaProducer.send("user.test", message);
             if (messageKey == null) {
                 throw new IllegalStateException("Failed to queue event (null key returned)");
             }
@@ -58,82 +58,82 @@ public class MsNotificationKafkaResource {
     }
 
     /**
-     * Send a notification creation event
+     * Send a user creation event
      */
-    @PostMapping("/publish/notification-created")
-    public ResponseEntity<Map<String, String>> publishNotificationCreated(@RequestBody NotificationDTO notificationDTO) {
-        LOG.debug("REST request to queue notification created event for: {}", notificationDTO);
+    @PostMapping("/publish/user-created")
+    public ResponseEntity<Map<String, String>> publishUserCreated(@RequestBody UserDTO userDTO) {
+        LOG.debug("REST request to queue user created event for: {}", userDTO);
 
         try {
-            String messageKey = kafkaProducer.send("notification.created", notificationDTO);
+            String messageKey = kafkaProducer.send("user.created", userDTO);
             if (messageKey == null) {
                 throw new IllegalStateException("Failed to queue event (null key returned)");
             }
 
             Map<String, String> response = new HashMap<>();
-            response.put("message", "Notification created event queued successfully");
+            response.put("message", "User created event queued successfully");
             response.put("messageKey", messageKey);
-            response.put("notificationId", String.valueOf(notificationDTO.getId()));
+            response.put("userId", String.valueOf(userDTO.getId()));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            LOG.error("Error queueing notification created event: {}", e.getMessage(), e);
+            LOG.error("Error queueing user created event: {}", e.getMessage(), e);
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to queue notification created event: " + e.getMessage());
+            error.put("error", "Failed to queue user created event: " + e.getMessage());
             return ResponseEntity.internalServerError().body(error);
         }
     }
 
     /**
-     * Send a notification updated event
+     * Send a user updated event
      */
-    @PostMapping("/publish/notification-updated")
-    public ResponseEntity<Map<String, String>> publishNotificationUpdated(@RequestBody NotificationDTO notificationDTO) {
-        LOG.debug("REST request to queue notification updated event for: {}", notificationDTO);
+    @PostMapping("/publish/user-updated")
+    public ResponseEntity<Map<String, String>> publishUserUpdated(@RequestBody UserDTO userDTO) {
+        LOG.debug("REST request to queue user updated event for: {}", userDTO);
         try {
-            String messageKey = kafkaProducer.send("notification.updated", notificationDTO);
+            String messageKey = kafkaProducer.send("user.updated", userDTO);
             if (messageKey == null) {
                 throw new IllegalStateException("Failed to queue event (null key returned)");
             }
 
             Map<String, String> response = new HashMap<>();
-            response.put("message", "Notification updated event queued successfully");
+            response.put("message", "User updated event queued successfully");
             response.put("messageKey", messageKey);
-            response.put("notificationId", String.valueOf(notificationDTO.getId()));
+            response.put("userId", String.valueOf(userDTO.getId()));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            LOG.error("Error queueing notification updated event: {}", e.getMessage(), e);
+            LOG.error("Error queueing user updated event: {}", e.getMessage(), e);
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to queue notification updated event: " + e.getMessage());
+            error.put("error", "Failed to queue user updated event: " + e.getMessage());
             return ResponseEntity.internalServerError().body(error);
         }
 
     }
 
     /**
-     * Send a notification deleted event
+     * Send a user deleted event
      */
-    @DeleteMapping("/publish/notification-deleted/{id}")
-    public ResponseEntity<Map<String, String>> publishNotificationDeleted(@PathVariable Long id) {
-        LOG.debug("REST request to queue notification deleted event for ID: {}", id);
+    @DeleteMapping("/publish/user-deleted/{id}")
+    public ResponseEntity<Map<String, String>> publishUserDeleted(@PathVariable Long id) {
+        LOG.debug("REST request to queue user deleted event for ID: {}", id);
 
         try {
-            String messageKey = kafkaProducer.send("notification.deleted", id);
+            String messageKey = kafkaProducer.send("user.deleted", id);
             if (messageKey == null) {
                 throw new IllegalStateException("Failed to queue event (null key returned)");
             }
 
             Map<String, String> response = new HashMap<>();
-            response.put("message", "Notification deleted event queued successfully");
+            response.put("message", "User deleted event queued successfully");
             response.put("messageKey", messageKey);
-            response.put("notificationId", String.valueOf(id));
+            response.put("userId", String.valueOf(id));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            LOG.error("Error queueing notification deleted event: {}", e.getMessage(), e);
+            LOG.error("Error queueing user deleted event: {}", e.getMessage(), e);
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to queue notification deleted event: " + e.getMessage());
+            error.put("error", "Failed to queue user deleted event: " + e.getMessage());
             return ResponseEntity.internalServerError().body(error);
         }
     }
@@ -144,7 +144,7 @@ public class MsNotificationKafkaResource {
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getStatus() {
         Map<String, Object> status = new HashMap<>();
-        status.put("service", "ms_notification");
+        status.put("service", "ms_user");
         status.put("kafkaUtilityEnabled", true);
         status.put("sseClientsCount", kafkaUtilityService.getEmitters().size());
         status.put("timestamp", System.currentTimeMillis());

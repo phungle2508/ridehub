@@ -1,4 +1,4 @@
-package com.ticketsystem.payment.broker;
+package com.ticketsystem.user.broker;
 
 import com.ticketsystem.kafka.broker.GenericKafkaConsumer;
 import com.ticketsystem.kafka.service.KafkaUtilityService;

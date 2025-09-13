@@ -13,110 +13,75 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
-logging:
-  level:
-    ROOT: DEBUG
-    tech.jhipster: DEBUG
-    org.hibernate.SQL: DEBUG
-    com.ticketsystem.notification: DEBUG
-
-management:
-  zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
-  tracing:
-    sampling:
-      probability: 1.0 # report 100% of traces
+server:
+  name: ms_notificationDEV
+  port: 8082
+  forward-headers-strategy: native
+  sql-port: 3307
+  sql-name: ms_notification
 
 spring:
-  devtools:
-    restart:
-      enabled: true
-      additional-exclude: static/**
-    livereload:
-      enabled: false # we use Webpack dev server + BrowserSync for livereload
-  jackson:
-    serialization:
-      indent-output: true
+  config:
+    # Import shared config first
+    import: optional:file:/home/phungvip/Desktop/work-space/ticket-store/backend/ticket-store-central-config/application-dev.yml
+    # Then service-specific config (will override shared)
+  # ===================================================================
+  # DEV profile - fixed and tidied
+  # ===================================================================
   cloud:
-    consul:
-      config:
-        fail-fast: false # if not in "prod" profile, do not force to use Spring Cloud Config
-        format: yaml
-        profile-separator: '-'
-      discovery:
-        prefer-ip-address: true
-        tags:
-          - profile=${spring.profiles.active}
-          - version='@project.version@'
-          - git-version=${git.commit.id.describe:}
-          - git-commit=${git.commit.id.abbrev:}
-          - git-branch=${git.branch:}
-      host: localhost
-      port: 8500
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/ms_notification?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-    username: root
-    password:
-    hikari:
-      poolName: Hikari
-      auto-commit: false
-      data-source-properties:
-        cachePrepStmts: true
-        prepStmtCacheSize: 250
-        prepStmtCacheSqlLimit: 2048
-        useServerPrepStmts: true
-  liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
-  messages:
-    cache-duration: PT1S # 1 second, see the ISO 8601 standard
-  thymeleaf:
-    cache: false
+    function:
+      definition: kafkaProducer;kafkaConsumer;dlqConsumer
+    stream:
+      bindings:
+        # Main consumer binding
+        kafkaConsumer-in-0:
+          destination: ${server.name}.events
+          content-type: application/*+avro
+          group: ${server.name}-notification-group
+          consumer:
+            use-native-decoding: true
+            # Retry configuration
+            max-attempts: 3
+            back-off-initial-interval: 1000
+            back-off-multiplier: 2.0
+            back-off-max-interval: 10000
+            # DLQ configuration - CRITICAL for DLQ to work
+            enable-dlq: true
+            dlq-name: ${server.name}.events.dlq
+            republish-to-dlq: true
+            # Concurrency
+            concurrency: 2
 
-server:
-  port: 8085
-  # make sure requests the proxy uri instead of the server one
-  forward-headers-strategy: native
+        # Producer binding
+        kafkaProducer-out-0:
+          destination: ${server.name}.events
+          contentType: application/*+avro
+          producer:
+            useNativeEncoding: true
 
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
+        # DLQ consumer binding (optional - for monitoring failed messages)
+        dlqConsumer-in-0:
+          destination: ${server.name}.events.dlq
+          content-type: application/octet-stream
+          group: ${server.name}-dlq-group
+          consumer:
+            use-native-decoding: true
+            max-attempts: 1
 
-jhipster:
-  cache: # Cache configuration
-    redis: # Redis configuration
-      expiration: 3600 # By default objects stay 1 hour (in seconds) in the cache
-      server: redis://localhost:6379
-      cluster: false
-      # server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
-      # cluster: true
-  # CORS is disabled by default on microservices, as you should access them through a gateway.
-  # If you want to enable it, please uncomment the configuration below.
-  # cors:
-  #   allowed-origins: "http://localhost:9000,https://localhost:9000"
-  #   allowed-methods: "*"
-  #   allowed-headers: "*"
-  #   exposed-headers: "Authorization,Link,X-Total-Count"
-  #   allow-credentials: true
-  #   max-age: 1800
-  logging:
-    use-json-format: false # By default, logs are not in Json format
-    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
-      enabled: false
-      host: localhost
-      port: 5000
-      ring-buffer-size: 512
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
+      # Kafka-specific configurations
+      kafka:
+        bindings:
+          kafkaConsumer-in-0:
+            consumer:
+              # Enable DLQ at Kafka level
+              enableDlq: true
+              dlqName: ${server.name}.events.dlq
+              # Ensure proper serialization for DLQ messages
+              dlqProducerProperties:
+                key.serializer: org.apache.kafka.common.serialization.StringSerializer
+                value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
 
-# application:
+          dlqConsumer-in-0:
+            consumer:
+              # DLQ consumer properties
+              startOffset: latest

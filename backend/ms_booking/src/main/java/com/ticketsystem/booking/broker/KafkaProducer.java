@@ -1,13 +1,42 @@
 package com.ticketsystem.booking.broker;
 
-import java.util.function.Supplier;
+import com.ticketsystem.avro.common.EventEnvelope;
+import com.ticketsystem.kafka.broker.GenericKafkaProducer;
+import com.ticketsystem.kafka.service.KafkaUtilityService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
-@Component
-public class KafkaProducer implements Supplier<String> {
+/**
+ * Booking-specific producer using Supplier pattern only.
+ * Exposes only get() and send(...).
+ */
+@Component("kafkaProducer")
+public class KafkaProducer extends GenericKafkaProducer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaProducer.class);
+
+    public KafkaProducer(KafkaUtilityService kafkaUtilityService) {
+        super(kafkaUtilityService);
+    }
 
     @Override
-    public String get() {
-        return "kafka_producer";
+    public Message<EventEnvelope> get() {
+        Message<EventEnvelope> message = super.get();
+        if (message != null) {
+            LOG.info("BookingKafkaProducer: Supplying booking event to kafkaProducer-out-0 binding");
+        }
+        return message;
+    }
+
+    /**
+     * Generic send for any booking-related event.
+     * (Queues to Supplier; no direct StreamBridge or destination logic.)
+     */
+    public String send(String eventName, Object payload) {
+        LOG.info("KafkaProducer: Queueing booking event: {}", eventName);
+        return queueEvent(eventName, payload, null);
     }
 }
