@@ -228,7 +228,7 @@
         <div class="mb-3">
           <label class="form-label" for="field_route" jhiTranslate="gatewayApp.msRouteSchedule.route">Route</label>
           <select class="form-control" id="field_route" data-cy="route" name="route" formControlName="route" [compareWith]="compareRoute">
-            @if (editForm.get(['route'])!.value == null) {
+            @if (editForm.get(['route'])!.value === null) {
               <option [ngValue]="null" selected></option>
             }
             @for (routeOption of routesSharedCollection; track $index) {
