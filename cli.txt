@@ -6,7 +6,8 @@ git restore backend/ms_*/src/main/java/com/ticketsystem/*/broker/* \
             backend/ms_*/src/main/resources/logback-spring.xml \
             backend/ms_*/pom.xml \
             backend/ms_*/src/main/java/com/ticketsystem/*/Ms*App.java \
-            backend/ms_*/src/main/resources/config/* \
+            backend/ms_*/src/main/resources/config/bootstrap.yml \
+            backend/ms_*/src/main/resources/config/application-dev.yml \
             backend/ms_*/src/main/java/com/ticketsystem/*/web/rest/Ms*KafkaResource.java \
             backend/gateway/src/main/resources/logback-spring.xml \
             backend/gateway/pom.xml \

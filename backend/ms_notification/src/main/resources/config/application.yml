@@ -19,10 +19,10 @@
 spring:
   config:
     activate:
-      on-profile: 'api-docs'
+      on-profile: '!api-docs'
 springdoc:
   api-docs:
-    enabled: true
+    enabled: false
 ---
 feign:
   circuitbreaker:
@@ -131,7 +131,6 @@ spring:
         kafkaProducer-out-0:
           content-type: text/plain
           group: ms-notification
-  
   docker:
     compose:
       enabled: true

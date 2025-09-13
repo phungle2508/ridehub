@@ -14,11 +14,11 @@
 # ===================================================================
 
 server:
-  name: ms_bookingDEV
-  port: 8082
+  name: ${SERVER_NAME:ms_booking}DEV
+  port: ${SERVER_PORT:8084}
   forward-headers-strategy: native
-  sql-port: 3307
-  sql-name: ms_booking
+  sql-port: ${SQL_PORT:3309}
+  sql-name: ${SQL_NAME:booking}
 
 spring:
   config:

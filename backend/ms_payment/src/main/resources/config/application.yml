@@ -19,10 +19,10 @@
 spring:
   config:
     activate:
-      on-profile: 'api-docs'
+      on-profile: '!api-docs'
 springdoc:
   api-docs:
-    enabled: true
+    enabled: false
 ---
 feign:
   circuitbreaker:
@@ -131,7 +131,6 @@ spring:
         kafkaProducer-out-0:
           content-type: text/plain
           group: ms-payment
-  
   docker:
     compose:
       enabled: true
@@ -171,6 +170,10 @@ spring:
       hibernate.order_updates: true
       hibernate.query.fail_on_pagination_over_collection_fetch: true
       hibernate.query.in_clause_parameter_padding: true
+      hibernate.cache.region.factory_class: com.hazelcast.hibernate.HazelcastCacheRegionFactory
+      hibernate.cache.use_minimal_puts: true
+      hibernate.cache.hazelcast.instance_name: ms_payment
+      hibernate.cache.hazelcast.use_lite_member: true
     hibernate:
       ddl-auto: none
       naming:

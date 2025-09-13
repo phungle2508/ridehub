@@ -14,11 +14,11 @@
 # ===================================================================
 
 server:
-  name: ms_userDEV
-  port: 8082
+  name: ${SERVER_NAME:ms_user}DEV
+  port: ${SERVER_PORT:8083}
   forward-headers-strategy: native
-  sql-port: 3307
-  sql-name: ms_user
+  sql-port: ${SQL_PORT:3308}
+  sql-name: ${SQL_NAME:user}
 
 spring:
   config:

@@ -14,11 +14,11 @@
 # ===================================================================
 
 server:
-  name: ms_paymentDEV
-  port: 8082
+  name: ${SERVER_NAME:ms_payment}DEV
+  port: ${SERVER_PORT:8085}
   forward-headers-strategy: native
-  sql-port: 3307
-  sql-name: ms_payment
+  sql-port: ${SQL_PORT:3310}
+  sql-name: ${SQL_NAME:payment}
 
 spring:
   config:
