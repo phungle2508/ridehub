@@ -83,7 +83,6 @@
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
-
         <repository>
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
@@ -147,6 +146,11 @@
             <artifactId>hazelcast-spring</artifactId>
             <version>${hazelcast-spring.version}</version>
         </dependency>
+        <!-- <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>${redisson.version}</version>
+        </dependency> -->
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
@@ -348,11 +352,6 @@
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
             <version>${jackson-databind-nullable.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
-            <version>${redisson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

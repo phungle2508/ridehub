@@ -11,5 +11,6 @@
     <module>ms_booking</module>
     <module>ms_payment</module>
     <module>ms_route</module>
+    <module>ms_user</module>
   </modules>
 </project>
