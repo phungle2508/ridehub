@@ -10,6 +10,7 @@ docker run -it --rm \
   --agree-tos \
   --non-interactive
 
-
+cd backend
+for dir in ms_* gateway; do (cd "$dir" && ./mvnw -Pprod verify jib:dockerBuild -DskipTests -T 1); done
 ./mvnw -Pprod verify jib:dockerBuild -DskipTests
 
