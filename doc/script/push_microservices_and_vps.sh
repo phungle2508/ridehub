@@ -1,9 +1,11 @@
+
 #!/bin/bash
 # push_microservices_and_vps.sh
 #
 # Pushes:
 #  - ./ms_*
 #  - ./backend/ms_*
+#  - ./backend/gateway
 #  - ./vps-*
 # to https://github.com/<OWNER>/<repo>.git (OWNER from GH_OWNER or gh auth)
 #
@@ -32,11 +34,10 @@ print_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
 # Prechecks
 # =========================
 command -v gh >/dev/null || { print_error "GitHub CLI (gh) is not installed."; exit 1; }
-if ! gh auth status &>/dev/null; then
-  print_error "GitHub CLI is not authenticated. Run: gh auth login"
-  exit 1
-fi
-
+# if ! gh auth status &>/dev/null; then
+#   print_error "GitHub CLI is not authenticated. Run: gh auth login"
+#   exit 1
+# fi
 OWNER="${GH_OWNER:-$(gh api user --jq .login)}"
 print_success "Authenticated as owner: ${OWNER}"
 
@@ -55,8 +56,13 @@ TARGET_DIRS+=("${MS_DIRS_ROOT[@]}")
 TARGET_DIRS+=("${MS_DIRS_BACKEND[@]}")
 TARGET_DIRS+=("${VPS_DIRS[@]}")
 
+# include backend/gateway if present
+if [ -d "backend/gateway" ]; then
+  TARGET_DIRS+=("backend/gateway")
+fi
+
 if [ "${#TARGET_DIRS[@]}" -eq 0 ]; then
-  print_error "No matching directories found: ms_* (root), backend/ms_*, or vps-*."
+  print_error "No matching directories found: ms_* (root), backend/ms_*, backend/gateway, or vps-*."
   exit 1
 fi
 
@@ -86,7 +92,7 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 
-# Node / frontend (just in case)
+# Node / frontend
 node_modules/
 .next/
 dist/
@@ -108,7 +114,7 @@ Thumbs.db
 .env.local
 .env.*.local
 
-# Misc archives
+# Archives
 *.zip
 *.tar.gz
 *.rar
@@ -118,7 +124,7 @@ EOF
 }
 
 # =========================
-# Main loop (hardened to keep going)
+# Main loop
 # =========================
 SUCCESS_COUNT=0
 FAILED_REPOS=()
@@ -136,80 +142,48 @@ for dir in "${TARGET_DIRS[@]}"; do
     continue
   fi
 
-  REPO_NAME="$(basename "${dir}")"     # backend/ms_payment -> ms_payment; vps-infra -> vps-infra
+  REPO_NAME="$(basename "${dir}")"
   REPO_URL="https://github.com/${OWNER}/${REPO_NAME}.git"
 
-  # prevent a single failure from killing the whole script
   set +e
+  pushd "${dir}" >/dev/null 2>&1 || { FAILED_REPOS+=("${REPO_NAME} (pushd failed)"); set -e; continue; }
 
-  pushd "${dir}" >/dev/null 2>&1
-  if [ $? -ne 0 ]; then
-    print_error "pushd failed: ${dir}"
-    FAILED_REPOS+=("${REPO_NAME} (pushd failed)")
-    set -e
-    continue
-  fi
-
-  # Init repo if needed
   if [ ! -d ".git" ]; then
     print_status "Initializing git repository..."
-    git init
-    if [ $? -ne 0 ]; then
-      print_error "git init failed"
-      popd >/dev/null 2>&1
-      FAILED_REPOS+=("${REPO_NAME} (git init failed)")
-      set -e
-      continue
-    fi
+    git init || { FAILED_REPOS+=("${REPO_NAME} (git init failed)"); popd >/dev/null; set -e; continue; }
   fi
 
-  # Ensure we have a branch and prefer 'main'
   git symbolic-ref -q HEAD >/dev/null || git checkout -b main
   CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || echo main)"
   [ "${CURRENT_BRANCH}" = "main" ] || git branch -M main
 
-  # .gitignore
   ensure_gitignore "."
 
-  # Commit if needed
   git add -A
   if ! git diff --cached --quiet; then
     if git rev-parse --verify HEAD >/dev/null 2>&1; then
-      print_status "Committing updates..."
-      git commit -m "Update: $(date '+%Y-%m-%d %H:%M:%S')" || print_warning "Commit failed or nothing to commit"
+      git commit -m "Update: $(date '+%Y-%m-%d %H:%M:%S')" || true
     else
-      print_status "Creating initial commit..."
-      git commit -m "Initial commit for ${REPO_NAME}" || print_warning "Initial commit failed (maybe empty repo)"
+      git commit -m "Initial commit for ${REPO_NAME}" || true
     fi
-  else
-    print_status "No changes to commit."
   fi
 
-  # Remote handling
   git remote remove origin >/dev/null 2>&1
-  print_status "Adding remote: ${REPO_URL}"
   git remote add origin "${REPO_URL}" 2>/dev/null || git remote set-url origin "${REPO_URL}"
 
-  # Push (try normal, then force if needed)
   print_status "Pushing to GitHub..."
   if git push -u origin main; then
     print_success "✅ Successfully pushed ${REPO_NAME}"
     SUCCESS_COUNT=$((SUCCESS_COUNT+1))
+  elif git push -u origin main --force; then
+    print_warning "⚠️  Force-pushed ${REPO_NAME} (diverged history)"
+    SUCCESS_COUNT=$((SUCCESS_COUNT+1))
   else
-    print_warning "Normal push failed, trying --force…"
-    if git push -u origin main --force; then
-      print_warning "⚠️  Force-pushed ${REPO_NAME} (diverged history)"
-      SUCCESS_COUNT=$((SUCCESS_COUNT+1))
-    else
-      print_error "❌ Push failed for ${REPO_NAME}"
-      print_error "Ensure repo exists: https://github.com/${OWNER}/${REPO_NAME}"
-      FAILED_REPOS+=("${REPO_NAME} (push failed - repo may not exist)")
-    fi
+    print_error "❌ Push failed for ${REPO_NAME}"
+    FAILED_REPOS+=("${REPO_NAME} (push failed - repo may not exist)")
   fi
 
   popd >/dev/null 2>&1 || true
-
-  # restore strict mode for the next iteration
   set -e
 done
 
@@ -231,7 +205,6 @@ if [ "${#FAILED_REPOS[@]}" -gt 0 ]; then
   print_status "To create missing repositories (public) under ${OWNER}, run:"
   for r in "${FAILED_REPOS[@]}"; do
     n="$(echo "${r}" | awk '{print $1}')"
-    # Suggest creation only for 'push failed' cases
     if [[ "${r}" == *"push failed"* ]]; then
       echo "  gh repo create ${OWNER}/${n} --public"
     fi

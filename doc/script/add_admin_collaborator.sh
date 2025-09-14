@@ -5,6 +5,7 @@ OWNER="maian3333"
 PERMISSION="admin"
 
 REPOS=(
+    "gateway"
     "ms_user"
     "ms_payment" 
     "ms_notification"
