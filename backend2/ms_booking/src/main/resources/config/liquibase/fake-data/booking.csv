@@ -1,0 +1,11 @@
+id;user_id;trip_id;booking_reference;status;total_amount;contact_phone;contact_email;special_requests;created_at;expires_at
+1;d57255a6-aff8-4550-b866-2e612a04c11e;6eeffb6c-e683-4b05-aa14-60e3e949a3b7;than except astride;REFUNDED;27122.35;where;ouch;stable sauerkraut;2025-09-14T11:58:36;2025-09-13T21:43:32
+2;03063d63-b408-4994-82a0-02f2d0c2209f;e485aadd-f608-4283-bb2c-0c85ed34ab1c;cap;CONFIRMED;22459.53;gnash homeschool;how;what commandeer hourly;2025-09-14T02:10:00;2025-09-13T17:33:25
+3;b59917c9-c6d3-474c-a004-7244089d67cb;dd0007b6-4759-444c-abd5-cc763283ac93;with;CHECKED_IN;21980.05;round smuggle despite;daughter steep gnaw;lonely among plus;2025-09-14T05:55:14;2025-09-14T10:56:27
+4;5ca45a29-03c7-4da1-a88e-649a0c5e3184;a94efc76-59b0-4d01-afc0-0e163e5cf6fd;mmm ew;CONFIRMED;20182.38;interchange unscramble apud;readjust fooey;until apropos finally;2025-09-14T02:25:25;2025-09-13T20:34:16
+5;de48fc8c-373b-4d27-8b0b-33d8c47165c8;0def7209-ec63-4860-b0ae-c357312eec30;boiling nautical doubtfully;CHECKED_IN;27712.39;safe solemnly;sprinkles supposing;anaesthetise term where;2025-09-14T03:57:10;2025-09-13T18:46:13
+6;d6d68a4b-c429-4a03-ba35-d6c771eaec88;ee054b01-f3e6-4805-b78d-383c4cda66cf;cautiously;PENDING_PAYMENT;11654.24;cop navigate within;netsuke;pish only pendant;2025-09-14T05:49:33;2025-09-13T22:30:50
+7;7c48c4e1-bca6-4cb6-8468-02722a29526b;5764b4ac-a5d5-4027-8d15-76ba0afe135c;meanwhile;DRAFT;28334.21;while acceptable;which mooch apprehensive;mallard;2025-09-13T18:22:24;2025-09-14T01:50:54
+8;8c911574-9763-4e47-a32b-382f27da2e6f;0ef68bd3-f67f-48bc-b737-391dd6c69e1d;stable overburden hmph;CHECKED_IN;25165.5;playfully;given afore even;though;2025-09-14T06:13:22;2025-09-13T13:46:36
+9;e53156d4-5ef8-4d86-89cf-def8d749f185;bec4a512-cf8d-4beb-b2e6-f338e89b1f5d;gratefully gee;CHECKED_IN;8843.45;repeatedly;muffled;imagineer;2025-09-13T21:01:33;2025-09-14T06:06:26
+10;3eb63260-0547-4fdf-a920-4dda887a2b3e;9ba6d8a0-c5e4-492c-86c1-4153439c5614;gadzooks by;REFUNDED;26256.51;up what;designation per;wisely haversack which;2025-09-13T18:41:33;2025-09-13T19:05:29
