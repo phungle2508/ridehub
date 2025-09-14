@@ -12,5 +12,6 @@
     <module>ms_payment</module>
     <module>ms_route</module>
     <module>ms_user</module>
+    <module>ms_notification</module>
   </modules>
 </project>
