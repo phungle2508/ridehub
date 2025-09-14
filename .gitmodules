@@ -33,6 +33,11 @@
 	url = https://github.com/maian3333/ms_route
 	branch = main
 
+[submodule "backend/gateway"]
+	path = backend/gateway
+	url = https://github.com/maian3333/gateway
+	branch = main
+
 [submodule "vps-infra"]
 	path = vps-infra
 	url = https://github.com/maian3333/vps-infra

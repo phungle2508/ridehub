@@ -1,9 +1,0 @@
-{
-  "gatewayApp": {
-    "TransportType": {
-      "null": "",
-      "TRAIN": "TRAIN",
-      "BUS": "BUS"
-    }
-  }
-}
