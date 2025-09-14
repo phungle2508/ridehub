@@ -210,10 +210,16 @@ process_target_service() {
         # ONLY these two files from resources/config (optional)
         "optional_copy_and_replace_file;${SRC_DIR}/src/main/resources/config/application-dev.yml;${dest_dir}/src/main/resources/config/application-dev.yml"
         "optional_copy_and_replace_file;${SRC_DIR}/src/main/resources/config/bootstrap.yml;${dest_dir}/src/main/resources/config/bootstrap.yml"
+        "optional_copy_and_replace_file;${SRC_DIR}/src/main/resources/config/tls/kafka.broker.keystore.jks;${dest_dir}/src/main/resources/config/tls/kafka.broker.keystore.jks"
+        "optional_copy_and_replace_file;${SRC_DIR}/src/main/resources/config/tls/kafka.client.truststore.jks;${dest_dir}/src/main/resources/config/tls/kafka.client.truststore.jks"
+
 
         # Java config under /config
         "copy_and_replace_file;${SRC_DIR}/src/main/java/com/ticketsystem/route/config/ConsulSSHTunnel.java;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/config/ConsulSSHTunnel.java"
         "copy_feign_config_package_only;${SRC_DIR}/src/main/java/com/ticketsystem/route/config/FeignClientConfiguration.java;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/config/FeignClientConfiguration.java"
+
+        "copy_and_replace_file;${SRC_DIR}/src/main/java/com/ticketsystem/route/config/tls;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/config/tls"
+
     )
 
     local IFS=';'
