@@ -3,25 +3,10 @@ jhipster jdl ../ticket-store.jdl  --skip-install --force
 
 cd ../
 ./git-restore.sh
-
-git restore backend/ms_*/src/main/java/com/ticketsystem/*/broker/* \
-            backend/ms_*/src/main/resources/logback-spring.xml \
-            backend/ms_*/pom.xml \
-            backend/ms_*/src/main/java/com/ticketsystem/*/Ms*App.java \
-            backend/ms_*/src/main/resources/config/bootstrap.yml \
-            backend/ms_*/src/main/resources/config/application-dev.yml \
-            backend/ms_*/src/main/java/com/ticketsystem/*/web/rest/Ms*KafkaResource.java \
-            backend/gateway/src/main/resources/logback-spring.xml \
-            backend/gateway/pom.xml \
-            backend/gateway/src/main/resources/config/* 
-
-for file in backend/ms_*/src/main/resources/config/liquibase/changelog/*; do
-    [[ -e "$file" ]] && git ls-files --others --exclude-standard | grep -Fxq "$file" && echo "Deleting: $file" && rm "$file"
-done
+./cleanup_changelogs.sh
 
 
 gh api user/repository_invitations --jq '.[] | "\(.repository.full_name) from \(.inviter.login)"'
-
 
 gh api user/repository_invitations --jq '.[] | select(.inviter.login=="maian3333") | .id' | xargs -I {} gh api --method PATCH user/repository_invitations/{}
 
