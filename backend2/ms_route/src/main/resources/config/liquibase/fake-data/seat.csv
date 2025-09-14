@@ -1,0 +1,11 @@
+id;seat_number;seat_type;deck;price_modifier;is_available;trip_id
+1;hefty;WHEELCHAIR_ACCESSIBLE;unaccountably;32505.27;false;1
+2;ordinary;BERTH_UPPER;heavily ah oof;17266.34;false;2
+3;lay;SEAT_VIP;compassionate potentially;28580.3;false;3
+4;pfft;SEAT_VIP;soybean sleepily;5112.06;true;4
+5;orderly strictly;WHEELCHAIR_ACCESSIBLE;scorpion phew enrich;16481.86;false;5
+6;righteously complication um;SEAT_VIP;uh-huh;656.39;false;6
+7;triumphantly canter gosh;WHEELCHAIR_ACCESSIBLE;pip blue;13629.64;true;7
+8;woot recount etch;BERTH_UPPER;before snappy individual;26173.05;false;8
+9;atop without tighten;SEAT_VIP;and that fraternise;21136.7;true;9
+10;outside flint;BERTH_UPPER;cutlet lovely frightened;5883.35;false;10

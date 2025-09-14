@@ -1,0 +1,70 @@
+{
+  "annotations": {
+    "changelogDate": "20250914124919"
+  },
+  "applications": ["ms_route"],
+  "clientRootFolder": "ms_route",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "transportType",
+      "fieldType": "TransportType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "BUS,TRAIN,FERRY"
+    },
+    {
+      "fieldName": "distance",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "estimatedDuration",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "basePrice",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "ms_route",
+  "name": "Route",
+  "pagination": "infinite-scroll",
+  "relationships": [
+    {
+      "otherEntityName": "trip",
+      "otherEntityRelationshipName": "route",
+      "relationshipName": "trips",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "station",
+      "relationshipName": "origin",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "station",
+      "relationshipName": "destination",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "operator",
+      "otherEntityRelationshipName": "routes",
+      "relationshipName": "operator",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "elasticsearch",
+  "service": "serviceImpl"
+}

@@ -1,0 +1,11 @@
+id;user_id;trip_id;rating;comment;cleanliness;comfort;punctuality;staff_service;created_at;is_verified;vehicle_id
+1;2c36cbbb-9b8d-42b5-b4f2-021548274cae;1c865473-7881-4758-8fdb-38ed742ce191;1;department phooey observe;1;4;2;2;2025-09-13T17:39:07;true;1
+2;fa0a895c-a62a-43bb-9e5b-a679ef8bcc11;d2af695f-841f-478a-8fa5-1ecbc7b574eb;3;misread uh-huh affectionate;4;3;3;5;2025-09-14T08:30:12;false;2
+3;57908d18-c8dd-46de-9299-b58b4fbf4285;a3b065b1-6978-46a5-9540-0087bff2a956;2;phooey throughout;4;1;1;1;2025-09-13T21:19:13;false;3
+4;3acc1cde-0495-427a-99cf-9f464c425c54;29eacb0c-88ac-4266-9296-840044d8fad2;2;husk kiddingly;1;2;2;4;2025-09-14T12:49:09;true;4
+5;e7135f74-081f-41c0-854e-b4fe6cf60d2e;04c43486-0a7a-4aba-ba64-86d2635b2be1;5;courteous ah;1;1;1;1;2025-09-13T23:51:05;true;5
+6;1753b884-c686-4ebe-b8e9-91f2f20feada;873b62ad-20a8-4714-871c-f3369f078cf9;3;if quaintly although;1;1;2;5;2025-09-14T04:06:20;true;6
+7;990a7f34-d12a-451c-ab36-5de940a37352;2a6de478-4201-4c72-a42a-0cc82f3f390e;3;yippee blah er;4;4;2;2;2025-09-14T03:13:39;false;7
+8;e4359d04-1e8e-4e7c-bf95-53f39e5b2b2a;be580cac-b7ef-4e03-9174-62d1fbae8f53;1;unnecessarily;3;2;1;5;2025-09-13T22:34:12;false;8
+9;2994061d-bcf1-4abd-8f89-d242801f8df1;a2704ae7-3754-41ce-a41c-e817f1150c8b;4;symbolise overconfidently for;1;4;1;5;2025-09-14T01:04:23;false;9
+10;3100a172-f83c-436d-a092-c7c5f1865a8d;b28ee41b-2b4a-4284-9ad7-cc4bd57679e6;1;rosy;5;3;4;2;2025-09-14T03:10:12;false;10
