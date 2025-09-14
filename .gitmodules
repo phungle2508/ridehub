@@ -1,9 +1,44 @@
 [submodule "backend/ticket-store-central-config"]
 	path = backend/ticket-store-central-config
-	url = https://github.com/phungle2508/ticket-store-central-config
+	url = https://github.com/maian3333/ticket-store-central-config
 	branch = main
-	
+
 [submodule "backend/ticketsystem-avro"]
 	path = backend/ticketsystem-avro
-	url = https://github.com/phungle2508/ticket-store-avro
-	branch = master
+	url = https://github.com/maian3333/ticket-store-avro
+	branch = main
+
+[submodule "backend/ms_booking"]
+	path = backend/ms_booking
+	url = https://github.com/maian3333/ms_booking
+	branch = main
+
+[submodule "backend/ms_payment"]
+	path = backend/ms_payment
+	url = https://github.com/maian3333/ms_payment
+	branch = main
+
+[submodule "backend/ms_user"]
+	path = backend/ms_user
+	url = https://github.com/maian3333/ms_user
+	branch = main
+
+[submodule "backend/ms_notification"]
+	path = backend/ms_notification
+	url = https://github.com/maian3333/ms_notification
+	branch = main
+
+[submodule "backend/ms_route"]
+	path = backend/ms_route
+	url = https://github.com/maian3333/ms_route
+	branch = main
+
+[submodule "vps-infra"]
+	path = vps-infra
+	url = https://github.com/maian3333/vps-infra
+	branch = main
+
+[submodule "vps-microservices"]
+	path = vps-microservices
+	url = https://github.com/maian3333/vps-microservices
+	branch = main
