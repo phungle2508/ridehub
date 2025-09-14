@@ -22,3 +22,6 @@ gh api user/repository_invitations --jq '.[] | "\(.repository.full_name) from \(
 
 
 gh api user/repository_invitations --jq '.[] | select(.inviter.login=="maian3333") | .id' | xargs -I {} gh api --method PATCH user/repository_invitations/{}
+
+
+git submodule update --init --recursive
