@@ -4,3 +4,4 @@ infra/.env
 microservices/nginx/log/*
 microservices/nginx/letsencrypt/*
 microservices/kafka/ssl/*
+.vscode/
