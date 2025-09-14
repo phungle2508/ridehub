@@ -1,0 +1,44 @@
+@startuml seq-payment-and-notify
+title Payment → Booking Confirmed → Notifications (Kafka)
+autonumber
+
+actor User as U
+participant "Gateway" as GW
+participant "ms_payment" as MSP
+participant "ms_booking" as MSB
+participant "ms_notification" as MSN
+participant "Kafka" as K
+database "MySQL (payment)" as DB_P
+database "MySQL (booking)" as DB_B
+database "MySQL (notification)" as DB_N
+
+== Initiate payment ==
+U -> GW: POST /api/payments {bookingId, method, amount}
+GW -> MSP: POST /payments {...}
+MSP -> DB_P: INSERT payment (status=PENDING)
+DB_P --> MSP: paymentId
+
+== External gateway (omitted) ==
+MSP -> MSP: process external gateway (sync/async)
+
+== Mark payment completed ==
+MSP -> DB_P: UPDATE payment.status = COMPLETED
+DB_P --> MSP: OK
+MSP -> K: publish PaymentCompleted{bookingId, userId, amount}
+
+== Booking service reacts ==
+K --> MSB: PaymentCompleted event
+MSB -> DB_B: UPDATE booking.status = CONFIRMED
+DB_B --> MSB: OK
+MSB -> K: publish BookingConfirmed{bookingId, userId}
+
+== Notification service reacts ==
+K --> MSN: BookingConfirmed event
+MSN -> DB_N: INSERT notification (isRead=false)
+DB_N --> MSN: notificationId
+MSN -> GW: (optional) push/SSE "new notification"
+
+== User sees success ==
+MSP --> GW: 200 payment {status=COMPLETED}
+GW --> U: 200 payment + booking status (CONFIRMED)
+@enduml

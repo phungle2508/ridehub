@@ -1,0 +1,21 @@
+@startuml TicketSystemArchitecture
+title OAuth2 Login via Gateway & Keycloak
+autonumber
+
+actor User as U
+participant "Gateway" as GW
+participant "Keycloak (Auth Server)" as KC
+
+U -> GW: GET / (protected)
+GW -> U: 302 Redirect to KC /authorize
+U -> KC: GET /authorize?client_id=web_app&response_type=code
+KC -> U: Login page
+U -> KC: POST credentials
+KC -> U: 302 Redirect back with ?code=abc
+U -> GW: GET /login/oauth2/code/oidc?code=abc
+GW -> KC: POST /token (code → tokens)
+KC --> GW: id_token, access_token, refresh_token
+GW -> U: 302 Redirect to original resource (session or bearer)
+U -> GW: GET /api/me (with access token)
+GW --> U: 200 User profile (via ms_user)
+@enduml

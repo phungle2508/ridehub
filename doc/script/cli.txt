@@ -2,6 +2,8 @@ cd backend
 jhipster jdl ../ticket-store.jdl  --skip-install --force
 
 cd ../
+./git-restore.sh
+
 git restore backend/ms_*/src/main/java/com/ticketsystem/*/broker/* \
             backend/ms_*/src/main/resources/logback-spring.xml \
             backend/ms_*/pom.xml \
@@ -25,3 +27,5 @@ gh api user/repository_invitations --jq '.[] | select(.inviter.login=="maian3333
 
 
 git submodule update --init --recursive
+
+git submodule foreach 'git checkout main && git pull origin main'
