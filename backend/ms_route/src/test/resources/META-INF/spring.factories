@@ -1,6 +1,0 @@
-org.springframework.test.context.ContextCustomizerFactory = \
-    com.ticketsystem.route.config.\
-    SqlTestContainersSpringContextCustomizerFactory,com.ticketsystem.route.\
-    config.TestContainersSpringContextCustomizerFactory,com.ticketsystem.route.\
-    config.RedisTestContainersSpringContextCustomizerFactory,com.ticketsystem.\
-    route.config.KafkaTestContainersSpringContextCustomizerFactory
