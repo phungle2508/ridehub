@@ -9,9 +9,10 @@
     <module>ticketsystem-avro</module>
     <module>gateway</module>
     <module>ms_booking</module>
-    <module>ms_payment</module>
+    <!-- <module>ms_payment</module> -->
     <module>ms_route</module>
     <module>ms_user</module>
-    <module>ms_notification</module>
+    <!-- <module>ms_notification</module> -->
+    <module>ms_promotion</module>
   </modules>
 </project>

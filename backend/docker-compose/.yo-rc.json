@@ -5,8 +5,7 @@
       "ms_user",
       "ms_route",
       "ms_booking",
-      "ms_payment",
-      "ms_notification"
+      "ms_promotion"
     ],
     "clusteredDbApps": [],
     "deploymentType": "docker-compose",

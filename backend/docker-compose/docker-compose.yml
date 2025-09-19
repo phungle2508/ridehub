@@ -186,16 +186,18 @@ services:
   ms_booking-redis:
     image: redis:8.0.0
 
-  ms_payment:
-    image: ms_payment
+  ms_promotion:
+    image: ms_promotion
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
       - SPRING_PROFILES_ACTIVE=prod,api-docs
       - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
       - SPRING_CLOUD_CONSUL_HOST=consul
       - SPRING_CLOUD_CONSUL_PORT=8500
-      - SPRING_DATASOURCE_URL=jdbc:mysql://ms_payment-mysql:3306/ms_payment?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-      - SPRING_LIQUIBASE_URL=jdbc:mysql://ms_payment-mysql:3306/ms_payment?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://ms_promotion-mysql:3306/ms_promotion?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+      - SPRING_LIQUIBASE_URL=jdbc:mysql://ms_promotion-mysql:3306/ms_promotion?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+      - JHIPSTER_CACHE_REDIS_SERVER=redis://ms_promotion-redis:6379
+      - JHIPSTER_CACHE_REDIS_CLUSTER=false
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
@@ -210,17 +212,17 @@ services:
       timeout: 5s
       retries: 40
     depends_on:
-      ms_payment-mysql:
+      ms_promotion-mysql:
         condition: service_healthy
       keycloak:
         condition: service_healthy
-  ms_payment-mysql:
+  ms_promotion-mysql:
     image: mysql:9.2.0
     volumes:
       - ./config/mysql:/etc/mysql/conf.d
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_DATABASE=ms_payment
+      - MYSQL_DATABASE=ms_promotion
     command: mysqld --lower_case_table_names=1 --skip-mysqlx --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
     healthcheck:
       test:
@@ -229,53 +231,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
-
-  ms_notification:
-    image: ms_notification
-    environment:
-      - _JAVA_OPTIONS=-Xmx512m -Xms256m
-      - SPRING_PROFILES_ACTIVE=prod,api-docs
-      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
-      - SPRING_CLOUD_CONSUL_HOST=consul
-      - SPRING_CLOUD_CONSUL_PORT=8500
-      - SPRING_DATASOURCE_URL=jdbc:mysql://ms_notification-mysql:3306/ms_notification?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-      - SPRING_LIQUIBASE_URL=jdbc:mysql://ms_notification-mysql:3306/ms_notification?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-      - JHIPSTER_CACHE_REDIS_SERVER=redis://ms_notification-redis:6379
-      - JHIPSTER_CACHE_REDIS_CLUSTER=false
-      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:9080/realms/jhipster
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=internal
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=internal
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
-    healthcheck:
-      test:
-        - CMD
-        - curl
-        - -f
-        - http://localhost:8085/management/health
-      interval: 5s
-      timeout: 5s
-      retries: 40
-    depends_on:
-      ms_notification-mysql:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
-  ms_notification-mysql:
-    image: mysql:9.2.0
-    volumes:
-      - ./config/mysql:/etc/mysql/conf.d
-    environment:
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_DATABASE=ms_notification
-    command: mysqld --lower_case_table_names=1 --skip-mysqlx --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - mysql -e "SHOW DATABASES;" && sleep 5
-      interval: 5s
-      timeout: 10s
-      retries: 10
-  ms_notification-redis:
+  ms_promotion-redis:
     image: redis:8.0.0
 
   kafka:

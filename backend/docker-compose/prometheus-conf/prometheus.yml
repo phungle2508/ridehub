@@ -36,5 +36,4 @@ scrape_configs:
           - ms_user:8081
           - ms_route:8082
           - ms_booking:8083
-          - ms_payment:8084
-          - ms_notification:8085
+          - ms_promotion:8084

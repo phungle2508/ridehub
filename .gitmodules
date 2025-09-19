@@ -23,6 +23,11 @@
 	url = https://github.com/maian3333/ms_route
 	branch = main
 
+[submodule "backend/ms_promotion"]
+	path = backend/ms_promotion
+	url = git@github.com:maian3333/ms_promotion.git
+	branch = main
+	
 [submodule "backend/gateway"]
 	path = backend/gateway
 	url = https://github.com/maian3333/gateway
@@ -37,3 +42,4 @@
 	path = vps-microservices
 	url = https://github.com/maian3333/vps-microservices
 	branch = main
+

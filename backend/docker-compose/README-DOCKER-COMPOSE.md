@@ -21,10 +21,8 @@ Launch all your infrastructure by running: `docker compose up -d`.
 - ms_route's elasticsearch search engine
 - ms_booking (microservice application)
 - ms_booking's mysql database
-- ms_payment (microservice application)
-- ms_payment's mysql database
-- ms_notification (microservice application)
-- ms_notification's mysql database
+- ms_promotion (microservice application)
+- ms_promotion's mysql database
 
 ### Additional Services:
 
