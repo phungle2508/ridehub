@@ -25,7 +25,7 @@
 
 [submodule "backend/ms_promotion"]
 	path = backend/ms_promotion
-	url = git@github.com:maian3333/ms_promotion.git
+	url = https://github.com/maian3333/ms_promotion
 	branch = main
 	
 [submodule "backend/gateway"]
