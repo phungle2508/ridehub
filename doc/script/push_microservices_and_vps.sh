@@ -1,30 +1,11 @@
-
-#!/bin/bash
+#!/usr/bin/env bash
 # push_microservices_and_vps.sh
-#
-# Pushes:
-#  - ./ms_*
-#  - ./backend/ms_*
-#  - ./backend/gateway
-#  - ./vps-*
-# to https://github.com/<OWNER>/<repo>.git (OWNER from GH_OWNER or gh auth)
-#
-# Usage:
-#   chmod +x ./push_microservices_and_vps.sh
-#   ./push_microservices_and_vps.sh
-#   GH_OWNER=my-org ./push_microservices_and_vps.sh   # push to org instead of user
-
 set -euo pipefail
 
 # =========================
 # Pretty colors
 # =========================
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
 print_status()  { echo -e "${BLUE}[INFO]${NC} $1"; }
 print_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 print_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
@@ -34,34 +15,40 @@ print_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
 # Prechecks
 # =========================
 command -v gh >/dev/null || { print_error "GitHub CLI (gh) is not installed."; exit 1; }
-# if ! gh auth status &>/dev/null; then
-#   print_error "GitHub CLI is not authenticated. Run: gh auth login"
-#   exit 1
-# fi
-OWNER="${GH_OWNER:-$(gh api user --jq .login)}"
+OWNER="${GH_OWNER:-$(gh api user --jq .login || true)}"
+if [[ -z "${OWNER}" ]]; then
+  print_error "GitHub CLI is not authenticated. Run: gh auth login"
+  exit 1
+fi
 print_success "Authenticated as owner: ${OWNER}"
-
-CURRENT_DIR="$(pwd)"
-print_status "Working in: ${CURRENT_DIR}"
+print_status "Working in: $(pwd)"
 
 # =========================
-# Collect target directories
+# Collect target directories (no mapfile/process substitution)
 # =========================
-mapfile -t MS_DIRS_ROOT    < <(find .       -maxdepth 1 -mindepth 1 -type d -name "ms_*"   -printf "%P\n" | sort)
-mapfile -t MS_DIRS_BACKEND < <(find backend -maxdepth 1 -mindepth 1 -type d -name "ms_*"   -printf "%P\n" 2>/dev/null | sed 's|^|backend/|' | sort || true)
-mapfile -t VPS_DIRS        < <(find .       -maxdepth 1 -mindepth 1 -type d -name "vps-*"  -printf "%P\n" | sort)
-
 TARGET_DIRS=()
-TARGET_DIRS+=("${MS_DIRS_ROOT[@]}")
-TARGET_DIRS+=("${MS_DIRS_BACKEND[@]}")
-TARGET_DIRS+=("${VPS_DIRS[@]}")
 
-# include backend/gateway if present
-if [ -d "backend/gateway" ]; then
-  TARGET_DIRS+=("backend/gateway")
+# root ms_* 
+for d in ms_*; do
+  [[ -d "$d" && "$d" != "ms_*" ]] && TARGET_DIRS+=("$d")
+done
+
+# backend/ms_* 
+if [[ -d backend ]]; then
+  for d in backend/ms_*; do
+    [[ -d "$d" && "$d" != "backend/ms_*" ]] && TARGET_DIRS+=("$d")
+  done
 fi
 
-if [ "${#TARGET_DIRS[@]}" -eq 0 ]; then
+# vps-* 
+for d in vps-*; do
+  [[ -d "$d" && "$d" != "vps-*" ]] && TARGET_DIRS+=("$d")
+done
+
+# include backend/gateway if present
+[[ -d "backend/gateway" ]] && TARGET_DIRS+=("backend/gateway")
+
+if [[ ${#TARGET_DIRS[@]} -eq 0 ]]; then
   print_error "No matching directories found: ms_* (root), backend/ms_*, backend/gateway, or vps-*."
   exit 1
 fi
@@ -75,7 +62,7 @@ echo
 # =========================
 ensure_gitignore() {
   local dir="$1"
-  if [ ! -f "${dir}/.gitignore" ]; then
+  if [[ ! -f "${dir}/.gitignore" ]]; then
     cat > "${dir}/.gitignore" <<'EOF'
 # Java / Maven
 target/
@@ -123,6 +110,15 @@ EOF
   fi
 }
 
+ensure_repo_exists() {
+  local reponame="$1"
+  if ! gh repo view "${OWNER}/${reponame}" >/dev/null 2>&1; then
+    print_warning "GitHub repo ${OWNER}/${reponame} not found. Creating..."
+    gh repo create "${OWNER}/${reponame}" --private --confirm >/dev/null
+    print_success "Created https://github.com/${OWNER}/${reponame}"
+  fi
+}
+
 # =========================
 # Main loop
 # =========================
@@ -136,7 +132,7 @@ for dir in "${TARGET_DIRS[@]}"; do
   print_status "[$i/${#TARGET_DIRS[@]}] Processing: ${dir}"
   echo "-------------------------------------------"
 
-  if [ ! -d "${dir}" ]; then
+  if [[ ! -d "${dir}" ]]; then
     print_error "Directory missing, skipping: ${dir}"
     FAILED_REPOS+=("${dir} (directory not found)")
     continue
@@ -145,17 +141,19 @@ for dir in "${TARGET_DIRS[@]}"; do
   REPO_NAME="$(basename "${dir}")"
   REPO_URL="https://github.com/${OWNER}/${REPO_NAME}.git"
 
-  set +e
-  pushd "${dir}" >/dev/null 2>&1 || { FAILED_REPOS+=("${REPO_NAME} (pushd failed)"); set -e; continue; }
-
-  if [ ! -d ".git" ]; then
-    print_status "Initializing git repository..."
-    git init || { FAILED_REPOS+=("${REPO_NAME} (git init failed)"); popd >/dev/null; set -e; continue; }
+  if ! pushd "${dir}" >/dev/null 2>&1; then
+    FAILED_REPOS+=("${REPO_NAME} (pushd failed)")
+    continue
   fi
 
-  git symbolic-ref -q HEAD >/dev/null || git checkout -b main
-  CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || echo main)"
-  [ "${CURRENT_BRANCH}" = "main" ] || git branch -M main
+  if [[ ! -d ".git" ]]; then
+    print_status "Initializing git repository..."
+    git init || { FAILED_REPOS+=("${REPO_NAME} (git init failed)"); popd >/dev/null; continue; }
+  fi
+
+  # Ensure main branch
+  CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
+  [[ "${CURRENT_BRANCH}" != "main" ]] && git checkout -B main
 
   ensure_gitignore "."
 
@@ -168,7 +166,9 @@ for dir in "${TARGET_DIRS[@]}"; do
     fi
   fi
 
-  git remote remove origin >/dev/null 2>&1
+  # Ensure remote exists on GitHub, then set origin
+  ensure_repo_exists "${REPO_NAME}"
+  git remote remove origin >/dev/null 2>&1 || true
   git remote add origin "${REPO_URL}" 2>/dev/null || git remote set-url origin "${REPO_URL}"
 
   print_status "Pushing to GitHub..."
@@ -180,11 +180,10 @@ for dir in "${TARGET_DIRS[@]}"; do
     SUCCESS_COUNT=$((SUCCESS_COUNT+1))
   else
     print_error "❌ Push failed for ${REPO_NAME}"
-    FAILED_REPOS+=("${REPO_NAME} (push failed - repo may not exist)")
+    FAILED_REPOS+=("${REPO_NAME} (push failed - check auth/permissions)")
   fi
 
-  popd >/dev/null 2>&1 || true
-  set -e
+  popd >/dev/null || true
 done
 
 # =========================
@@ -196,23 +195,14 @@ print_status "SUMMARY"
 echo "==========================================="
 print_success "Successfully processed: ${SUCCESS_COUNT}/${#TARGET_DIRS[@]}"
 
-if [ "${#FAILED_REPOS[@]}" -gt 0 ]; then
+if [[ ${#FAILED_REPOS[@]} -gt 0 ]]; then
   echo
   print_warning "Failed repositories:"
   for r in "${FAILED_REPOS[@]}"; do echo "  ❌ ${r}"; done
-
-  echo
-  print_status "To create missing repositories (public) under ${OWNER}, run:"
-  for r in "${FAILED_REPOS[@]}"; do
-    n="$(echo "${r}" | awk '{print $1}')"
-    if [[ "${r}" == *"push failed"* ]]; then
-      echo "  gh repo create ${OWNER}/${n} --public"
-    fi
-  done
 fi
 
 echo
-if [ "${SUCCESS_COUNT}" -eq "${#TARGET_DIRS[@]}" ]; then
+if [[ "${SUCCESS_COUNT}" -eq "${#TARGET_DIRS[@]}" ]]; then
   print_success "🎉 All repositories pushed!"
 else
   print_warning "⚠️  Some repositories failed."
