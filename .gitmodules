@@ -13,19 +13,9 @@
 	url = https://github.com/maian3333/ms_booking
 	branch = main
 
-[submodule "backend/ms_payment"]
-	path = backend/ms_payment
-	url = https://github.com/maian3333/ms_payment
-	branch = main
-
 [submodule "backend/ms_user"]
 	path = backend/ms_user
 	url = https://github.com/maian3333/ms_user
-	branch = main
-
-[submodule "backend/ms_notification"]
-	path = backend/ms_notification
-	url = https://github.com/maian3333/ms_notification
 	branch = main
 
 [submodule "backend/ms_route"]
