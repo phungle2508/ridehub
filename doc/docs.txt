@@ -1,0 +1,56 @@
+300k
+
+https://apigateway.microservices.appf4s.io.vn/
+
+
+class diagram 
+5 service + 1 gateway
+data 
+
+
+lop cha -> lop con
+
+requirement
+
+Xe  
+    xe thuong 
+    limosine 
+    chair map with floor (1 floor have 18 chairs max 2 floor)
+User
+    khuyen mai
+    dang nhap 
+    dang ky
+    cap nhat thong tin user
+    hoa don
+    thanh toan
+    search
+    dat ve
+Admin
+    Quan ly (tai xe va phu xe)
+        ten tuoi gioi tinh sdt
+        trang thai (dang lam hoac da nghi)
+    Quan ly khach hang
+    Quan ly ticket
+    Thong ke
+    Quan Ly tuyen 
+    Quan ly khuyen mai
+Bus Station
+    have something 
+ticket
+    gia
+    tuyen di 
+    khuyen mai 
+    cho ngoi
+    thoi gian from
+    thoi gian to
+
+khuyen mai have condition
+    mua n tang m
+    discount % on total
+
+Extra on 
+    + base on route
+    + base on specific days
+
+
+soft delete

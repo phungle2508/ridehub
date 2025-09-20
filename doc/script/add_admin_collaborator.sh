@@ -1,18 +1,19 @@
 #!/bin/bash
 
 COLLAB="phungle2508"
-OWNER="maian3333"
+OWNER="LeTrungMiniuh"
 PERMISSION="admin"
 
 REPOS=(
     "gateway"
     "ms_user"
-    "ms_payment" 
-    "ms_notification"
+    "ms_promotion" 
     "ms_route"
     "ms_booking"
-    "vps-infra"
-    "vps-microservices"
+    "ridehub-central-config"
+    "ridehub-central-common"
+    # "vps-infra"
+    # "vps-microservices"
 )
 
 for repo in "${REPOS[@]}"; do

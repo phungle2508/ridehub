@@ -1,0 +1,413 @@
+@startuml
+title RideHub – 4 Microservices\n(DB per service, Central Redis, Single Kafka, Vehicle-type Pricing)
+
+left to right direction
+hide methods
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+' =============================
+'              ENUMS
+' =============================
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum BookingStatus {
+  DRAFT
+  AWAITING_PAYMENT
+  PAID
+  CONFIRMED
+  CANCELED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  VNPAY
+  MOMO
+  ZALOPAY
+  CREDIT_CARD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  INITIATED
+  PROCESSING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum StaffStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum VehicleType {
+  STANDARD_BUS
+  LIMOUSINE
+}
+
+' =============================
+'      EXTERNAL COMPONENTS
+' =============================
+class "API Gateway" as GATEWAY
+class "Keycloak"   as KEYCLOAK
+class "Kafka"      as KAFKA
+class "Redis"      as REDIS
+
+' =============================
+'        BASE ENTITY
+' =============================
+abstract class BaseEntity {
+  +id: UUID
+  +createdAt: Instant
+  +updatedAt: Instant
+  +isDeleted: boolean
+  +deletedAt: Instant
+  +deletedBy: UUID
+}
+
+' =============================
+'          MS-USER
+' =============================
+package "ms-user\n(Identity & Auth)" as MS_USER {
+
+  abstract class User extends BaseEntity {
+    +email: String
+    +phoneNumber: String
+    +passwordHash: String
+    +role: Role
+    +locked: boolean
+  }
+
+  class Customer extends User {
+    +fullName: String
+    +birthDate: LocalDate
+  }
+
+  class Admin extends User {
+    +level: int
+  }
+
+  class Profile extends BaseEntity {
+    +fullName: String
+    +birthDate: LocalDate
+  }
+
+  class AuthService
+
+  class "UserDB" as USERDB
+}
+
+User "1" o-- "1" Profile : "owns"
+
+' =============================
+'          MS-ROUTE
+' =============================
+package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff)" as MS_ROUTE {
+
+  ' ----- Vietnam Address Hierarchy -----
+  class Province extends BaseEntity {
+    +provinceCode: String
+    +name: String
+    +nameEn: String
+    +fullName: String
+    +fullNameEn: String
+    +codeName: String
+    +administrativeUnitId: int
+    +administrativeRegionId: int
+  }
+
+  class District extends BaseEntity {
+    +districtCode: String
+    +name: String
+    +nameEn: String
+    +fullName: String
+    +fullNameEn: String
+    +codeName: String
+    +administrativeUnitId: int
+  }
+
+  class Ward extends BaseEntity {
+    +wardCode: String
+    +name: String
+    +nameEn: String
+    +fullName: String
+    +fullNameEn: String
+    +codeName: String
+    +administrativeUnitId: int
+  }
+
+  class Address extends BaseEntity {
+    +streetAddress: String
+    +latitude: double
+    +longitude: double
+  }
+
+  ' ----- Station / Route / Fleet / Trips -----
+  class Station extends BaseEntity {
+    +name: String
+    +phoneNumber: String
+    +description: String
+    +active: boolean
+  }
+
+  class Route extends BaseEntity {
+    +routeCode: String
+    +distanceKm: double
+  }
+
+  abstract class Vehicle extends BaseEntity {
+    +type: VehicleType
+    +typeFactor: double
+    +plateNumber: String
+    +brand: String
+    +description: String
+  }
+
+  class StandardBus extends Vehicle
+  class Limousine   extends Vehicle
+
+  class SeatMap extends BaseEntity {
+    +name: String
+  }
+
+  class Floor extends BaseEntity {
+    +floorNo: int
+    +priceFactorFloor: double
+  }
+
+  class Seat extends BaseEntity {
+    +seatNo: String
+    +row: int
+    +col: int
+    +priceFactor: double
+  }
+
+  class Trip extends BaseEntity {
+    +tripCode: String
+    +departureTime: Instant
+    +arrivalTime: Instant
+    +baseFare: Money
+  }
+
+  class TripSeat extends BaseEntity {
+    +seatNo: String
+    +floorNo: int
+    +booked: boolean
+    +priceFactor: double
+  }
+
+  abstract class Staff extends BaseEntity {
+    +name: String
+    +age: int
+    +gender: Gender
+    +phoneNumber: String
+    +status: StaffStatus
+  }
+
+  class Driver extends Staff {
+    +licenseClass: String
+    +yearsExperience: int
+  }
+
+  class Attendant extends Staff
+
+  class "RouteDB" as ROUTEDB
+}
+
+' Address relations (inside ms-route)
+Province "1" o-- "0..*" District : "contains"
+District "1" o-- "0..*" Ward : "contains"
+Ward "1" o-- "0..*" Address : "located in"
+
+' Station located at Address
+Station "1" o-- "1" Address : "located at"
+
+' Route / Trip / Seats / Staff
+Station "1" -- "0..*" Route : "origin"
+Station "1" -- "0..*" Route : "destination"
+Route "1" o-- "0..*" Trip : "schedules"
+Trip "1" o-- "1..*" TripSeat : "seat snapshot"
+Trip "1" -- "1" Driver : "main driver"
+Trip "0..1" -- "0..1" Attendant : "attendant"
+Vehicle "1" o-- "1" SeatMap : "uses"
+SeatMap "1" o-- "1..2" Floor : "contains"
+Floor "1" o-- "1..18" Seat : "seats per floor ≤ 18"
+
+' =============================
+'          MS-BOOKING
+' =============================
+package "ms-booking\n(Booking, Ticket, Payment, Invoice, Pricing)" as MS_BOOK {
+
+  class Ticket extends BaseEntity {
+    +ticketCode: String
+    +price: Money
+    +qrCode: String
+    +checkedIn: boolean
+    +timeFrom: Instant
+    +timeTo: Instant
+  }
+
+  class Booking extends BaseEntity {
+    +bookingCode: String
+    +status: BookingStatus
+    +quantity: int
+    +totalAmount: Money
+    +createdTime: Instant
+  }
+
+  class Invoice extends BaseEntity {
+    +invoiceNo: String
+    +issuedAt: Instant
+    +grossAmount: Money
+    +vatAmount: Money
+    +netAmount: Money
+  }
+
+  class PaymentTransaction extends BaseEntity {
+    +transactionId: String
+    +method: PaymentMethod
+    +status: PaymentStatus
+    +amount: Money
+    +time: Instant
+    +gatewayNote: String
+  }
+
+  class PricingService
+
+  class PaymentService
+  class SearchService
+
+  class "BookingDB" as BOOKDB
+}
+
+Customer "1" -- "0..*" Booking : "creates"
+Booking "1" o-- "1..*" Ticket : "contains"
+Ticket "1" -- "1" TripSeat : "seat"
+Ticket "1" -- "1" Trip : "of trip"
+Ticket "1" -- "1" Route : "of route"
+Booking "1" o-- "0..1" Invoice : "issues"
+Booking "1" o-- "0..1" PaymentTransaction : "payment"
+
+' Pricing dependency (reads vehicle & seat data from ms-route)
+PricingService ..> Trip : "reads baseFare"
+PricingService ..> Vehicle : "reads typeFactor"
+PricingService ..> Floor : "reads priceFactorFloor"
+PricingService ..> Seat : "reads priceFactor"
+
+' =============================
+'          MS-PROMOTION
+' =============================
+package "ms-promotion\n(Promotions & Conditions)" as MS_PROMO {
+
+  class Promotion extends BaseEntity {
+    +code: String
+    +description: String
+    +startDate: LocalDate
+    +endDate: LocalDate
+    +usageLimit: int
+    +usedCount: int
+  }
+
+  abstract class DiscountPolicy extends BaseEntity
+
+  class BuyNGetMFree extends DiscountPolicy {
+    +buyN: int
+    +getM: int
+  }
+
+  class PercentOffTotal extends DiscountPolicy {
+    +percent: int
+    +maxOff: Money
+  }
+
+  abstract class PromoCondition extends BaseEntity
+
+  class ConditionByRoute extends PromoCondition {
+    +routeIds: List<UUID>
+  }
+
+  class ConditionByDate extends PromoCondition {
+    +specificDates: List<LocalDate>
+    +weekdays: List<Integer>
+  }
+
+  class ConditionByLocation extends PromoCondition {
+    +provinces: List[UUID]
+    +districts: List[UUID]
+    +wards: List[UUID]
+  }
+
+  class "PromotionDB" as PROMODB
+}
+
+Promotion "1" o-- "1..*" DiscountPolicy : "includes"
+Promotion "1" o-- "0..*" PromoCondition : "constraints"
+Promotion "0..*" -- "0..*" Booking : "applied"
+
+' =============================
+'     GATEWAY / AUTH / INFRA
+' =============================
+GATEWAY --> KEYCLOAK : "OIDC / JWT"
+GATEWAY --> MS_USER  : "/users/*"
+GATEWAY --> MS_ROUTE : "/routes/*, /trips/*, /stations/*"
+GATEWAY --> MS_BOOK  : "/bookings/*"
+GATEWAY --> MS_PROMO : "/promotions/*"
+
+' One central Redis (shared)
+MS_USER ..>  REDIS : "cache ns: user:*"
+MS_ROUTE ..> REDIS : "cache ns: route:*, seat:*"
+MS_BOOK  ..> REDIS : "cache ns: booking:*"
+MS_PROMO ..> REDIS : "cache ns: promo:*"
+
+' Single Kafka (shared broker)
+MS_BOOK  ..> KAFKA : "produce BookingCreated / PaymentSucceeded / TicketIssued"
+MS_ROUTE ..  KAFKA : "consume SeatsReserve / SeatsRelease"
+MS_PROMO ..  KAFKA : "consume PromoUpdated"
+MS_USER  ..  KAFKA : "consume UserUpdated"
+
+' DB-per-service
+MS_USER ..>  USERDB  : "owns DB"
+MS_ROUTE ..> ROUTEDB : "owns DB"
+MS_BOOK  ..> BOOKDB  : "owns DB"
+MS_PROMO ..> PROMODB : "owns DB"
+
+' =============================
+'          VALUE OBJECTS
+' =============================
+class Money {
+  +amount: long
+  +currency: String
+}
+
+' =============================
+'            NOTES
+' =============================
+note bottom of PricingService
+Ticket price formula (example):
+price = Trip.baseFare
+      * Vehicle.typeFactor
+      * Floor.priceFactorFloor
+      * Seat.priceFactor
+Then apply promotions (ms-promotion).
+end note
+
+note bottom of BaseEntity
+Soft delete for all entities:
+- isDeleted
+- deletedAt
+- deletedBy
+Default queries filter isDeleted = false.
+end note
+
+@enduml

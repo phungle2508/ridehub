@@ -1,0 +1,41 @@
+//// ===========================
+//// ms_user (Identity & Profile)
+//// ===========================
+
+Table app_user {
+  id UUID [pk, not null, note: 'maps to Keycloak sub (keycloakId)']
+  keycloak_id UUID [not null, unique]
+  email varchar [not null, unique]
+  phone_number varchar
+  first_name varchar
+  last_name varchar
+  date_of_birth date
+  is_verified boolean
+  is_active boolean [not null]
+  last_login_at timestamptz
+
+  // audit + soft delete
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+}
+
+Table profile {
+  id UUID [pk, not null]
+  user_id UUID [not null, ref: > app_user.id]
+  full_name varchar
+  birth_date date
+
+  // audit + soft delete
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+
+  Indexes {
+    (user_id) [unique] // 1-1
+  }
+}
