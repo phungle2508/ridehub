@@ -3,11 +3,6 @@
 	url = https://github.com/phungle2508/ticket-store-central-config
 	branch = main
 
-[submodule "backend/ticketsystem-avro"]
-	path = backend/ticketsystem-avro
-	url = https://github.com/phungle2508/ticket-store-avro
-	branch = main
-
 [submodule "backend/ms_booking"]
 	path = backend/ms_booking
 	url = https://github.com/maian3333/ms_booking
