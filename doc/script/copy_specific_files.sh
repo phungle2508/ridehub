@@ -274,8 +274,6 @@ process_target_service() {
         # ONLY these files from resources/config (optional)
         "optional_copy_and_replace_file;${src_dir}/src/main/resources/config/application-dev.yml;${dest_dir}/src/main/resources/config/application-dev.yml"
         "optional_copy_and_replace_file;${src_dir}/src/main/resources/config/bootstrap.yml;${dest_dir}/src/main/resources/config/bootstrap.yml"
-        "optional_copy_and_replace_file;${src_dir}/src/main/resources/config/tls/kafka.broker.keystore.jks;${dest_dir}/src/main/resources/config/tls/kafka.broker.keystore.jks"
-        "optional_copy_and_replace_file;${src_dir}/src/main/resources/config/tls/kafka.client.truststore.jks;${dest_dir}/src/main/resources/config/tls/kafka.client.truststore.jks"
 
         # Java config under /config
         "copy_and_replace_file;${src_dir}/src/main/java/com/ticketsystem/${source_token}/config/ConsulSSHTunnel.java;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/config/ConsulSSHTunnel.java"
