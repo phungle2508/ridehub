@@ -1,33 +1,9 @@
-[submodule "backend/ms_booking"]
-	path = backend/ms_booking
-	url = https://github.com/LeTrungMiniuh/ms_booking
-	branch = main
-
-[submodule "backend/ms_user"]
-	path = backend/ms_user
-	url = https://github.com/LeTrungMiniuh/ms_user
-	branch = main
-
-[submodule "backend/ms_route"]
-	path = backend/ms_route
-	url = https://github.com/LeTrungMiniuh/ms_route
-	branch = main
-
-[submodule "backend/ms_promotion"]
-	path = backend/ms_promotion
-	url = https://github.com/LeTrungMiniuh/ms_promotion
-	branch = main
-	
-[submodule "backend/gateway"]
-	path = backend/gateway
-	url = https://github.com/LeTrungMiniuh/gateway
-	branch = main
-
 [submodule "backend/ridehub-central-common"]
-	path = backend/ridehub-central-common
-	url = https://github.com/LeTrungMiniuh/ridehub-central-common.git
-	branch = main
+    path = backend/ridehub-central-common
+    url = https://github.com/LeTrungMiniuh/ridehub-central-common.git
+    branch = main
+
 [submodule "backend/ridehub-central-config"]
-	path = backend/ridehub-central-config
-	url = https://github.com/LeTrungMiniuh/ridehub-central-config.git
-	branch = main
+    path = backend/ridehub-central-config
+    url = https://github.com/LeTrungMiniuh/ridehub-central-config.git
+    branch = main
