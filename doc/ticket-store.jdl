@@ -12,7 +12,7 @@ enum PaymentStatus { PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED, REFUNDED
 application {
   config {
     baseName gateway
-    packageName com.ticketsystem.gateway
+    packageName com.ridehub.gateway
     applicationType gateway
     authenticationType oauth2
     databaseType no
@@ -25,7 +25,7 @@ application {
 application {
   config {
     baseName ms_user
-    packageName com.ticketsystem.user
+    packageName com.ridehub.user
     applicationType microservice
     authenticationType oauth2
     databaseType sql
@@ -42,7 +42,7 @@ application {
 application {
   config {
     baseName ms_route
-    packageName com.ticketsystem.route
+    packageName com.ridehub.route
     applicationType microservice
     authenticationType oauth2
     databaseType sql
@@ -61,7 +61,7 @@ application {
 application {
   config {
     baseName ms_booking
-    packageName com.ticketsystem.booking
+    packageName com.ridehub.booking
     applicationType microservice
     authenticationType oauth2
     databaseType sql
@@ -79,7 +79,7 @@ application {
 application {
   config {
     baseName ms_payment
-    packageName com.ticketsystem.payment
+    packageName com.ridehub.payment
     applicationType microservice
     authenticationType oauth2
     databaseType sql
@@ -96,7 +96,7 @@ application {
 application {
   config {
     baseName ms_notification
-    packageName com.ticketsystem.notification
+    packageName com.ridehub.notification
     applicationType microservice
     authenticationType oauth2
     databaseType sql
@@ -430,5 +430,5 @@ deployment {
   serviceDiscoveryType consul
   monitoring prometheus
   appsFolders [gateway, ms_user, ms_route, ms_booking, ms_payment, ms_notification]
-  dockerRepositoryName "ticketsystem"
+  dockerRepositoryName "ridehub"
 }

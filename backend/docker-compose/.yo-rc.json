@@ -10,7 +10,7 @@
     "clusteredDbApps": [],
     "deploymentType": "docker-compose",
     "directoryPath": "../",
-    "dockerRepositoryName": "ticketsystem",
+    "dockerRepositoryName": "ridehub",
     "gatewayType": "SpringCloudGateway",
     "jhipsterVersion": "8.10.0",
     "jwtSecretKey": "OWNhMTk2NDhlY2QzNDI1NmJiMjM5ZjZhOTAyMDQ5YTgzOGE2NjI3OGJhMTA4ZWY0MDM3MjU3Y2ExMzdjYzBhZDdmMzVmOTllYjQ2Yjk3YzEzN2U2MjVkZTk4MzlkN2FmMzhmNg==",

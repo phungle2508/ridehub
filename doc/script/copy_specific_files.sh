@@ -174,7 +174,7 @@ copy_kafka_resource() {
     local -r source_title="${source_token^}"
     echo "  Copying Ms*KafkaResource.java..."
     shopt -s nullglob
-    local kafka_files=("${src_dir}"/src/main/java/com/ticketsystem/${source_token}/web/rest/Ms*KafkaResource.java)
+    local kafka_files=("${src_dir}"/src/main/java/com/ridehub/${source_token}/web/rest/Ms*KafkaResource.java)
     shopt -u nullglob
     if [[ ${#kafka_files[@]} -eq 0 ]]; then
         echo -e "${RED}  Warning: No Ms*KafkaResource.java found${NC}" >&2
@@ -183,7 +183,7 @@ copy_kafka_resource() {
     for src_file in "${kafka_files[@]}"; do
         local base_name="${src_file##*/}"
         local dest_name="${base_name//${source_title}/${target_title}}"
-        local dest_file="${dest_dir}/src/main/java/com/ticketsystem/${target_token}/web/rest/${dest_name}"
+        local dest_file="${dest_dir}/src/main/java/com/ridehub/${target_token}/web/rest/${dest_name}"
         copy_and_replace_file "$src_file" "$dest_file" "$source_token" "$target_token"
     done
 }
@@ -194,7 +194,7 @@ copy_feign_config_package_only() {
     [[ -f "$src_file" ]] || { echo -e "${RED}  Warning: Source file not found: $src_file${NC}" >&2; return 1; }
     echo "  Copying (package-only): $src_file -> $dest_file"
     mkdir -p "$(dirname "$dest_file")"
-    sed -E 's|^([[:space:]]*package[[:space:]]+com\.ticketsystem\.)[^.]+(\.[^;]*;)|\1'"$to"'\2|' \
+    sed -E 's|^([[:space:]]*package[[:space:]]+com\.ridehub\.)[^.]+(\.[^;]*;)|\1'"$to"'\2|' \
         "$src_file" > "$dest_file"
 }
 
@@ -266,18 +266,18 @@ process_target_service() {
 
     local -a operations=(
         # Java sources
-        "copy_and_replace_dir;${src_dir}/src/main/java/com/ticketsystem/${source_token}/broker;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/broker"
+        "copy_and_replace_dir;${src_dir}/src/main/java/com/ridehub/${source_token}/broker;${dest_dir}/src/main/java/com/ridehub/${target_token}/broker"
         "copy_and_replace_file;${src_dir}/src/main/resources/logback-spring.xml;${dest_dir}/src/main/resources/logback-spring.xml"
         "copy_and_replace_file;${src_dir}/pom.xml;${dest_dir}/pom.xml"
-        "copy_and_replace_file;${src_dir}/src/main/java/com/ticketsystem/${source_token}/Ms${source_token^}App.java;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/Ms${target_title}App.java"
+        "copy_and_replace_file;${src_dir}/src/main/java/com/ridehub/${source_token}/Ms${source_token^}App.java;${dest_dir}/src/main/java/com/ridehub/${target_token}/Ms${target_title}App.java"
 
         # ONLY these files from resources/config (optional)
         "optional_copy_and_replace_file;${src_dir}/src/main/resources/config/application-dev.yml;${dest_dir}/src/main/resources/config/application-dev.yml"
         "optional_copy_and_replace_file;${src_dir}/src/main/resources/config/bootstrap.yml;${dest_dir}/src/main/resources/config/bootstrap.yml"
 
         # Java config under /config
-        "copy_and_replace_file;${src_dir}/src/main/java/com/ticketsystem/${source_token}/config/ConsulSSHTunnel.java;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/config/ConsulSSHTunnel.java"
-        "copy_feign_config_package_only;${src_dir}/src/main/java/com/ticketsystem/${source_token}/config/FeignClientConfiguration.java;${dest_dir}/src/main/java/com/ticketsystem/${target_token}/config/FeignClientConfiguration.java"
+        "copy_and_replace_file;${src_dir}/src/main/java/com/ridehub/${source_token}/config/ConsulSSHTunnel.java;${dest_dir}/src/main/java/com/ridehub/${target_token}/config/ConsulSSHTunnel.java"
+        "copy_feign_config_package_only;${src_dir}/src/main/java/com/ridehub/${source_token}/config/FeignClientConfiguration.java;${dest_dir}/src/main/java/com/ridehub/${target_token}/config/FeignClientConfiguration.java"
     )
 
     local IFS=';'
@@ -287,8 +287,8 @@ process_target_service() {
     done
 
     # Handle TLS config directory if it exists
-    if [[ -d "${src_dir}/src/main/java/com/ticketsystem/${source_token}/config/tls" ]]; then
-        copy_and_replace_dir "${src_dir}/src/main/java/com/ticketsystem/${source_token}/config/tls" "${dest_dir}/src/main/java/com/ticketsystem/${target_token}/config/tls" "$source_token" "$target_token"
+    if [[ -d "${src_dir}/src/main/java/com/ridehub/${source_token}/config/tls" ]]; then
+        copy_and_replace_dir "${src_dir}/src/main/java/com/ridehub/${source_token}/config/tls" "${dest_dir}/src/main/java/com/ridehub/${target_token}/config/tls" "$source_token" "$target_token"
     fi
 
     # Patch application-dev.yml in place (keeps other content)

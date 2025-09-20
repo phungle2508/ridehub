@@ -1,4 +1,4 @@
-@startuml TicketSystemArchitecture
+@startuml ridehubArchitecture
 title OAuth2 Login via Gateway & Keycloak
 autonumber
 

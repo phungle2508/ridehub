@@ -13,13 +13,13 @@ for sm in backend/ms_* backend/gateway; do
   # Pick patterns per submodule type
   if [[ "$sm" == backend/ms_* ]]; then
     patterns=(
-      "src/main/java/com/ticketsystem/*/broker/*"
+      "src/main/java/com/ridehub/*/broker/*"
       "src/main/resources/logback-spring.xml"
       "pom.xml"
-      "src/main/java/com/ticketsystem/*/Ms*App.java"
+      "src/main/java/com/ridehub/*/Ms*App.java"
       "src/main/resources/config/bootstrap.yml"
       "src/main/resources/config/application-dev.yml"
-      "src/main/java/com/ticketsystem/*/web/rest/Ms*KafkaResource.java"
+      "src/main/java/com/ridehub/*/web/rest/Ms*KafkaResource.java"
     )
   else # gateway
     patterns=(
