@@ -1,0 +1,52 @@
+{
+  "annotations": {
+    "changelogDate": "20250919170151"
+  },
+  "applications": ["ms_route"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "licenseClass",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "yearsExperience",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "isDeleted",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "deletedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "deletedBy",
+      "fieldType": "UUID"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "ms_route",
+  "name": "Driver",
+  "relationships": [
+    {
+      "otherEntityName": "trip",
+      "otherEntityRelationshipName": "driver",
+      "relationshipName": "trip",
+      "relationshipSide": "right",
+      "relationshipType": "one-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceImpl"
+}

@@ -1,0 +1,29 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 3,
+    "applicationType": "microservice",
+    "authenticationType": "oauth2",
+    "baseName": "ms_booking",
+    "cacheProvider": "redis",
+    "creationTimestamp": 1757851680202,
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "enableSwaggerCodegen": true,
+    "entities": ["Booking", "Ticket", "Invoice", "PaymentTransaction", "AppliedPromotion"],
+    "gatewayServerPort": "8080",
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "OGQyYzMyNzhlZDBiZWFhNmY1OTJiZmU0MTgxZGNiMWMxMzgwYjRmYTJkNTg5NjNiNmY4NTY0ZjI2OTJjNTJiYzRiNDhjYmU2YzliN2FiZDZjN2FkOTI3NjU4ODM0NzU5MzRlOGFiMTJiODg0Y2QyNWRlZDYyMDkzNTE3MWRiMTY=",
+    "languages": ["en"],
+    "lastLiquibaseTimestamp": 1757851980000,
+    "messageBroker": "kafka",
+    "monorepository": true,
+    "nativeLanguage": "en",
+    "packageName": "com.ridehub.booking",
+    "prodDatabaseType": "mysql",
+    "serverPort": "8083",
+    "serviceDiscoveryType": "consul",
+    "skipClient": true,
+    "skipCommitHook": true,
+    "skipUserManagement": true
+  }
+}

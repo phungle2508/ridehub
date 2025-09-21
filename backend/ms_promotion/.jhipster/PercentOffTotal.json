@@ -1,0 +1,53 @@
+{
+  "annotations": {
+    "changelogDate": "20250919165625"
+  },
+  "applications": ["ms_promotion"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "percent",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "maxOff",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "isDeleted",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "deletedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "deletedBy",
+      "fieldType": "UUID"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "ms_promotion",
+  "name": "PercentOffTotal",
+  "relationships": [
+    {
+      "otherEntityName": "promotion",
+      "otherEntityRelationshipName": "percentOff",
+      "relationshipName": "promotion",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceImpl"
+}

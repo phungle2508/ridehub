@@ -1,0 +1,95 @@
+{
+  "annotations": {
+    "changelogDate": "20250914120900"
+  },
+  "applications": ["ms_booking"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "bookingCode",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "BookingStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,AWAITING_PAYMENT,PAID,CONFIRMED,CANCELED,REFUNDED"
+    },
+    {
+      "fieldName": "quantity",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "totalAmount",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdTime",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "customerId",
+      "fieldType": "UUID",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "isDeleted",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "deletedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "deletedBy",
+      "fieldType": "UUID"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "ms_booking",
+  "name": "Booking",
+  "pagination": "infinite-scroll",
+  "relationships": [
+    {
+      "otherEntityName": "invoice",
+      "otherEntityRelationshipName": "booking",
+      "relationshipName": "invoice",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityName": "paymentTransaction",
+      "otherEntityRelationshipName": "booking",
+      "relationshipName": "paymentTransaction",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityName": "ticket",
+      "otherEntityRelationshipName": "booking",
+      "relationshipName": "tickets",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "appliedPromotion",
+      "otherEntityRelationshipName": "booking",
+      "relationshipName": "appliedPromos",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceImpl"
+}

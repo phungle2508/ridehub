@@ -1,0 +1,1113 @@
+package com.ridehub.booking.web.rest;
+
+import static com.ridehub.booking.domain.AppliedPromotionAsserts.*;
+import static com.ridehub.booking.web.rest.TestUtil.createUpdateProxyForBean;
+import static com.ridehub.booking.web.rest.TestUtil.sameNumber;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ridehub.booking.IntegrationTest;
+import com.ridehub.booking.domain.AppliedPromotion;
+import com.ridehub.booking.domain.Booking;
+import com.ridehub.booking.repository.AppliedPromotionRepository;
+import com.ridehub.booking.service.dto.AppliedPromotionDTO;
+import com.ridehub.booking.service.mapper.AppliedPromotionMapper;
+import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Integration tests for the {@link AppliedPromotionResource} REST controller.
+ */
+@IntegrationTest
+@AutoConfigureMockMvc
+@WithMockUser
+class AppliedPromotionResourceIT {
+
+    private static final UUID DEFAULT_PROMOTION_ID = UUID.randomUUID();
+    private static final UUID UPDATED_PROMOTION_ID = UUID.randomUUID();
+
+    private static final String DEFAULT_PROMOTION_CODE = "AAAAAAAAAA";
+    private static final String UPDATED_PROMOTION_CODE = "BBBBBBBBBB";
+
+    private static final BigDecimal DEFAULT_DISCOUNT_AMOUNT = new BigDecimal(1);
+    private static final BigDecimal UPDATED_DISCOUNT_AMOUNT = new BigDecimal(2);
+    private static final BigDecimal SMALLER_DISCOUNT_AMOUNT = new BigDecimal(1 - 1);
+
+    private static final Instant DEFAULT_APPLIED_AT = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_APPLIED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    private static final Instant DEFAULT_UPDATED_AT = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_UPDATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    private static final Boolean DEFAULT_IS_DELETED = false;
+    private static final Boolean UPDATED_IS_DELETED = true;
+
+    private static final Instant DEFAULT_DELETED_AT = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_DELETED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    private static final UUID DEFAULT_DELETED_BY = UUID.randomUUID();
+    private static final UUID UPDATED_DELETED_BY = UUID.randomUUID();
+
+    private static final String ENTITY_API_URL = "/api/applied-promotions";
+    private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
+
+    private static Random random = new Random();
+    private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+
+    @Autowired
+    private ObjectMapper om;
+
+    @Autowired
+    private AppliedPromotionRepository appliedPromotionRepository;
+
+    @Autowired
+    private AppliedPromotionMapper appliedPromotionMapper;
+
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
+    private MockMvc restAppliedPromotionMockMvc;
+
+    private AppliedPromotion appliedPromotion;
+
+    private AppliedPromotion insertedAppliedPromotion;
+
+    /**
+     * Create an entity for this test.
+     *
+     * This is a static method, as tests for other entities might also need it,
+     * if they test an entity which requires the current entity.
+     */
+    public static AppliedPromotion createEntity(EntityManager em) {
+        AppliedPromotion appliedPromotion = new AppliedPromotion()
+            .promotionId(DEFAULT_PROMOTION_ID)
+            .promotionCode(DEFAULT_PROMOTION_CODE)
+            .discountAmount(DEFAULT_DISCOUNT_AMOUNT)
+            .appliedAt(DEFAULT_APPLIED_AT)
+            .createdAt(DEFAULT_CREATED_AT)
+            .updatedAt(DEFAULT_UPDATED_AT)
+            .isDeleted(DEFAULT_IS_DELETED)
+            .deletedAt(DEFAULT_DELETED_AT)
+            .deletedBy(DEFAULT_DELETED_BY);
+        // Add required entity
+        Booking booking;
+        if (TestUtil.findAll(em, Booking.class).isEmpty()) {
+            booking = BookingResourceIT.createEntity();
+            em.persist(booking);
+            em.flush();
+        } else {
+            booking = TestUtil.findAll(em, Booking.class).get(0);
+        }
+        appliedPromotion.setBooking(booking);
+        return appliedPromotion;
+    }
+
+    /**
+     * Create an updated entity for this test.
+     *
+     * This is a static method, as tests for other entities might also need it,
+     * if they test an entity which requires the current entity.
+     */
+    public static AppliedPromotion createUpdatedEntity(EntityManager em) {
+        AppliedPromotion updatedAppliedPromotion = new AppliedPromotion()
+            .promotionId(UPDATED_PROMOTION_ID)
+            .promotionCode(UPDATED_PROMOTION_CODE)
+            .discountAmount(UPDATED_DISCOUNT_AMOUNT)
+            .appliedAt(UPDATED_APPLIED_AT)
+            .createdAt(UPDATED_CREATED_AT)
+            .updatedAt(UPDATED_UPDATED_AT)
+            .isDeleted(UPDATED_IS_DELETED)
+            .deletedAt(UPDATED_DELETED_AT)
+            .deletedBy(UPDATED_DELETED_BY);
+        // Add required entity
+        Booking booking;
+        if (TestUtil.findAll(em, Booking.class).isEmpty()) {
+            booking = BookingResourceIT.createUpdatedEntity();
+            em.persist(booking);
+            em.flush();
+        } else {
+            booking = TestUtil.findAll(em, Booking.class).get(0);
+        }
+        updatedAppliedPromotion.setBooking(booking);
+        return updatedAppliedPromotion;
+    }
+
+    @BeforeEach
+    void initTest() {
+        appliedPromotion = createEntity(em);
+    }
+
+    @AfterEach
+    void cleanup() {
+        if (insertedAppliedPromotion != null) {
+            appliedPromotionRepository.delete(insertedAppliedPromotion);
+            insertedAppliedPromotion = null;
+        }
+    }
+
+    @Test
+    @Transactional
+    void createAppliedPromotion() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        // Create the AppliedPromotion
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+        var returnedAppliedPromotionDTO = om.readValue(
+            restAppliedPromotionMockMvc
+                .perform(
+                    post(ENTITY_API_URL)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsBytes(appliedPromotionDTO))
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            AppliedPromotionDTO.class
+        );
+
+        // Validate the AppliedPromotion in the database
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedAppliedPromotion = appliedPromotionMapper.toEntity(returnedAppliedPromotionDTO);
+        assertAppliedPromotionUpdatableFieldsEquals(returnedAppliedPromotion, getPersistedAppliedPromotion(returnedAppliedPromotion));
+
+        insertedAppliedPromotion = returnedAppliedPromotion;
+    }
+
+    @Test
+    @Transactional
+    void createAppliedPromotionWithExistingId() throws Exception {
+        // Create the AppliedPromotion with an existing ID
+        appliedPromotion.setId(1L);
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        long databaseSizeBeforeCreate = getRepositoryCount();
+
+        // An entity with an existing ID cannot be created, so this API call must fail
+        restAppliedPromotionMockMvc
+            .perform(
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    @Transactional
+    void checkPromotionIdIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        // set the field null
+        appliedPromotion.setPromotionId(null);
+
+        // Create the AppliedPromotion, which fails.
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        restAppliedPromotionMockMvc
+            .perform(
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void checkDiscountAmountIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        // set the field null
+        appliedPromotion.setDiscountAmount(null);
+
+        // Create the AppliedPromotion, which fails.
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        restAppliedPromotionMockMvc
+            .perform(
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void checkAppliedAtIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        // set the field null
+        appliedPromotion.setAppliedAt(null);
+
+        // Create the AppliedPromotion, which fails.
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        restAppliedPromotionMockMvc
+            .perform(
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void checkCreatedAtIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        // set the field null
+        appliedPromotion.setCreatedAt(null);
+
+        // Create the AppliedPromotion, which fails.
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        restAppliedPromotionMockMvc
+            .perform(
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotions() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList
+        restAppliedPromotionMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(appliedPromotion.getId().intValue())))
+            .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.toString())))
+            .andExpect(jsonPath("$.[*].promotionCode").value(hasItem(DEFAULT_PROMOTION_CODE)))
+            .andExpect(jsonPath("$.[*].discountAmount").value(hasItem(sameNumber(DEFAULT_DISCOUNT_AMOUNT))))
+            .andExpect(jsonPath("$.[*].appliedAt").value(hasItem(DEFAULT_APPLIED_AT.toString())))
+            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
+            .andExpect(jsonPath("$.[*].deletedAt").value(hasItem(DEFAULT_DELETED_AT.toString())))
+            .andExpect(jsonPath("$.[*].deletedBy").value(hasItem(DEFAULT_DELETED_BY.toString())));
+    }
+
+    @Test
+    @Transactional
+    void getAppliedPromotion() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get the appliedPromotion
+        restAppliedPromotionMockMvc
+            .perform(get(ENTITY_API_URL_ID, appliedPromotion.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.id").value(appliedPromotion.getId().intValue()))
+            .andExpect(jsonPath("$.promotionId").value(DEFAULT_PROMOTION_ID.toString()))
+            .andExpect(jsonPath("$.promotionCode").value(DEFAULT_PROMOTION_CODE))
+            .andExpect(jsonPath("$.discountAmount").value(sameNumber(DEFAULT_DISCOUNT_AMOUNT)))
+            .andExpect(jsonPath("$.appliedAt").value(DEFAULT_APPLIED_AT.toString()))
+            .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
+            .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
+            .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
+            .andExpect(jsonPath("$.deletedAt").value(DEFAULT_DELETED_AT.toString()))
+            .andExpect(jsonPath("$.deletedBy").value(DEFAULT_DELETED_BY.toString()));
+    }
+
+    @Test
+    @Transactional
+    void getAppliedPromotionsByIdFiltering() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        Long id = appliedPromotion.getId();
+
+        defaultAppliedPromotionFiltering("id.equals=" + id, "id.notEquals=" + id);
+
+        defaultAppliedPromotionFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
+
+        defaultAppliedPromotionFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionId equals to
+        defaultAppliedPromotionFiltering("promotionId.equals=" + DEFAULT_PROMOTION_ID, "promotionId.equals=" + UPDATED_PROMOTION_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionId in
+        defaultAppliedPromotionFiltering(
+            "promotionId.in=" + DEFAULT_PROMOTION_ID + "," + UPDATED_PROMOTION_ID,
+            "promotionId.in=" + UPDATED_PROMOTION_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionId is not null
+        defaultAppliedPromotionFiltering("promotionId.specified=true", "promotionId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionCodeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionCode equals to
+        defaultAppliedPromotionFiltering(
+            "promotionCode.equals=" + DEFAULT_PROMOTION_CODE,
+            "promotionCode.equals=" + UPDATED_PROMOTION_CODE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionCodeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionCode in
+        defaultAppliedPromotionFiltering(
+            "promotionCode.in=" + DEFAULT_PROMOTION_CODE + "," + UPDATED_PROMOTION_CODE,
+            "promotionCode.in=" + UPDATED_PROMOTION_CODE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionCodeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionCode is not null
+        defaultAppliedPromotionFiltering("promotionCode.specified=true", "promotionCode.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionCodeContainsSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionCode contains
+        defaultAppliedPromotionFiltering(
+            "promotionCode.contains=" + DEFAULT_PROMOTION_CODE,
+            "promotionCode.contains=" + UPDATED_PROMOTION_CODE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionCodeNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionCode does not contain
+        defaultAppliedPromotionFiltering(
+            "promotionCode.doesNotContain=" + UPDATED_PROMOTION_CODE,
+            "promotionCode.doesNotContain=" + DEFAULT_PROMOTION_CODE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDiscountAmountIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where discountAmount equals to
+        defaultAppliedPromotionFiltering(
+            "discountAmount.equals=" + DEFAULT_DISCOUNT_AMOUNT,
+            "discountAmount.equals=" + UPDATED_DISCOUNT_AMOUNT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDiscountAmountIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where discountAmount in
+        defaultAppliedPromotionFiltering(
+            "discountAmount.in=" + DEFAULT_DISCOUNT_AMOUNT + "," + UPDATED_DISCOUNT_AMOUNT,
+            "discountAmount.in=" + UPDATED_DISCOUNT_AMOUNT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDiscountAmountIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where discountAmount is not null
+        defaultAppliedPromotionFiltering("discountAmount.specified=true", "discountAmount.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDiscountAmountIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where discountAmount is greater than or equal to
+        defaultAppliedPromotionFiltering(
+            "discountAmount.greaterThanOrEqual=" + DEFAULT_DISCOUNT_AMOUNT,
+            "discountAmount.greaterThanOrEqual=" + UPDATED_DISCOUNT_AMOUNT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDiscountAmountIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where discountAmount is less than or equal to
+        defaultAppliedPromotionFiltering(
+            "discountAmount.lessThanOrEqual=" + DEFAULT_DISCOUNT_AMOUNT,
+            "discountAmount.lessThanOrEqual=" + SMALLER_DISCOUNT_AMOUNT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDiscountAmountIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where discountAmount is less than
+        defaultAppliedPromotionFiltering(
+            "discountAmount.lessThan=" + UPDATED_DISCOUNT_AMOUNT,
+            "discountAmount.lessThan=" + DEFAULT_DISCOUNT_AMOUNT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDiscountAmountIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where discountAmount is greater than
+        defaultAppliedPromotionFiltering(
+            "discountAmount.greaterThan=" + SMALLER_DISCOUNT_AMOUNT,
+            "discountAmount.greaterThan=" + DEFAULT_DISCOUNT_AMOUNT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByAppliedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where appliedAt equals to
+        defaultAppliedPromotionFiltering("appliedAt.equals=" + DEFAULT_APPLIED_AT, "appliedAt.equals=" + UPDATED_APPLIED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByAppliedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where appliedAt in
+        defaultAppliedPromotionFiltering(
+            "appliedAt.in=" + DEFAULT_APPLIED_AT + "," + UPDATED_APPLIED_AT,
+            "appliedAt.in=" + UPDATED_APPLIED_AT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByAppliedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where appliedAt is not null
+        defaultAppliedPromotionFiltering("appliedAt.specified=true", "appliedAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByCreatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where createdAt equals to
+        defaultAppliedPromotionFiltering("createdAt.equals=" + DEFAULT_CREATED_AT, "createdAt.equals=" + UPDATED_CREATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByCreatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where createdAt in
+        defaultAppliedPromotionFiltering(
+            "createdAt.in=" + DEFAULT_CREATED_AT + "," + UPDATED_CREATED_AT,
+            "createdAt.in=" + UPDATED_CREATED_AT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByCreatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where createdAt is not null
+        defaultAppliedPromotionFiltering("createdAt.specified=true", "createdAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByUpdatedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where updatedAt equals to
+        defaultAppliedPromotionFiltering("updatedAt.equals=" + DEFAULT_UPDATED_AT, "updatedAt.equals=" + UPDATED_UPDATED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByUpdatedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where updatedAt in
+        defaultAppliedPromotionFiltering(
+            "updatedAt.in=" + DEFAULT_UPDATED_AT + "," + UPDATED_UPDATED_AT,
+            "updatedAt.in=" + UPDATED_UPDATED_AT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByUpdatedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where updatedAt is not null
+        defaultAppliedPromotionFiltering("updatedAt.specified=true", "updatedAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByIsDeletedIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where isDeleted equals to
+        defaultAppliedPromotionFiltering("isDeleted.equals=" + DEFAULT_IS_DELETED, "isDeleted.equals=" + UPDATED_IS_DELETED);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByIsDeletedIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where isDeleted in
+        defaultAppliedPromotionFiltering(
+            "isDeleted.in=" + DEFAULT_IS_DELETED + "," + UPDATED_IS_DELETED,
+            "isDeleted.in=" + UPDATED_IS_DELETED
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByIsDeletedIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where isDeleted is not null
+        defaultAppliedPromotionFiltering("isDeleted.specified=true", "isDeleted.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDeletedAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where deletedAt equals to
+        defaultAppliedPromotionFiltering("deletedAt.equals=" + DEFAULT_DELETED_AT, "deletedAt.equals=" + UPDATED_DELETED_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDeletedAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where deletedAt in
+        defaultAppliedPromotionFiltering(
+            "deletedAt.in=" + DEFAULT_DELETED_AT + "," + UPDATED_DELETED_AT,
+            "deletedAt.in=" + UPDATED_DELETED_AT
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDeletedAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where deletedAt is not null
+        defaultAppliedPromotionFiltering("deletedAt.specified=true", "deletedAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDeletedByIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where deletedBy equals to
+        defaultAppliedPromotionFiltering("deletedBy.equals=" + DEFAULT_DELETED_BY, "deletedBy.equals=" + UPDATED_DELETED_BY);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDeletedByIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where deletedBy in
+        defaultAppliedPromotionFiltering(
+            "deletedBy.in=" + DEFAULT_DELETED_BY + "," + UPDATED_DELETED_BY,
+            "deletedBy.in=" + UPDATED_DELETED_BY
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByDeletedByIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where deletedBy is not null
+        defaultAppliedPromotionFiltering("deletedBy.specified=true", "deletedBy.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByBookingIsEqualToSomething() throws Exception {
+        Booking booking;
+        if (TestUtil.findAll(em, Booking.class).isEmpty()) {
+            appliedPromotionRepository.saveAndFlush(appliedPromotion);
+            booking = BookingResourceIT.createEntity();
+        } else {
+            booking = TestUtil.findAll(em, Booking.class).get(0);
+        }
+        em.persist(booking);
+        em.flush();
+        appliedPromotion.setBooking(booking);
+        appliedPromotionRepository.saveAndFlush(appliedPromotion);
+        Long bookingId = booking.getId();
+        // Get all the appliedPromotionList where booking equals to bookingId
+        defaultAppliedPromotionShouldBeFound("bookingId.equals=" + bookingId);
+
+        // Get all the appliedPromotionList where booking equals to (bookingId + 1)
+        defaultAppliedPromotionShouldNotBeFound("bookingId.equals=" + (bookingId + 1));
+    }
+
+    private void defaultAppliedPromotionFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
+        defaultAppliedPromotionShouldBeFound(shouldBeFound);
+        defaultAppliedPromotionShouldNotBeFound(shouldNotBeFound);
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is returned.
+     */
+    private void defaultAppliedPromotionShouldBeFound(String filter) throws Exception {
+        restAppliedPromotionMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(appliedPromotion.getId().intValue())))
+            .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.toString())))
+            .andExpect(jsonPath("$.[*].promotionCode").value(hasItem(DEFAULT_PROMOTION_CODE)))
+            .andExpect(jsonPath("$.[*].discountAmount").value(hasItem(sameNumber(DEFAULT_DISCOUNT_AMOUNT))))
+            .andExpect(jsonPath("$.[*].appliedAt").value(hasItem(DEFAULT_APPLIED_AT.toString())))
+            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
+            .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
+            .andExpect(jsonPath("$.[*].deletedAt").value(hasItem(DEFAULT_DELETED_AT.toString())))
+            .andExpect(jsonPath("$.[*].deletedBy").value(hasItem(DEFAULT_DELETED_BY.toString())));
+
+        // Check, that the count call also returns 1
+        restAppliedPromotionMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("1"));
+    }
+
+    /**
+     * Executes the search, and checks that the default entity is not returned.
+     */
+    private void defaultAppliedPromotionShouldNotBeFound(String filter) throws Exception {
+        restAppliedPromotionMockMvc
+            .perform(get(ENTITY_API_URL + "?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        // Check, that the count call also returns 0
+        restAppliedPromotionMockMvc
+            .perform(get(ENTITY_API_URL + "/count?sort=id,desc&" + filter))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string("0"));
+    }
+
+    @Test
+    @Transactional
+    void getNonExistingAppliedPromotion() throws Exception {
+        // Get the appliedPromotion
+        restAppliedPromotionMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Transactional
+    void putExistingAppliedPromotion() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        // Update the appliedPromotion
+        AppliedPromotion updatedAppliedPromotion = appliedPromotionRepository.findById(appliedPromotion.getId()).orElseThrow();
+        // Disconnect from session so that the updates on updatedAppliedPromotion are not directly saved in db
+        em.detach(updatedAppliedPromotion);
+        updatedAppliedPromotion
+            .promotionId(UPDATED_PROMOTION_ID)
+            .promotionCode(UPDATED_PROMOTION_CODE)
+            .discountAmount(UPDATED_DISCOUNT_AMOUNT)
+            .appliedAt(UPDATED_APPLIED_AT)
+            .createdAt(UPDATED_CREATED_AT)
+            .updatedAt(UPDATED_UPDATED_AT)
+            .isDeleted(UPDATED_IS_DELETED)
+            .deletedAt(UPDATED_DELETED_AT)
+            .deletedBy(UPDATED_DELETED_BY);
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(updatedAppliedPromotion);
+
+        restAppliedPromotionMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, appliedPromotionDTO.getId())
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPersistedAppliedPromotionToMatchAllProperties(updatedAppliedPromotion);
+    }
+
+    @Test
+    @Transactional
+    void putNonExistingAppliedPromotion() throws Exception {
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+        appliedPromotion.setId(longCount.incrementAndGet());
+
+        // Create the AppliedPromotion
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        // If the entity doesn't have an ID, it will throw BadRequestAlertException
+        restAppliedPromotionMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, appliedPromotionDTO.getId())
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void putWithIdMismatchAppliedPromotion() throws Exception {
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+        appliedPromotion.setId(longCount.incrementAndGet());
+
+        // Create the AppliedPromotion
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restAppliedPromotionMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, longCount.incrementAndGet())
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void putWithMissingIdPathParamAppliedPromotion() throws Exception {
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+        appliedPromotion.setId(longCount.incrementAndGet());
+
+        // Create the AppliedPromotion
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restAppliedPromotionMockMvc
+            .perform(
+                put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void partialUpdateAppliedPromotionWithPatch() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        // Update the appliedPromotion using partial update
+        AppliedPromotion partialUpdatedAppliedPromotion = new AppliedPromotion();
+        partialUpdatedAppliedPromotion.setId(appliedPromotion.getId());
+
+        partialUpdatedAppliedPromotion
+            .promotionCode(UPDATED_PROMOTION_CODE)
+            .discountAmount(UPDATED_DISCOUNT_AMOUNT)
+            .deletedAt(UPDATED_DELETED_AT);
+
+        restAppliedPromotionMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedAppliedPromotion.getId())
+                    .with(csrf())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(partialUpdatedAppliedPromotion))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the AppliedPromotion in the database
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAppliedPromotionUpdatableFieldsEquals(
+            createUpdateProxyForBean(partialUpdatedAppliedPromotion, appliedPromotion),
+            getPersistedAppliedPromotion(appliedPromotion)
+        );
+    }
+
+    @Test
+    @Transactional
+    void fullUpdateAppliedPromotionWithPatch() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        // Update the appliedPromotion using partial update
+        AppliedPromotion partialUpdatedAppliedPromotion = new AppliedPromotion();
+        partialUpdatedAppliedPromotion.setId(appliedPromotion.getId());
+
+        partialUpdatedAppliedPromotion
+            .promotionId(UPDATED_PROMOTION_ID)
+            .promotionCode(UPDATED_PROMOTION_CODE)
+            .discountAmount(UPDATED_DISCOUNT_AMOUNT)
+            .appliedAt(UPDATED_APPLIED_AT)
+            .createdAt(UPDATED_CREATED_AT)
+            .updatedAt(UPDATED_UPDATED_AT)
+            .isDeleted(UPDATED_IS_DELETED)
+            .deletedAt(UPDATED_DELETED_AT)
+            .deletedBy(UPDATED_DELETED_BY);
+
+        restAppliedPromotionMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedAppliedPromotion.getId())
+                    .with(csrf())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(partialUpdatedAppliedPromotion))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the AppliedPromotion in the database
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAppliedPromotionUpdatableFieldsEquals(
+            partialUpdatedAppliedPromotion,
+            getPersistedAppliedPromotion(partialUpdatedAppliedPromotion)
+        );
+    }
+
+    @Test
+    @Transactional
+    void patchNonExistingAppliedPromotion() throws Exception {
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+        appliedPromotion.setId(longCount.incrementAndGet());
+
+        // Create the AppliedPromotion
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        // If the entity doesn't have an ID, it will throw BadRequestAlertException
+        restAppliedPromotionMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, appliedPromotionDTO.getId())
+                    .with(csrf())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithIdMismatchAppliedPromotion() throws Exception {
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+        appliedPromotion.setId(longCount.incrementAndGet());
+
+        // Create the AppliedPromotion
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restAppliedPromotionMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
+                    .with(csrf())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isBadRequest());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void patchWithMissingIdPathParamAppliedPromotion() throws Exception {
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+        appliedPromotion.setId(longCount.incrementAndGet());
+
+        // Create the AppliedPromotion
+        AppliedPromotionDTO appliedPromotionDTO = appliedPromotionMapper.toDto(appliedPromotion);
+
+        // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+        restAppliedPromotionMockMvc
+            .perform(
+                patch(ENTITY_API_URL)
+                    .with(csrf())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(appliedPromotionDTO))
+            )
+            .andExpect(status().isMethodNotAllowed());
+
+        // Validate the AppliedPromotion in the database
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+    }
+
+    @Test
+    @Transactional
+    void deleteAppliedPromotion() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        long databaseSizeBeforeDelete = getRepositoryCount();
+
+        // Delete the appliedPromotion
+        restAppliedPromotionMockMvc
+            .perform(delete(ENTITY_API_URL_ID, appliedPromotion.getId()).with(csrf()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+
+        // Validate the database contains one less item
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    protected long getRepositoryCount() {
+        return appliedPromotionRepository.count();
+    }
+
+    protected void assertIncrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertDecrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertSameRepositoryCount(long countBefore) {
+        assertThat(countBefore).isEqualTo(getRepositoryCount());
+    }
+
+    protected AppliedPromotion getPersistedAppliedPromotion(AppliedPromotion appliedPromotion) {
+        return appliedPromotionRepository.findById(appliedPromotion.getId()).orElseThrow();
+    }
+
+    protected void assertPersistedAppliedPromotionToMatchAllProperties(AppliedPromotion expectedAppliedPromotion) {
+        assertAppliedPromotionAllPropertiesEquals(expectedAppliedPromotion, getPersistedAppliedPromotion(expectedAppliedPromotion));
+    }
+
+    protected void assertPersistedAppliedPromotionToMatchUpdatableProperties(AppliedPromotion expectedAppliedPromotion) {
+        assertAppliedPromotionAllUpdatablePropertiesEquals(
+            expectedAppliedPromotion,
+            getPersistedAppliedPromotion(expectedAppliedPromotion)
+        );
+    }
+}

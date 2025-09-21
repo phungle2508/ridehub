@@ -1,0 +1,20 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 4,
+    "applicationType": "microservice",
+    "authenticationType": "oauth2",
+    "baseName": "ms_promotion",
+    "cacheProvider": "redis",
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "enableSwaggerCodegen": true,
+    "entities": ["Promotion", "BuyNGetMFree", "PercentOffTotal", "ConditionByRoute", "ConditionByDate", "ConditionByLocation"],
+    "jhipsterVersion": "8.11.0",
+    "lastLiquibaseTimestamp": 1758301165000,
+    "messageBroker": "kafka",
+    "packageName": "com.ridehub.promotion",
+    "prodDatabaseType": "mysql",
+    "serverPort": "8084",
+    "serviceDiscoveryType": "consul"
+  }
+}

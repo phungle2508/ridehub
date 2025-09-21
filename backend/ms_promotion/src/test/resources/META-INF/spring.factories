@@ -1,0 +1,7 @@
+org.springframework.test.context.ContextCustomizerFactory = \
+    com.mycompany.myapp.config.\
+    SqlTestContainersSpringContextCustomizerFactory,com.ridehub.promotion.\
+    config.SqlTestContainersSpringContextCustomizerFactory,com.ridehub.\
+    promotion.config.RedisTestContainersSpringContextCustomizerFactory,com.\
+    ridehub.promotion.config.\
+    KafkaTestContainersSpringContextCustomizerFactory
