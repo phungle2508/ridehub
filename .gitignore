@@ -5,3 +5,4 @@ microservices/nginx/log/*
 microservices/nginx/letsencrypt/*
 microservices/kafka/ssl/*
 .vscode/
+.idea/*
