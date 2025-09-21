@@ -31,6 +31,6 @@ spring:
         health-check-interval: 15s
   docker:
     compose:
-      enabled: true
+      enabled: false
       lifecycle-management: start-only
       file: src/main/docker/mysql.yml
