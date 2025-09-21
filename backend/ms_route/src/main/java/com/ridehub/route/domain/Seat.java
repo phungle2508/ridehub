@@ -32,10 +32,10 @@ public class Seat implements Serializable {
     @Column(name = "seat_no", nullable = false)
     private String seatNo;
 
-    @Column(name = "seat_row")
+    @Column(name = "row")
     private Integer row;
 
-    @Column(name = "seat_col")
+    @Column(name = "col")
     private Integer col;
 
     @Column(name = "price_factor", precision = 21, scale = 2)

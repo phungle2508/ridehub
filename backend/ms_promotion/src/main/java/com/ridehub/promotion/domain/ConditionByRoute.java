@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -28,11 +30,6 @@ public class ConditionByRoute implements Serializable {
     private Long id;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "route_id", length = 36, nullable = false)
-    private UUID routeId;
-
-    @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -48,6 +45,11 @@ public class ConditionByRoute implements Serializable {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "condition")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "condition" }, allowSetters = true)
+    private Set<ConditionRouteItem> items = new HashSet<>();
 
     @ManyToOne(optional = false)
     @NotNull
@@ -67,19 +69,6 @@ public class ConditionByRoute implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public UUID getRouteId() {
-        return this.routeId;
-    }
-
-    public ConditionByRoute routeId(UUID routeId) {
-        this.setRouteId(routeId);
-        return this;
-    }
-
-    public void setRouteId(UUID routeId) {
-        this.routeId = routeId;
     }
 
     public Instant getCreatedAt() {
@@ -147,6 +136,37 @@ public class ConditionByRoute implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public Set<ConditionRouteItem> getItems() {
+        return this.items;
+    }
+
+    public void setItems(Set<ConditionRouteItem> conditionRouteItems) {
+        if (this.items != null) {
+            this.items.forEach(i -> i.setCondition(null));
+        }
+        if (conditionRouteItems != null) {
+            conditionRouteItems.forEach(i -> i.setCondition(this));
+        }
+        this.items = conditionRouteItems;
+    }
+
+    public ConditionByRoute items(Set<ConditionRouteItem> conditionRouteItems) {
+        this.setItems(conditionRouteItems);
+        return this;
+    }
+
+    public ConditionByRoute addItems(ConditionRouteItem conditionRouteItem) {
+        this.items.add(conditionRouteItem);
+        conditionRouteItem.setCondition(this);
+        return this;
+    }
+
+    public ConditionByRoute removeItems(ConditionRouteItem conditionRouteItem) {
+        this.items.remove(conditionRouteItem);
+        conditionRouteItem.setCondition(null);
+        return this;
+    }
+
     public Promotion getPromotion() {
         return this.promotion;
     }
@@ -184,7 +204,6 @@ public class ConditionByRoute implements Serializable {
     public String toString() {
         return "ConditionByRoute{" +
             "id=" + getId() +
-            ", routeId='" + getRouteId() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

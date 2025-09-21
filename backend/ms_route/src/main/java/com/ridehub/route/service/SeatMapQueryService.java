@@ -6,6 +6,7 @@ import com.ridehub.route.repository.SeatMapRepository;
 import com.ridehub.route.service.criteria.SeatMapCriteria;
 import com.ridehub.route.service.dto.SeatMapDTO;
 import com.ridehub.route.service.mapper.SeatMapMapper;
+import jakarta.persistence.criteria.JoinType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,8 @@ public class SeatMapQueryService extends QueryService<SeatMap> {
                 buildRangeSpecification(criteria.getUpdatedAt(), SeatMap_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), SeatMap_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), SeatMap_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), SeatMap_.deletedBy)
+                buildSpecification(criteria.getDeletedBy(), SeatMap_.deletedBy),
+                buildSpecification(criteria.getVehicleId(), root -> root.join(SeatMap_.vehicle, JoinType.LEFT).get(Vehicle_.id))
             );
         }
         return specification;

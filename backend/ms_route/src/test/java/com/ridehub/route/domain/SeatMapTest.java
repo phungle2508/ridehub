@@ -1,6 +1,7 @@
 package com.ridehub.route.domain;
 
 import static com.ridehub.route.domain.SeatMapTestSamples.*;
+import static com.ridehub.route.domain.VehicleTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.route.web.rest.TestUtil;
@@ -20,5 +21,19 @@ class SeatMapTest {
 
         seatMap2 = getSeatMapSample2();
         assertThat(seatMap1).isNotEqualTo(seatMap2);
+    }
+
+    @Test
+    void vehicleTest() {
+        SeatMap seatMap = getSeatMapRandomSampleGenerator();
+        Vehicle vehicleBack = getVehicleRandomSampleGenerator();
+
+        seatMap.setVehicle(vehicleBack);
+        assertThat(seatMap.getVehicle()).isEqualTo(vehicleBack);
+        assertThat(vehicleBack.getSeatMap()).isEqualTo(seatMap);
+
+        seatMap.vehicle(null);
+        assertThat(seatMap.getVehicle()).isNull();
+        assertThat(vehicleBack.getSeatMap()).isNull();
     }
 }

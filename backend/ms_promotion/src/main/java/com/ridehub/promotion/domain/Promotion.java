@@ -78,17 +78,17 @@ public class Promotion implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "promotion")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "promotion" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "items", "promotion" }, allowSetters = true)
     private Set<ConditionByRoute> conditionsRS = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "promotion")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "promotion" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "items", "promotion" }, allowSetters = true)
     private Set<ConditionByDate> conditionsDS = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "promotion")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "promotion" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "items", "promotion" }, allowSetters = true)
     private Set<ConditionByLocation> conditionsLocs = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

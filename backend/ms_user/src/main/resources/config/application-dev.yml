@@ -19,7 +19,7 @@ server:
   forward-headers-strategy: native
   sql-port: ${SQL_PORT:3308}
   sql-name: ${SQL_NAME:user}
-  dev-config-folder: /D:/VsCode-WordSpace/ticket-store/backend/ticket-store-central-config
+  dev-config-folder: /home/phungvip/Desktop/work-space/ridehub/backend/ridehub-central-config
 
 spring:
   config:

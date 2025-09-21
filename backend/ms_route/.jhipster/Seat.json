@@ -1,8 +1,10 @@
 {
   "annotations": {
-    "changelogDate": "20250919165751"
+    "changelogDate": "20250921164155"
   },
   "applications": ["ms_route"],
+  "clientRootFolder": "ms_route",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
     {
@@ -56,5 +58,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

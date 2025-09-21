@@ -3,7 +3,6 @@ package com.ridehub.promotion.service.dto;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,10 +13,6 @@ import java.util.UUID;
 public class ConditionByDateDTO implements Serializable {
 
     private Long id;
-
-    private LocalDate specificDate;
-
-    private Integer weekday;
 
     @NotNull
     private Instant createdAt;
@@ -39,22 +34,6 @@ public class ConditionByDateDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public LocalDate getSpecificDate() {
-        return specificDate;
-    }
-
-    public void setSpecificDate(LocalDate specificDate) {
-        this.specificDate = specificDate;
-    }
-
-    public Integer getWeekday() {
-        return weekday;
-    }
-
-    public void setWeekday(Integer weekday) {
-        this.weekday = weekday;
     }
 
     public Instant getCreatedAt() {
@@ -131,8 +110,6 @@ public class ConditionByDateDTO implements Serializable {
     public String toString() {
         return "ConditionByDateDTO{" +
             "id=" + getId() +
-            ", specificDate='" + getSpecificDate() + "'" +
-            ", weekday=" + getWeekday() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

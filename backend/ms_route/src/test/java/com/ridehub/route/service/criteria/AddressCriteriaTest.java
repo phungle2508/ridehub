@@ -84,6 +84,7 @@ class AddressCriteriaTest {
         addressCriteria.isDeleted();
         addressCriteria.deletedAt();
         addressCriteria.deletedBy();
+        addressCriteria.stationId();
         addressCriteria.wardId();
         addressCriteria.distinct();
     }
@@ -100,6 +101,7 @@ class AddressCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getStationId()) &&
                 condition.apply(criteria.getWardId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -118,6 +120,7 @@ class AddressCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getStationId(), copy.getStationId()) &&
                 condition.apply(criteria.getWardId(), copy.getWardId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

@@ -19,7 +19,7 @@ server:
   forward-headers-strategy: native
   sql-port: ${SQL_PORT:3307}
   sql-name: ${SQL_NAME:route}
-  dev-config-folder: /D:/VsCode-WordSpace/ridehub/backend/ridehub-central-config 
+  dev-config-folder: /home/phungvip/Desktop/work-space/ridehub/backend/ridehub-central-config
 spring:
   config:
     # Import shared config first

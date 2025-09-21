@@ -24,8 +24,6 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
 
     private LongFilter id;
 
-    private UUIDFilter routeId;
-
     private InstantFilter createdAt;
 
     private InstantFilter updatedAt;
@@ -36,6 +34,8 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter itemsId;
+
     private LongFilter promotionId;
 
     private Boolean distinct;
@@ -44,12 +44,12 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
 
     public ConditionByRouteCriteria(ConditionByRouteCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.routeId = other.optionalRouteId().map(UUIDFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.itemsId = other.optionalItemsId().map(LongFilter::copy).orElse(null);
         this.promotionId = other.optionalPromotionId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -76,25 +76,6 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
 
     public void setId(LongFilter id) {
         this.id = id;
-    }
-
-    public UUIDFilter getRouteId() {
-        return routeId;
-    }
-
-    public Optional<UUIDFilter> optionalRouteId() {
-        return Optional.ofNullable(routeId);
-    }
-
-    public UUIDFilter routeId() {
-        if (routeId == null) {
-            setRouteId(new UUIDFilter());
-        }
-        return routeId;
-    }
-
-    public void setRouteId(UUIDFilter routeId) {
-        this.routeId = routeId;
     }
 
     public InstantFilter getCreatedAt() {
@@ -192,6 +173,25 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getItemsId() {
+        return itemsId;
+    }
+
+    public Optional<LongFilter> optionalItemsId() {
+        return Optional.ofNullable(itemsId);
+    }
+
+    public LongFilter itemsId() {
+        if (itemsId == null) {
+            setItemsId(new LongFilter());
+        }
+        return itemsId;
+    }
+
+    public void setItemsId(LongFilter itemsId) {
+        this.itemsId = itemsId;
+    }
+
     public LongFilter getPromotionId() {
         return promotionId;
     }
@@ -241,12 +241,12 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
         final ConditionByRouteCriteria that = (ConditionByRouteCriteria) o;
         return (
             Objects.equals(id, that.id) &&
-            Objects.equals(routeId, that.routeId) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(itemsId, that.itemsId) &&
             Objects.equals(promotionId, that.promotionId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -254,7 +254,7 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, routeId, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, promotionId, distinct);
+        return Objects.hash(id, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, itemsId, promotionId, distinct);
     }
 
     // prettier-ignore
@@ -262,12 +262,12 @@ public class ConditionByRouteCriteria implements Serializable, Criteria {
     public String toString() {
         return "ConditionByRouteCriteria{" +
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
-            optionalRouteId().map(f -> "routeId=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalItemsId().map(f -> "itemsId=" + f + ", ").orElse("") +
             optionalPromotionId().map(f -> "promotionId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

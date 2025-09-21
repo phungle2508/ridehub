@@ -47,8 +47,6 @@ public class ConditionByDateAsserts {
     public static void assertConditionByDateUpdatableFieldsEquals(ConditionByDate expected, ConditionByDate actual) {
         assertThat(actual)
             .as("Verify ConditionByDate relevant properties")
-            .satisfies(a -> assertThat(a.getSpecificDate()).as("check specificDate").isEqualTo(expected.getSpecificDate()))
-            .satisfies(a -> assertThat(a.getWeekday()).as("check weekday").isEqualTo(expected.getWeekday()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))

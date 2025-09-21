@@ -1,22 +1,12 @@
 {
   "annotations": {
-    "changelogDate": "20250919165925"
+    "changelogDate": "20250921163755"
   },
   "applications": ["ms_promotion"],
+  "clientRootFolder": "ms_promotion",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
-    {
-      "fieldName": "provinceId",
-      "fieldType": "UUID"
-    },
-    {
-      "fieldName": "districtId",
-      "fieldType": "UUID"
-    },
-    {
-      "fieldName": "wardId",
-      "fieldType": "UUID"
-    },
     {
       "fieldName": "createdAt",
       "fieldType": "Instant",
@@ -44,6 +34,13 @@
   "name": "ConditionByLocation",
   "relationships": [
     {
+      "otherEntityName": "conditionLocationItem",
+      "otherEntityRelationshipName": "condition",
+      "relationshipName": "items",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
       "otherEntityName": "promotion",
       "otherEntityRelationshipName": "conditionsLoc",
       "relationshipName": "promotion",
@@ -52,5 +49,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

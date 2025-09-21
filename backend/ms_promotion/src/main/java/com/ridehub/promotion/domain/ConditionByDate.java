@@ -5,7 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -28,12 +29,6 @@ public class ConditionByDate implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "specific_date")
-    private LocalDate specificDate;
-
-    @Column(name = "weekday")
-    private Integer weekday;
-
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -50,6 +45,11 @@ public class ConditionByDate implements Serializable {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "condition")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "condition" }, allowSetters = true)
+    private Set<ConditionDateItem> items = new HashSet<>();
 
     @ManyToOne(optional = false)
     @NotNull
@@ -69,32 +69,6 @@ public class ConditionByDate implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public LocalDate getSpecificDate() {
-        return this.specificDate;
-    }
-
-    public ConditionByDate specificDate(LocalDate specificDate) {
-        this.setSpecificDate(specificDate);
-        return this;
-    }
-
-    public void setSpecificDate(LocalDate specificDate) {
-        this.specificDate = specificDate;
-    }
-
-    public Integer getWeekday() {
-        return this.weekday;
-    }
-
-    public ConditionByDate weekday(Integer weekday) {
-        this.setWeekday(weekday);
-        return this;
-    }
-
-    public void setWeekday(Integer weekday) {
-        this.weekday = weekday;
     }
 
     public Instant getCreatedAt() {
@@ -162,6 +136,37 @@ public class ConditionByDate implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public Set<ConditionDateItem> getItems() {
+        return this.items;
+    }
+
+    public void setItems(Set<ConditionDateItem> conditionDateItems) {
+        if (this.items != null) {
+            this.items.forEach(i -> i.setCondition(null));
+        }
+        if (conditionDateItems != null) {
+            conditionDateItems.forEach(i -> i.setCondition(this));
+        }
+        this.items = conditionDateItems;
+    }
+
+    public ConditionByDate items(Set<ConditionDateItem> conditionDateItems) {
+        this.setItems(conditionDateItems);
+        return this;
+    }
+
+    public ConditionByDate addItems(ConditionDateItem conditionDateItem) {
+        this.items.add(conditionDateItem);
+        conditionDateItem.setCondition(this);
+        return this;
+    }
+
+    public ConditionByDate removeItems(ConditionDateItem conditionDateItem) {
+        this.items.remove(conditionDateItem);
+        conditionDateItem.setCondition(null);
+        return this;
+    }
+
     public Promotion getPromotion() {
         return this.promotion;
     }
@@ -199,8 +204,6 @@ public class ConditionByDate implements Serializable {
     public String toString() {
         return "ConditionByDate{" +
             "id=" + getId() +
-            ", specificDate='" + getSpecificDate() + "'" +
-            ", weekday=" + getWeekday() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

@@ -1,18 +1,12 @@
 {
   "annotations": {
-    "changelogDate": "20250919165825"
+    "changelogDate": "20250921163655"
   },
   "applications": ["ms_promotion"],
+  "clientRootFolder": "ms_promotion",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
-    {
-      "fieldName": "specificDate",
-      "fieldType": "LocalDate"
-    },
-    {
-      "fieldName": "weekday",
-      "fieldType": "Integer"
-    },
     {
       "fieldName": "createdAt",
       "fieldType": "Instant",
@@ -40,6 +34,13 @@
   "name": "ConditionByDate",
   "relationships": [
     {
+      "otherEntityName": "conditionDateItem",
+      "otherEntityRelationshipName": "condition",
+      "relationshipName": "items",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
       "otherEntityName": "promotion",
       "otherEntityRelationshipName": "conditionsD",
       "relationshipName": "promotion",
@@ -48,5 +49,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

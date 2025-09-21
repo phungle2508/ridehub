@@ -76,12 +76,12 @@ class ConditionByRouteCriteriaTest {
 
     private static void setAllFilters(ConditionByRouteCriteria conditionByRouteCriteria) {
         conditionByRouteCriteria.id();
-        conditionByRouteCriteria.routeId();
         conditionByRouteCriteria.createdAt();
         conditionByRouteCriteria.updatedAt();
         conditionByRouteCriteria.isDeleted();
         conditionByRouteCriteria.deletedAt();
         conditionByRouteCriteria.deletedBy();
+        conditionByRouteCriteria.itemsId();
         conditionByRouteCriteria.promotionId();
         conditionByRouteCriteria.distinct();
     }
@@ -90,12 +90,12 @@ class ConditionByRouteCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId()) &&
-                condition.apply(criteria.getRouteId()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getItemsId()) &&
                 condition.apply(criteria.getPromotionId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -109,12 +109,12 @@ class ConditionByRouteCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId(), copy.getId()) &&
-                condition.apply(criteria.getRouteId(), copy.getRouteId()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getItemsId(), copy.getItemsId()) &&
                 condition.apply(criteria.getPromotionId(), copy.getPromotionId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

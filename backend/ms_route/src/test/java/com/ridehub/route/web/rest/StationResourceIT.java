@@ -694,16 +694,8 @@ class StationResourceIT {
     @Test
     @Transactional
     void getAllStationsByAddressIsEqualToSomething() throws Exception {
-        Address address;
-        if (TestUtil.findAll(em, Address.class).isEmpty()) {
-            stationRepository.saveAndFlush(station);
-            address = AddressResourceIT.createEntity(em);
-        } else {
-            address = TestUtil.findAll(em, Address.class).get(0);
-        }
-        em.persist(address);
-        em.flush();
-        station.setAddress(address);
+        // Get already existing entity
+        Address address = station.getAddress();
         stationRepository.saveAndFlush(station);
         Long addressId = address.getId();
         // Get all the stationList where address equals to addressId

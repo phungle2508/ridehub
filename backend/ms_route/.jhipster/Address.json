@@ -1,8 +1,10 @@
 {
   "annotations": {
-    "changelogDate": "20250919165151"
+    "changelogDate": "20250921163555"
   },
   "applications": ["ms_route"],
+  "clientRootFolder": "ms_route",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
     {
@@ -45,6 +47,13 @@
   "name": "Address",
   "relationships": [
     {
+      "otherEntityName": "station",
+      "otherEntityRelationshipName": "address",
+      "relationshipName": "station",
+      "relationshipSide": "right",
+      "relationshipType": "one-to-one"
+    },
+    {
       "otherEntityName": "ward",
       "otherEntityRelationshipName": "addresses",
       "relationshipName": "ward",
@@ -53,5 +62,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

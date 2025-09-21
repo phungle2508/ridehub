@@ -87,8 +87,14 @@ public class CacheConfiguration {
             createCache(cm, com.ridehub.promotion.domain.BuyNGetMFree.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.PercentOffTotal.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.ConditionByRoute.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.ConditionByRoute.class.getName() + ".items", jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.ConditionByDate.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.ConditionByDate.class.getName() + ".items", jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.ConditionByLocation.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.ConditionByLocation.class.getName() + ".items", jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.ConditionRouteItem.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.ConditionDateItem.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.ConditionLocationItem.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }

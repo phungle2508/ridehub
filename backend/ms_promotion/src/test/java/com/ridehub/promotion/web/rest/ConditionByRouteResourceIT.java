@@ -39,9 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ConditionByRouteResourceIT {
 
-    private static final UUID DEFAULT_ROUTE_ID = UUID.randomUUID();
-    private static final UUID UPDATED_ROUTE_ID = UUID.randomUUID();
-
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
@@ -90,7 +87,6 @@ class ConditionByRouteResourceIT {
      */
     public static ConditionByRoute createEntity(EntityManager em) {
         ConditionByRoute conditionByRoute = new ConditionByRoute()
-            .routeId(DEFAULT_ROUTE_ID)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -117,7 +113,6 @@ class ConditionByRouteResourceIT {
      */
     public static ConditionByRoute createUpdatedEntity(EntityManager em) {
         ConditionByRoute updatedConditionByRoute = new ConditionByRoute()
-            .routeId(UPDATED_ROUTE_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -200,25 +195,6 @@ class ConditionByRouteResourceIT {
 
     @Test
     @Transactional
-    void checkRouteIdIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        // set the field null
-        conditionByRoute.setRouteId(null);
-
-        // Create the ConditionByRoute, which fails.
-        ConditionByRouteDTO conditionByRouteDTO = conditionByRouteMapper.toDto(conditionByRoute);
-
-        restConditionByRouteMockMvc
-            .perform(
-                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(conditionByRouteDTO))
-            )
-            .andExpect(status().isBadRequest());
-
-        assertSameRepositoryCount(databaseSizeBeforeTest);
-    }
-
-    @Test
-    @Transactional
     void checkCreatedAtIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null
@@ -248,7 +224,6 @@ class ConditionByRouteResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionByRoute.getId().intValue())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -268,7 +243,6 @@ class ConditionByRouteResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(conditionByRoute.getId().intValue()))
-            .andExpect(jsonPath("$.routeId").value(DEFAULT_ROUTE_ID.toString()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -289,36 +263,6 @@ class ConditionByRouteResourceIT {
         defaultConditionByRouteFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
 
         defaultConditionByRouteFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByRoutesByRouteIdIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByRoute = conditionByRouteRepository.saveAndFlush(conditionByRoute);
-
-        // Get all the conditionByRouteList where routeId equals to
-        defaultConditionByRouteFiltering("routeId.equals=" + DEFAULT_ROUTE_ID, "routeId.equals=" + UPDATED_ROUTE_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByRoutesByRouteIdIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedConditionByRoute = conditionByRouteRepository.saveAndFlush(conditionByRoute);
-
-        // Get all the conditionByRouteList where routeId in
-        defaultConditionByRouteFiltering("routeId.in=" + DEFAULT_ROUTE_ID + "," + UPDATED_ROUTE_ID, "routeId.in=" + UPDATED_ROUTE_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByRoutesByRouteIdIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedConditionByRoute = conditionByRouteRepository.saveAndFlush(conditionByRoute);
-
-        // Get all the conditionByRouteList where routeId is not null
-        defaultConditionByRouteFiltering("routeId.specified=true", "routeId.specified=false");
     }
 
     @Test
@@ -522,7 +466,6 @@ class ConditionByRouteResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionByRoute.getId().intValue())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -576,7 +519,6 @@ class ConditionByRouteResourceIT {
         // Disconnect from session so that the updates on updatedConditionByRoute are not directly saved in db
         em.detach(updatedConditionByRoute);
         updatedConditionByRoute
-            .routeId(UPDATED_ROUTE_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -676,7 +618,7 @@ class ConditionByRouteResourceIT {
         ConditionByRoute partialUpdatedConditionByRoute = new ConditionByRoute();
         partialUpdatedConditionByRoute.setId(conditionByRoute.getId());
 
-        partialUpdatedConditionByRoute.routeId(UPDATED_ROUTE_ID).isDeleted(UPDATED_IS_DELETED);
+        partialUpdatedConditionByRoute.createdAt(UPDATED_CREATED_AT).deletedAt(UPDATED_DELETED_AT);
 
         restConditionByRouteMockMvc
             .perform(
@@ -709,7 +651,6 @@ class ConditionByRouteResourceIT {
         partialUpdatedConditionByRoute.setId(conditionByRoute.getId());
 
         partialUpdatedConditionByRoute
-            .routeId(UPDATED_ROUTE_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

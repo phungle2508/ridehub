@@ -71,7 +71,7 @@ public class Ward implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "ward")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "ward" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "station", "ward" }, allowSetters = true)
     private Set<Address> addresses = new HashSet<>();
 
     @ManyToOne(optional = false)

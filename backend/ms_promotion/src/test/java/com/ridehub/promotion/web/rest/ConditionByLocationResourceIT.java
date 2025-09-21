@@ -39,15 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ConditionByLocationResourceIT {
 
-    private static final UUID DEFAULT_PROVINCE_ID = UUID.randomUUID();
-    private static final UUID UPDATED_PROVINCE_ID = UUID.randomUUID();
-
-    private static final UUID DEFAULT_DISTRICT_ID = UUID.randomUUID();
-    private static final UUID UPDATED_DISTRICT_ID = UUID.randomUUID();
-
-    private static final UUID DEFAULT_WARD_ID = UUID.randomUUID();
-    private static final UUID UPDATED_WARD_ID = UUID.randomUUID();
-
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
@@ -96,9 +87,6 @@ class ConditionByLocationResourceIT {
      */
     public static ConditionByLocation createEntity(EntityManager em) {
         ConditionByLocation conditionByLocation = new ConditionByLocation()
-            .provinceId(DEFAULT_PROVINCE_ID)
-            .districtId(DEFAULT_DISTRICT_ID)
-            .wardId(DEFAULT_WARD_ID)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -125,9 +113,6 @@ class ConditionByLocationResourceIT {
      */
     public static ConditionByLocation createUpdatedEntity(EntityManager em) {
         ConditionByLocation updatedConditionByLocation = new ConditionByLocation()
-            .provinceId(UPDATED_PROVINCE_ID)
-            .districtId(UPDATED_DISTRICT_ID)
-            .wardId(UPDATED_WARD_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -248,9 +233,6 @@ class ConditionByLocationResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionByLocation.getId().intValue())))
-            .andExpect(jsonPath("$.[*].provinceId").value(hasItem(DEFAULT_PROVINCE_ID.toString())))
-            .andExpect(jsonPath("$.[*].districtId").value(hasItem(DEFAULT_DISTRICT_ID.toString())))
-            .andExpect(jsonPath("$.[*].wardId").value(hasItem(DEFAULT_WARD_ID.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -270,9 +252,6 @@ class ConditionByLocationResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(conditionByLocation.getId().intValue()))
-            .andExpect(jsonPath("$.provinceId").value(DEFAULT_PROVINCE_ID.toString()))
-            .andExpect(jsonPath("$.districtId").value(DEFAULT_DISTRICT_ID.toString()))
-            .andExpect(jsonPath("$.wardId").value(DEFAULT_WARD_ID.toString()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -293,102 +272,6 @@ class ConditionByLocationResourceIT {
         defaultConditionByLocationFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
 
         defaultConditionByLocationFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByProvinceIdIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where provinceId equals to
-        defaultConditionByLocationFiltering("provinceId.equals=" + DEFAULT_PROVINCE_ID, "provinceId.equals=" + UPDATED_PROVINCE_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByProvinceIdIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where provinceId in
-        defaultConditionByLocationFiltering(
-            "provinceId.in=" + DEFAULT_PROVINCE_ID + "," + UPDATED_PROVINCE_ID,
-            "provinceId.in=" + UPDATED_PROVINCE_ID
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByProvinceIdIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where provinceId is not null
-        defaultConditionByLocationFiltering("provinceId.specified=true", "provinceId.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByDistrictIdIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where districtId equals to
-        defaultConditionByLocationFiltering("districtId.equals=" + DEFAULT_DISTRICT_ID, "districtId.equals=" + UPDATED_DISTRICT_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByDistrictIdIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where districtId in
-        defaultConditionByLocationFiltering(
-            "districtId.in=" + DEFAULT_DISTRICT_ID + "," + UPDATED_DISTRICT_ID,
-            "districtId.in=" + UPDATED_DISTRICT_ID
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByDistrictIdIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where districtId is not null
-        defaultConditionByLocationFiltering("districtId.specified=true", "districtId.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByWardIdIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where wardId equals to
-        defaultConditionByLocationFiltering("wardId.equals=" + DEFAULT_WARD_ID, "wardId.equals=" + UPDATED_WARD_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByWardIdIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where wardId in
-        defaultConditionByLocationFiltering("wardId.in=" + DEFAULT_WARD_ID + "," + UPDATED_WARD_ID, "wardId.in=" + UPDATED_WARD_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByLocationsByWardIdIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedConditionByLocation = conditionByLocationRepository.saveAndFlush(conditionByLocation);
-
-        // Get all the conditionByLocationList where wardId is not null
-        defaultConditionByLocationFiltering("wardId.specified=true", "wardId.specified=false");
     }
 
     @Test
@@ -592,9 +475,6 @@ class ConditionByLocationResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionByLocation.getId().intValue())))
-            .andExpect(jsonPath("$.[*].provinceId").value(hasItem(DEFAULT_PROVINCE_ID.toString())))
-            .andExpect(jsonPath("$.[*].districtId").value(hasItem(DEFAULT_DISTRICT_ID.toString())))
-            .andExpect(jsonPath("$.[*].wardId").value(hasItem(DEFAULT_WARD_ID.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -648,9 +528,6 @@ class ConditionByLocationResourceIT {
         // Disconnect from session so that the updates on updatedConditionByLocation are not directly saved in db
         em.detach(updatedConditionByLocation);
         updatedConditionByLocation
-            .provinceId(UPDATED_PROVINCE_ID)
-            .districtId(UPDATED_DISTRICT_ID)
-            .wardId(UPDATED_WARD_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -753,7 +630,7 @@ class ConditionByLocationResourceIT {
         ConditionByLocation partialUpdatedConditionByLocation = new ConditionByLocation();
         partialUpdatedConditionByLocation.setId(conditionByLocation.getId());
 
-        partialUpdatedConditionByLocation.districtId(UPDATED_DISTRICT_ID).updatedAt(UPDATED_UPDATED_AT).isDeleted(UPDATED_IS_DELETED);
+        partialUpdatedConditionByLocation.updatedAt(UPDATED_UPDATED_AT).deletedBy(UPDATED_DELETED_BY);
 
         restConditionByLocationMockMvc
             .perform(
@@ -786,9 +663,6 @@ class ConditionByLocationResourceIT {
         partialUpdatedConditionByLocation.setId(conditionByLocation.getId());
 
         partialUpdatedConditionByLocation
-            .provinceId(UPDATED_PROVINCE_ID)
-            .districtId(UPDATED_DISTRICT_ID)
-            .wardId(UPDATED_WARD_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

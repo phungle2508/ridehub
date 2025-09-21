@@ -251,17 +251,6 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler implemen
 
     private boolean containsPackageName(String message) {
         // This list is for sure not complete
-        return StringUtils.containsAny(
-            message,
-            "org.",
-            "java.",
-            "net.",
-            "jakarta.",
-            "javax.",
-            "com.",
-            "io.",
-            "de.",
-            "com.ridehub.gateway"
-        );
+        return StringUtils.containsAny(message, "org.", "java.", "net.", "jakarta.", "javax.", "com.", "io.", "de.", "com.ridehub.gateway");
     }
 }

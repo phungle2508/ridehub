@@ -1,8 +1,10 @@
 {
   "annotations": {
-    "changelogDate": "20250919165525"
+    "changelogDate": "20250921163355"
   },
   "applications": ["ms_promotion"],
+  "clientRootFolder": "ms_promotion",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "entityTableName": "buy_n_get_m_free",
   "fields": [
@@ -51,5 +53,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

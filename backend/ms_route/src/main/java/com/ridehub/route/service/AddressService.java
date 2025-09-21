@@ -1,6 +1,7 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.AddressDTO;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -30,6 +31,13 @@ public interface AddressService {
      * @return the persisted entity.
      */
     Optional<AddressDTO> partialUpdate(AddressDTO addressDTO);
+
+    /**
+     * Get all the AddressDTO where Station is {@code null}.
+     *
+     * @return the {@link List} of entities.
+     */
+    List<AddressDTO> findAllWhereStationIsNull();
 
     /**
      * Get the "id" address.

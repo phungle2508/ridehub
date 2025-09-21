@@ -1,0 +1,59 @@
+{
+  "annotations": {
+    "changelogDate": "20250921164055"
+  },
+  "applications": ["ms_promotion"],
+  "clientRootFolder": "ms_promotion",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "provinceId",
+      "fieldType": "UUID"
+    },
+    {
+      "fieldName": "districtId",
+      "fieldType": "UUID"
+    },
+    {
+      "fieldName": "wardId",
+      "fieldType": "UUID"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "isDeleted",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "deletedAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "deletedBy",
+      "fieldType": "UUID"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "ms_promotion",
+  "name": "ConditionLocationItem",
+  "relationships": [
+    {
+      "otherEntityName": "conditionByLocation",
+      "otherEntityRelationshipName": "items",
+      "relationshipName": "condition",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

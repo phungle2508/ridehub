@@ -36,6 +36,8 @@ public class SeatMapCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter vehicleId;
+
     private Boolean distinct;
 
     public SeatMapCriteria() {}
@@ -48,6 +50,7 @@ public class SeatMapCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.vehicleId = other.optionalVehicleId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -189,6 +192,25 @@ public class SeatMapCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getVehicleId() {
+        return vehicleId;
+    }
+
+    public Optional<LongFilter> optionalVehicleId() {
+        return Optional.ofNullable(vehicleId);
+    }
+
+    public LongFilter vehicleId() {
+        if (vehicleId == null) {
+            setVehicleId(new LongFilter());
+        }
+        return vehicleId;
+    }
+
+    public void setVehicleId(LongFilter vehicleId) {
+        this.vehicleId = vehicleId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -225,13 +247,14 @@ public class SeatMapCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(vehicleId, that.vehicleId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, distinct);
+        return Objects.hash(id, name, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, vehicleId, distinct);
     }
 
     // prettier-ignore
@@ -245,6 +268,7 @@ public class SeatMapCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalVehicleId().map(f -> "vehicleId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

@@ -76,14 +76,12 @@ class ConditionByLocationCriteriaTest {
 
     private static void setAllFilters(ConditionByLocationCriteria conditionByLocationCriteria) {
         conditionByLocationCriteria.id();
-        conditionByLocationCriteria.provinceId();
-        conditionByLocationCriteria.districtId();
-        conditionByLocationCriteria.wardId();
         conditionByLocationCriteria.createdAt();
         conditionByLocationCriteria.updatedAt();
         conditionByLocationCriteria.isDeleted();
         conditionByLocationCriteria.deletedAt();
         conditionByLocationCriteria.deletedBy();
+        conditionByLocationCriteria.itemsId();
         conditionByLocationCriteria.promotionId();
         conditionByLocationCriteria.distinct();
     }
@@ -92,14 +90,12 @@ class ConditionByLocationCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId()) &&
-                condition.apply(criteria.getProvinceId()) &&
-                condition.apply(criteria.getDistrictId()) &&
-                condition.apply(criteria.getWardId()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getItemsId()) &&
                 condition.apply(criteria.getPromotionId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -113,14 +109,12 @@ class ConditionByLocationCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId(), copy.getId()) &&
-                condition.apply(criteria.getProvinceId(), copy.getProvinceId()) &&
-                condition.apply(criteria.getDistrictId(), copy.getDistrictId()) &&
-                condition.apply(criteria.getWardId(), copy.getWardId()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getItemsId(), copy.getItemsId()) &&
                 condition.apply(criteria.getPromotionId(), copy.getPromotionId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

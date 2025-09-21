@@ -75,12 +75,14 @@ public class ConditionByRouteQueryService extends QueryService<ConditionByRoute>
             specification = Specification.allOf(
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), ConditionByRoute_.id),
-                buildSpecification(criteria.getRouteId(), ConditionByRoute_.routeId),
                 buildRangeSpecification(criteria.getCreatedAt(), ConditionByRoute_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), ConditionByRoute_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), ConditionByRoute_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), ConditionByRoute_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), ConditionByRoute_.deletedBy),
+                buildSpecification(criteria.getItemsId(), root ->
+                    root.join(ConditionByRoute_.items, JoinType.LEFT).get(ConditionRouteItem_.id)
+                ),
                 buildSpecification(criteria.getPromotionId(), root ->
                     root.join(ConditionByRoute_.promotion, JoinType.LEFT).get(Promotion_.id)
                 )

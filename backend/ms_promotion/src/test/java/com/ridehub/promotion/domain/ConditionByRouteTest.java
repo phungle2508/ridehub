@@ -1,10 +1,13 @@
 package com.ridehub.promotion.domain;
 
 import static com.ridehub.promotion.domain.ConditionByRouteTestSamples.*;
+import static com.ridehub.promotion.domain.ConditionRouteItemTestSamples.*;
 import static com.ridehub.promotion.domain.PromotionTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.promotion.web.rest.TestUtil;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class ConditionByRouteTest {
@@ -21,6 +24,28 @@ class ConditionByRouteTest {
 
         conditionByRoute2 = getConditionByRouteSample2();
         assertThat(conditionByRoute1).isNotEqualTo(conditionByRoute2);
+    }
+
+    @Test
+    void itemsTest() {
+        ConditionByRoute conditionByRoute = getConditionByRouteRandomSampleGenerator();
+        ConditionRouteItem conditionRouteItemBack = getConditionRouteItemRandomSampleGenerator();
+
+        conditionByRoute.addItems(conditionRouteItemBack);
+        assertThat(conditionByRoute.getItems()).containsOnly(conditionRouteItemBack);
+        assertThat(conditionRouteItemBack.getCondition()).isEqualTo(conditionByRoute);
+
+        conditionByRoute.removeItems(conditionRouteItemBack);
+        assertThat(conditionByRoute.getItems()).doesNotContain(conditionRouteItemBack);
+        assertThat(conditionRouteItemBack.getCondition()).isNull();
+
+        conditionByRoute.items(new HashSet<>(Set.of(conditionRouteItemBack)));
+        assertThat(conditionByRoute.getItems()).containsOnly(conditionRouteItemBack);
+        assertThat(conditionRouteItemBack.getCondition()).isEqualTo(conditionByRoute);
+
+        conditionByRoute.setItems(new HashSet<>());
+        assertThat(conditionByRoute.getItems()).doesNotContain(conditionRouteItemBack);
+        assertThat(conditionRouteItemBack.getCondition()).isNull();
     }
 
     @Test

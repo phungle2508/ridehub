@@ -72,13 +72,14 @@ public class ConditionByDateQueryService extends QueryService<ConditionByDate> {
             specification = Specification.allOf(
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), ConditionByDate_.id),
-                buildRangeSpecification(criteria.getSpecificDate(), ConditionByDate_.specificDate),
-                buildRangeSpecification(criteria.getWeekday(), ConditionByDate_.weekday),
                 buildRangeSpecification(criteria.getCreatedAt(), ConditionByDate_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), ConditionByDate_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), ConditionByDate_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), ConditionByDate_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), ConditionByDate_.deletedBy),
+                buildSpecification(criteria.getItemsId(), root ->
+                    root.join(ConditionByDate_.items, JoinType.LEFT).get(ConditionDateItem_.id)
+                ),
                 buildSpecification(criteria.getPromotionId(), root ->
                     root.join(ConditionByDate_.promotion, JoinType.LEFT).get(Promotion_.id)
                 )

@@ -1,8 +1,10 @@
 {
   "annotations": {
-    "changelogDate": "20250914121300"
+    "changelogDate": "20250921163655"
   },
   "applications": ["ms_booking"],
+  "clientRootFolder": "ms_booking",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
     {
@@ -59,5 +61,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

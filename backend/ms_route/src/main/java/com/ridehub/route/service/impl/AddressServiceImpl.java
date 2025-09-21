@@ -5,7 +5,11 @@ import com.ridehub.route.repository.AddressRepository;
 import com.ridehub.route.service.AddressService;
 import com.ridehub.route.service.dto.AddressDTO;
 import com.ridehub.route.service.mapper.AddressMapper;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -58,6 +62,19 @@ public class AddressServiceImpl implements AddressService {
             })
             .map(addressRepository::save)
             .map(addressMapper::toDto);
+    }
+
+    /**
+     *  Get all the addresses where Station is {@code null}.
+     *  @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<AddressDTO> findAllWhereStationIsNull() {
+        LOG.debug("Request to get all addresses where Station is null");
+        return StreamSupport.stream(addressRepository.findAll().spliterator(), false)
+            .filter(address -> address.getStation() == null)
+            .map(addressMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override

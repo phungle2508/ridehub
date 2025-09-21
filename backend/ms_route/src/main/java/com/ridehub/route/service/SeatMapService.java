@@ -1,6 +1,7 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.SeatMapDTO;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -30,6 +31,13 @@ public interface SeatMapService {
      * @return the persisted entity.
      */
     Optional<SeatMapDTO> partialUpdate(SeatMapDTO seatMapDTO);
+
+    /**
+     * Get all the SeatMapDTO where Vehicle is {@code null}.
+     *
+     * @return the {@link List} of entities.
+     */
+    List<SeatMapDTO> findAllWhereVehicleIsNull();
 
     /**
      * Get the "id" seatMap.

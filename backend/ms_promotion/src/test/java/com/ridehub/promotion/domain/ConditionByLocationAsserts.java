@@ -47,9 +47,6 @@ public class ConditionByLocationAsserts {
     public static void assertConditionByLocationUpdatableFieldsEquals(ConditionByLocation expected, ConditionByLocation actual) {
         assertThat(actual)
             .as("Verify ConditionByLocation relevant properties")
-            .satisfies(a -> assertThat(a.getProvinceId()).as("check provinceId").isEqualTo(expected.getProvinceId()))
-            .satisfies(a -> assertThat(a.getDistrictId()).as("check districtId").isEqualTo(expected.getDistrictId()))
-            .satisfies(a -> assertThat(a.getWardId()).as("check wardId").isEqualTo(expected.getWardId()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))

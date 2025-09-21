@@ -47,7 +47,6 @@ public class ConditionByRouteAsserts {
     public static void assertConditionByRouteUpdatableFieldsEquals(ConditionByRoute expected, ConditionByRoute actual) {
         assertThat(actual)
             .as("Verify ConditionByRoute relevant properties")
-            .satisfies(a -> assertThat(a.getRouteId()).as("check routeId").isEqualTo(expected.getRouteId()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))

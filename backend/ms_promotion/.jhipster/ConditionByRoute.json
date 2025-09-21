@@ -1,15 +1,12 @@
 {
   "annotations": {
-    "changelogDate": "20250919165725"
+    "changelogDate": "20250921163555"
   },
   "applications": ["ms_promotion"],
+  "clientRootFolder": "ms_promotion",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
-    {
-      "fieldName": "routeId",
-      "fieldType": "UUID",
-      "fieldValidateRules": ["required"]
-    },
     {
       "fieldName": "createdAt",
       "fieldType": "Instant",
@@ -37,6 +34,13 @@
   "name": "ConditionByRoute",
   "relationships": [
     {
+      "otherEntityName": "conditionRouteItem",
+      "otherEntityRelationshipName": "condition",
+      "relationshipName": "items",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
       "otherEntityName": "promotion",
       "otherEntityRelationshipName": "conditionsR",
       "relationshipName": "promotion",
@@ -45,5 +49,6 @@
       "relationshipValidateRules": "required"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

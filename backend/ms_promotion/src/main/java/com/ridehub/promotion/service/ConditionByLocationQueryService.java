@@ -75,14 +75,14 @@ public class ConditionByLocationQueryService extends QueryService<ConditionByLoc
             specification = Specification.allOf(
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), ConditionByLocation_.id),
-                buildSpecification(criteria.getProvinceId(), ConditionByLocation_.provinceId),
-                buildSpecification(criteria.getDistrictId(), ConditionByLocation_.districtId),
-                buildSpecification(criteria.getWardId(), ConditionByLocation_.wardId),
                 buildRangeSpecification(criteria.getCreatedAt(), ConditionByLocation_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), ConditionByLocation_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), ConditionByLocation_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), ConditionByLocation_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), ConditionByLocation_.deletedBy),
+                buildSpecification(criteria.getItemsId(), root ->
+                    root.join(ConditionByLocation_.items, JoinType.LEFT).get(ConditionLocationItem_.id)
+                ),
                 buildSpecification(criteria.getPromotionId(), root ->
                     root.join(ConditionByLocation_.promotion, JoinType.LEFT).get(Promotion_.id)
                 )

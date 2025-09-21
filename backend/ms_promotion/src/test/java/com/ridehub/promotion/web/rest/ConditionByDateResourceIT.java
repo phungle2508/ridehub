@@ -17,8 +17,6 @@ import com.ridehub.promotion.service.dto.ConditionByDateDTO;
 import com.ridehub.promotion.service.mapper.ConditionByDateMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.UUID;
@@ -40,14 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @WithMockUser
 class ConditionByDateResourceIT {
-
-    private static final LocalDate DEFAULT_SPECIFIC_DATE = LocalDate.ofEpochDay(0L);
-    private static final LocalDate UPDATED_SPECIFIC_DATE = LocalDate.now(ZoneId.systemDefault());
-    private static final LocalDate SMALLER_SPECIFIC_DATE = LocalDate.ofEpochDay(-1L);
-
-    private static final Integer DEFAULT_WEEKDAY = 1;
-    private static final Integer UPDATED_WEEKDAY = 2;
-    private static final Integer SMALLER_WEEKDAY = 1 - 1;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -97,8 +87,6 @@ class ConditionByDateResourceIT {
      */
     public static ConditionByDate createEntity(EntityManager em) {
         ConditionByDate conditionByDate = new ConditionByDate()
-            .specificDate(DEFAULT_SPECIFIC_DATE)
-            .weekday(DEFAULT_WEEKDAY)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -125,8 +113,6 @@ class ConditionByDateResourceIT {
      */
     public static ConditionByDate createUpdatedEntity(EntityManager em) {
         ConditionByDate updatedConditionByDate = new ConditionByDate()
-            .specificDate(UPDATED_SPECIFIC_DATE)
-            .weekday(UPDATED_WEEKDAY)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -238,8 +224,6 @@ class ConditionByDateResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionByDate.getId().intValue())))
-            .andExpect(jsonPath("$.[*].specificDate").value(hasItem(DEFAULT_SPECIFIC_DATE.toString())))
-            .andExpect(jsonPath("$.[*].weekday").value(hasItem(DEFAULT_WEEKDAY)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -259,8 +243,6 @@ class ConditionByDateResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(conditionByDate.getId().intValue()))
-            .andExpect(jsonPath("$.specificDate").value(DEFAULT_SPECIFIC_DATE.toString()))
-            .andExpect(jsonPath("$.weekday").value(DEFAULT_WEEKDAY))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -281,158 +263,6 @@ class ConditionByDateResourceIT {
         defaultConditionByDateFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
 
         defaultConditionByDateFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesBySpecificDateIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where specificDate equals to
-        defaultConditionByDateFiltering("specificDate.equals=" + DEFAULT_SPECIFIC_DATE, "specificDate.equals=" + UPDATED_SPECIFIC_DATE);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesBySpecificDateIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where specificDate in
-        defaultConditionByDateFiltering(
-            "specificDate.in=" + DEFAULT_SPECIFIC_DATE + "," + UPDATED_SPECIFIC_DATE,
-            "specificDate.in=" + UPDATED_SPECIFIC_DATE
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesBySpecificDateIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where specificDate is not null
-        defaultConditionByDateFiltering("specificDate.specified=true", "specificDate.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesBySpecificDateIsGreaterThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where specificDate is greater than or equal to
-        defaultConditionByDateFiltering(
-            "specificDate.greaterThanOrEqual=" + DEFAULT_SPECIFIC_DATE,
-            "specificDate.greaterThanOrEqual=" + UPDATED_SPECIFIC_DATE
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesBySpecificDateIsLessThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where specificDate is less than or equal to
-        defaultConditionByDateFiltering(
-            "specificDate.lessThanOrEqual=" + DEFAULT_SPECIFIC_DATE,
-            "specificDate.lessThanOrEqual=" + SMALLER_SPECIFIC_DATE
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesBySpecificDateIsLessThanSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where specificDate is less than
-        defaultConditionByDateFiltering("specificDate.lessThan=" + UPDATED_SPECIFIC_DATE, "specificDate.lessThan=" + DEFAULT_SPECIFIC_DATE);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesBySpecificDateIsGreaterThanSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where specificDate is greater than
-        defaultConditionByDateFiltering(
-            "specificDate.greaterThan=" + SMALLER_SPECIFIC_DATE,
-            "specificDate.greaterThan=" + DEFAULT_SPECIFIC_DATE
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesByWeekdayIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where weekday equals to
-        defaultConditionByDateFiltering("weekday.equals=" + DEFAULT_WEEKDAY, "weekday.equals=" + UPDATED_WEEKDAY);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesByWeekdayIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where weekday in
-        defaultConditionByDateFiltering("weekday.in=" + DEFAULT_WEEKDAY + "," + UPDATED_WEEKDAY, "weekday.in=" + UPDATED_WEEKDAY);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesByWeekdayIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where weekday is not null
-        defaultConditionByDateFiltering("weekday.specified=true", "weekday.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesByWeekdayIsGreaterThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where weekday is greater than or equal to
-        defaultConditionByDateFiltering("weekday.greaterThanOrEqual=" + DEFAULT_WEEKDAY, "weekday.greaterThanOrEqual=" + UPDATED_WEEKDAY);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesByWeekdayIsLessThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where weekday is less than or equal to
-        defaultConditionByDateFiltering("weekday.lessThanOrEqual=" + DEFAULT_WEEKDAY, "weekday.lessThanOrEqual=" + SMALLER_WEEKDAY);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesByWeekdayIsLessThanSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where weekday is less than
-        defaultConditionByDateFiltering("weekday.lessThan=" + UPDATED_WEEKDAY, "weekday.lessThan=" + DEFAULT_WEEKDAY);
-    }
-
-    @Test
-    @Transactional
-    void getAllConditionByDatesByWeekdayIsGreaterThanSomething() throws Exception {
-        // Initialize the database
-        insertedConditionByDate = conditionByDateRepository.saveAndFlush(conditionByDate);
-
-        // Get all the conditionByDateList where weekday is greater than
-        defaultConditionByDateFiltering("weekday.greaterThan=" + SMALLER_WEEKDAY, "weekday.greaterThan=" + DEFAULT_WEEKDAY);
     }
 
     @Test
@@ -636,8 +466,6 @@ class ConditionByDateResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionByDate.getId().intValue())))
-            .andExpect(jsonPath("$.[*].specificDate").value(hasItem(DEFAULT_SPECIFIC_DATE.toString())))
-            .andExpect(jsonPath("$.[*].weekday").value(hasItem(DEFAULT_WEEKDAY)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -691,8 +519,6 @@ class ConditionByDateResourceIT {
         // Disconnect from session so that the updates on updatedConditionByDate are not directly saved in db
         em.detach(updatedConditionByDate);
         updatedConditionByDate
-            .specificDate(UPDATED_SPECIFIC_DATE)
-            .weekday(UPDATED_WEEKDAY)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -792,11 +618,7 @@ class ConditionByDateResourceIT {
         ConditionByDate partialUpdatedConditionByDate = new ConditionByDate();
         partialUpdatedConditionByDate.setId(conditionByDate.getId());
 
-        partialUpdatedConditionByDate
-            .createdAt(UPDATED_CREATED_AT)
-            .updatedAt(UPDATED_UPDATED_AT)
-            .isDeleted(UPDATED_IS_DELETED)
-            .deletedAt(UPDATED_DELETED_AT);
+        partialUpdatedConditionByDate.isDeleted(UPDATED_IS_DELETED).deletedAt(UPDATED_DELETED_AT).deletedBy(UPDATED_DELETED_BY);
 
         restConditionByDateMockMvc
             .perform(
@@ -829,8 +651,6 @@ class ConditionByDateResourceIT {
         partialUpdatedConditionByDate.setId(conditionByDate.getId());
 
         partialUpdatedConditionByDate
-            .specificDate(UPDATED_SPECIFIC_DATE)
-            .weekday(UPDATED_WEEKDAY)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

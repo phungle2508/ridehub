@@ -1,5 +1,6 @@
 package com.ridehub.route.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -53,6 +54,7 @@ public class Floor implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
+    @JsonIgnoreProperties(value = { "vehicle" }, allowSetters = true)
     private SeatMap seatMap;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

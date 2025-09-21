@@ -8,13 +8,30 @@
     "databaseType": "sql",
     "devDatabaseType": "mysql",
     "enableSwaggerCodegen": true,
-    "entities": ["Promotion", "BuyNGetMFree", "PercentOffTotal", "ConditionByRoute", "ConditionByDate", "ConditionByLocation"],
+    "entities": [
+      "Promotion",
+      "BuyNGetMFree",
+      "PercentOffTotal",
+      "ConditionByRoute",
+      "ConditionByDate",
+      "ConditionByLocation",
+      "ConditionRouteItem",
+      "ConditionDateItem",
+      "ConditionLocationItem"
+    ],
     "jhipsterVersion": "8.11.0",
-    "lastLiquibaseTimestamp": 1758301165000,
+    "jwtSecretKey": "MTU1Yzc3YWExZjBlYjVmZjQyY2RhM2I4YmEzMjcxM2UwNTM2ODQ3ODliZjU2OWNlMmY5MWI0OGJkMWJkNjQ3ZjQyMGU2MDJmNzQwOGViMGZlZDcwMTQwOGRlNTgxOWU5NzQ5NWMwYzNkYWUyODA5YTg5ODI1MjdjMjU4YTFlOWI=",
+    "languages": ["en"],
+    "lastLiquibaseTimestamp": 1758472855000,
     "messageBroker": "kafka",
+    "monorepository": true,
+    "nativeLanguage": "en",
     "packageName": "com.ridehub.promotion",
     "prodDatabaseType": "mysql",
     "serverPort": "8084",
-    "serviceDiscoveryType": "consul"
+    "serviceDiscoveryType": "consul",
+    "skipClient": true,
+    "skipCommitHook": true,
+    "skipUserManagement": true
   }
 }

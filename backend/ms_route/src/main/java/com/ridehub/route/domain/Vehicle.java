@@ -1,5 +1,6 @@
 package com.ridehub.route.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ridehub.route.domain.enumeration.VehicleType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -63,8 +64,10 @@ public class Vehicle implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @ManyToOne(optional = false)
+    @JsonIgnoreProperties(value = { "vehicle" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @NotNull
+    @JoinColumn(unique = true)
     private SeatMap seatMap;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

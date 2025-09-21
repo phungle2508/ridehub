@@ -55,6 +55,10 @@ public class Address implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
+    @JsonIgnoreProperties(value = { "address" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "address")
+    private Station station;
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "addresses", "district" }, allowSetters = true)
@@ -177,6 +181,25 @@ public class Address implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public Station getStation() {
+        return this.station;
+    }
+
+    public void setStation(Station station) {
+        if (this.station != null) {
+            this.station.setAddress(null);
+        }
+        if (station != null) {
+            station.setAddress(this);
+        }
+        this.station = station;
+    }
+
+    public Address station(Station station) {
+        this.setStation(station);
+        return this;
     }
 
     public Ward getWard() {

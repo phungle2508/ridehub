@@ -14,12 +14,6 @@ public class ConditionByLocationDTO implements Serializable {
 
     private Long id;
 
-    private UUID provinceId;
-
-    private UUID districtId;
-
-    private UUID wardId;
-
     @NotNull
     private Instant createdAt;
 
@@ -40,30 +34,6 @@ public class ConditionByLocationDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public UUID getProvinceId() {
-        return provinceId;
-    }
-
-    public void setProvinceId(UUID provinceId) {
-        this.provinceId = provinceId;
-    }
-
-    public UUID getDistrictId() {
-        return districtId;
-    }
-
-    public void setDistrictId(UUID districtId) {
-        this.districtId = districtId;
-    }
-
-    public UUID getWardId() {
-        return wardId;
-    }
-
-    public void setWardId(UUID wardId) {
-        this.wardId = wardId;
     }
 
     public Instant getCreatedAt() {
@@ -140,9 +110,6 @@ public class ConditionByLocationDTO implements Serializable {
     public String toString() {
         return "ConditionByLocationDTO{" +
             "id=" + getId() +
-            ", provinceId='" + getProvinceId() + "'" +
-            ", districtId='" + getDistrictId() + "'" +
-            ", wardId='" + getWardId() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

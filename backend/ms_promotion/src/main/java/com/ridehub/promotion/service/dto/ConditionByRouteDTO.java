@@ -15,9 +15,6 @@ public class ConditionByRouteDTO implements Serializable {
     private Long id;
 
     @NotNull
-    private UUID routeId;
-
-    @NotNull
     private Instant createdAt;
 
     private Instant updatedAt;
@@ -37,14 +34,6 @@ public class ConditionByRouteDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public UUID getRouteId() {
-        return routeId;
-    }
-
-    public void setRouteId(UUID routeId) {
-        this.routeId = routeId;
     }
 
     public Instant getCreatedAt() {
@@ -121,7 +110,6 @@ public class ConditionByRouteDTO implements Serializable {
     public String toString() {
         return "ConditionByRouteDTO{" +
             "id=" + getId() +
-            ", routeId='" + getRouteId() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -27,18 +29,6 @@ public class ConditionByLocation implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "province_id", length = 36)
-    private UUID provinceId;
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "district_id", length = 36)
-    private UUID districtId;
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "ward_id", length = 36)
-    private UUID wardId;
-
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -55,6 +45,11 @@ public class ConditionByLocation implements Serializable {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "condition")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "condition" }, allowSetters = true)
+    private Set<ConditionLocationItem> items = new HashSet<>();
 
     @ManyToOne(optional = false)
     @NotNull
@@ -74,45 +69,6 @@ public class ConditionByLocation implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public UUID getProvinceId() {
-        return this.provinceId;
-    }
-
-    public ConditionByLocation provinceId(UUID provinceId) {
-        this.setProvinceId(provinceId);
-        return this;
-    }
-
-    public void setProvinceId(UUID provinceId) {
-        this.provinceId = provinceId;
-    }
-
-    public UUID getDistrictId() {
-        return this.districtId;
-    }
-
-    public ConditionByLocation districtId(UUID districtId) {
-        this.setDistrictId(districtId);
-        return this;
-    }
-
-    public void setDistrictId(UUID districtId) {
-        this.districtId = districtId;
-    }
-
-    public UUID getWardId() {
-        return this.wardId;
-    }
-
-    public ConditionByLocation wardId(UUID wardId) {
-        this.setWardId(wardId);
-        return this;
-    }
-
-    public void setWardId(UUID wardId) {
-        this.wardId = wardId;
     }
 
     public Instant getCreatedAt() {
@@ -180,6 +136,37 @@ public class ConditionByLocation implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public Set<ConditionLocationItem> getItems() {
+        return this.items;
+    }
+
+    public void setItems(Set<ConditionLocationItem> conditionLocationItems) {
+        if (this.items != null) {
+            this.items.forEach(i -> i.setCondition(null));
+        }
+        if (conditionLocationItems != null) {
+            conditionLocationItems.forEach(i -> i.setCondition(this));
+        }
+        this.items = conditionLocationItems;
+    }
+
+    public ConditionByLocation items(Set<ConditionLocationItem> conditionLocationItems) {
+        this.setItems(conditionLocationItems);
+        return this;
+    }
+
+    public ConditionByLocation addItems(ConditionLocationItem conditionLocationItem) {
+        this.items.add(conditionLocationItem);
+        conditionLocationItem.setCondition(this);
+        return this;
+    }
+
+    public ConditionByLocation removeItems(ConditionLocationItem conditionLocationItem) {
+        this.items.remove(conditionLocationItem);
+        conditionLocationItem.setCondition(null);
+        return this;
+    }
+
     public Promotion getPromotion() {
         return this.promotion;
     }
@@ -217,9 +204,6 @@ public class ConditionByLocation implements Serializable {
     public String toString() {
         return "ConditionByLocation{" +
             "id=" + getId() +
-            ", provinceId='" + getProvinceId() + "'" +
-            ", districtId='" + getDistrictId() + "'" +
-            ", wardId='" + getWardId() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

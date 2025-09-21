@@ -10,29 +10,14 @@ public class ConditionByLocationTestSamples {
     private static final AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
     public static ConditionByLocation getConditionByLocationSample1() {
-        return new ConditionByLocation()
-            .id(1L)
-            .provinceId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
-            .districtId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
-            .wardId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
-            .deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
+        return new ConditionByLocation().id(1L).deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
     }
 
     public static ConditionByLocation getConditionByLocationSample2() {
-        return new ConditionByLocation()
-            .id(2L)
-            .provinceId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
-            .districtId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
-            .wardId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
-            .deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
+        return new ConditionByLocation().id(2L).deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
     }
 
     public static ConditionByLocation getConditionByLocationRandomSampleGenerator() {
-        return new ConditionByLocation()
-            .id(longCount.incrementAndGet())
-            .provinceId(UUID.randomUUID())
-            .districtId(UUID.randomUUID())
-            .wardId(UUID.randomUUID())
-            .deletedBy(UUID.randomUUID());
+        return new ConditionByLocation().id(longCount.incrementAndGet()).deletedBy(UUID.randomUUID());
     }
 }

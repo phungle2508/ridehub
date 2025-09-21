@@ -76,13 +76,12 @@ class ConditionByDateCriteriaTest {
 
     private static void setAllFilters(ConditionByDateCriteria conditionByDateCriteria) {
         conditionByDateCriteria.id();
-        conditionByDateCriteria.specificDate();
-        conditionByDateCriteria.weekday();
         conditionByDateCriteria.createdAt();
         conditionByDateCriteria.updatedAt();
         conditionByDateCriteria.isDeleted();
         conditionByDateCriteria.deletedAt();
         conditionByDateCriteria.deletedBy();
+        conditionByDateCriteria.itemsId();
         conditionByDateCriteria.promotionId();
         conditionByDateCriteria.distinct();
     }
@@ -91,13 +90,12 @@ class ConditionByDateCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId()) &&
-                condition.apply(criteria.getSpecificDate()) &&
-                condition.apply(criteria.getWeekday()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getItemsId()) &&
                 condition.apply(criteria.getPromotionId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -111,13 +109,12 @@ class ConditionByDateCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId(), copy.getId()) &&
-                condition.apply(criteria.getSpecificDate(), copy.getSpecificDate()) &&
-                condition.apply(criteria.getWeekday(), copy.getWeekday()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getItemsId(), copy.getItemsId()) &&
                 condition.apply(criteria.getPromotionId(), copy.getPromotionId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

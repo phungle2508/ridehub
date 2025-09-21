@@ -1,8 +1,10 @@
 {
   "annotations": {
-    "changelogDate": "20250919165551"
+    "changelogDate": "20250921163955"
   },
   "applications": ["ms_route"],
+  "clientRootFolder": "ms_route",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
     {
@@ -35,6 +37,15 @@
   "jpaMetamodelFiltering": true,
   "microserviceName": "ms_route",
   "name": "SeatMap",
-  "relationships": [],
+  "relationships": [
+    {
+      "otherEntityName": "vehicle",
+      "otherEntityRelationshipName": "seatMap",
+      "relationshipName": "vehicle",
+      "relationshipSide": "right",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }

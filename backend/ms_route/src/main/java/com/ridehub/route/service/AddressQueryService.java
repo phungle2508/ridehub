@@ -80,6 +80,7 @@ public class AddressQueryService extends QueryService<Address> {
                 buildSpecification(criteria.getIsDeleted(), Address_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Address_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), Address_.deletedBy),
+                buildSpecification(criteria.getStationId(), root -> root.join(Address_.station, JoinType.LEFT).get(Station_.id)),
                 buildSpecification(criteria.getWardId(), root -> root.join(Address_.ward, JoinType.LEFT).get(Ward_.id))
             );
         }

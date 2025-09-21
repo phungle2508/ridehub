@@ -64,9 +64,10 @@ public class Station implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @ManyToOne(optional = false)
+    @JsonIgnoreProperties(value = { "station", "ward" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "ward" }, allowSetters = true)
+    @JoinColumn(unique = true)
     private Address address;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

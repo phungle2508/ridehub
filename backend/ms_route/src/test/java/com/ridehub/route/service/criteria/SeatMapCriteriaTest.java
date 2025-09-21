@@ -82,6 +82,7 @@ class SeatMapCriteriaTest {
         seatMapCriteria.isDeleted();
         seatMapCriteria.deletedAt();
         seatMapCriteria.deletedBy();
+        seatMapCriteria.vehicleId();
         seatMapCriteria.distinct();
     }
 
@@ -95,6 +96,7 @@ class SeatMapCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getVehicleId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -110,6 +112,7 @@ class SeatMapCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getVehicleId(), copy.getVehicleId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

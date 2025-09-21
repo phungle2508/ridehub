@@ -5,7 +5,11 @@ import com.ridehub.route.repository.SeatMapRepository;
 import com.ridehub.route.service.SeatMapService;
 import com.ridehub.route.service.dto.SeatMapDTO;
 import com.ridehub.route.service.mapper.SeatMapMapper;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -58,6 +62,19 @@ public class SeatMapServiceImpl implements SeatMapService {
             })
             .map(seatMapRepository::save)
             .map(seatMapMapper::toDto);
+    }
+
+    /**
+     *  Get all the seatMaps where Vehicle is {@code null}.
+     *  @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<SeatMapDTO> findAllWhereVehicleIsNull() {
+        LOG.debug("Request to get all seatMaps where Vehicle is null");
+        return StreamSupport.stream(seatMapRepository.findAll().spliterator(), false)
+            .filter(seatMap -> seatMap.getVehicle() == null)
+            .map(seatMapMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override

@@ -1,8 +1,10 @@
 {
   "annotations": {
-    "changelogDate": "20250914120900"
+    "changelogDate": "20250921163255"
   },
   "applications": ["ms_user"],
+  "clientRootFolder": "ms_user",
+  "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
     {
@@ -79,5 +81,6 @@
       "relationshipType": "one-to-one"
     }
   ],
+  "searchEngine": "no",
   "service": "serviceImpl"
 }
