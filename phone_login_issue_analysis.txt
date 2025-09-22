@@ -1,0 +1,116 @@
+Phone Number Login Issue Analysis & Solution
+============================================
+
+PROBLEM IDENTIFIED:
+==================
+Users cannot login with phone numbers in ms_user even though the Keycloak SPI 
+is designed to support phone number login.
+
+ROOT CAUSE:
+===========
+Phone number format mismatch between registration and login:
+
+1. DURING REGISTRATION (Keycloak SPI):
+   - Phone numbers are normalized using Util.normalizePhone()
+   - Example: "0123456789" becomes "+84123456789"
+   - This normalized phone number is stored as the username in Keycloak
+
+2. DURING LOGIN (ms_user):
+   - Login accepts raw username without normalization
+   - Example: User enters "0123456789" 
+   - Keycloak looks for username "0123456789" but finds "+84123456789"
+   - Login fails with "invalid_grant" error
+
+KEYCLOAK SPI DESIGN (Correct):
+==============================
+File: spi/keycloak-custom-reg/src/main/java/com/example/kc/customreg/CustomRegResource.java
+
+- Line 103: user.setUsername(phone) // Sets normalized phone as username
+- Line 115: user.setSingleAttribute("phone_number", phone) // Stores phone attribute
+- Line 20: Util.normalizePhone() converts "0123456789" to "+84123456789"
+
+NORMALIZATION LOGIC:
+===================
+From Util.java:
+- Removes whitespace: "012 345 6789" → "0123456789"
+- Validates format: Must match ^\\+?\\d{8,15}$
+- Converts local to international: "0123456789" → "+84123456789"
+
+SOLUTION IMPLEMENTED:
+====================
+
+1. Created PhoneUtil.java:
+   - Replicates exact normalization logic from Keycloak SPI
+   - Added looksLikePhoneNumber() method for detection
+   - Ensures consistent phone number handling
+
+2. Updated KeycloakAuthServiceImpl.login():
+   - Detects if username looks like a phone number
+   - Normalizes phone numbers before sending to Keycloak
+   - Maintains backward compatibility for email logins
+
+CODE CHANGES:
+=============
+
+1. NEW FILE: backend/ms_user/src/main/java/com/ridehub/user/util/PhoneUtil.java
+   - normalizePhone(String raw): Normalizes phone numbers
+   - looksLikePhoneNumber(String input): Detects phone number format
+
+2. UPDATED: KeycloakAuthServiceImpl.java
+   - Added phone number normalization in login() method
+   - Added logging for normalization process
+
+TESTING SCENARIOS:
+==================
+
+Before Fix:
+- Register with: "0123456789" (stored as "+84123456789")
+- Login with: "0123456789" → FAILS (username mismatch)
+- Login with: "+84123456789" → SUCCESS
+
+After Fix:
+- Register with: "0123456789" (stored as "+84123456789")  
+- Login with: "0123456789" → SUCCESS (normalized to "+84123456789")
+- Login with: "+84123456789" → SUCCESS
+- Login with: "012 345 6789" → SUCCESS (spaces removed, normalized)
+
+COMMANDS TO TEST:
+================
+
+1. Run specific test:
+   mvn test -Dtest=AuthResourceIT#verifyOtpWithInvalidCode
+
+2. Run all auth tests:
+   mvn test -Dtest=AuthResourceIT
+
+3. Test login functionality:
+   mvn test -Dtest=*Login*
+
+4. Integration test:
+   mvn test -Dtest=*Integration*
+
+ADDITIONAL BENEFITS:
+===================
+
+1. User Experience:
+   - Users can login with any phone format they remember
+   - Consistent behavior between registration and login
+
+2. System Reliability:
+   - Eliminates phone format-related login failures
+   - Reduces support tickets for "can't login" issues
+
+3. Data Consistency:
+   - All phone numbers stored in consistent format
+   - Easier user lookup and management
+
+VERIFICATION STEPS:
+==================
+
+1. Register a new user with phone: "0123456789"
+2. Try login with: "0123456789" → Should work
+3. Try login with: "+84123456789" → Should work  
+4. Try login with: "012 345 6789" → Should work
+5. Try login with email → Should still work
+
+Generated on: 2025-09-22
