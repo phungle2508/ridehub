@@ -33,6 +33,8 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     private final ObjectMapper objectMapper;
     private final String keycloakBaseUrl;
     private final AppUserService appUserService;
+    private final String keycloakClientId;
+    private final String keycloakClientSecret;
 
     private static String enc(String v) {
         return URLEncoder.encode(v, StandardCharsets.UTF_8);
@@ -41,10 +43,14 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     public KeycloakAuthServiceImpl(
             ObjectMapper objectMapper,
             AppUserService appUserService,
+            @Value("${spring.security.oauth2.client.provider.oidc.client-id}") String keycloakClientId,
+            @Value("${spring.security.oauth2.client.provider.oidc.client-secret}") String keycloakClientSecret,
             @Value("${app.keycloak.base-url:https://keycloak.appf4s.io.vn}") String keycloakBaseUrl) {
         this.objectMapper = objectMapper;
         this.appUserService = appUserService;
         this.keycloakBaseUrl = keycloakBaseUrl;
+        this.keycloakClientId = keycloakClientId;
+        this.keycloakClientSecret = keycloakClientSecret;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
@@ -303,10 +309,12 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             String tokenUrl = keycloakBaseUrl + "/realms/jhipster/protocol/openid-connect/token";
 
             String formData = "grant_type=" + enc("password") +
-                    "&client_id=" + enc("web_app") +
-                    // If client is confidential, also add:
-                    // "&client_secret=" + enc(kcClientSecret) +
-                    "&username=" + enc(normalizedUsername) + // <-- encodes '+' to %2B
+                    "&client_id=" + enc(keycloakClientId) +
+                    (keycloakClientSecret != null && !keycloakClientSecret.isBlank()
+                            ? "&client_secret=" + enc(keycloakClientSecret)
+                            : "")
+                    +
+                    "&username=" + enc(normalizedUsername) +
                     "&password=" + enc(password);
 
             HttpRequest request = HttpRequest.newBuilder()
