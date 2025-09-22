@@ -91,17 +91,17 @@ public class AppUserServiceImpl implements AppUserService {
         // Check if user already exists
         Optional<AppUser> existingUser = appUserRepository.findByKeycloakId(keycloakId);
 
-        AppUser appUser;
-        if (existingUser.isPresent()) {
-            // Update existing user
-            appUser = existingUser.get();
-            LOG.debug("Updating existing user with keycloakId: {}", keycloakId);
-        } else {
+        AppUser appUser = existingUser.orElseGet(() -> {
             // Create new user
-            appUser = new AppUser();
-            appUser.setKeycloakId(keycloakId);
-            appUser.setCreatedAt(Instant.now());
+            AppUser newUser = new AppUser();
+            newUser.setKeycloakId(keycloakId);
+            newUser.setCreatedAt(Instant.now());
             LOG.debug("Creating new user with keycloakId: {}", keycloakId);
+            return newUser;
+        });
+
+        if (existingUser.isPresent()) {
+            LOG.debug("Updating existing user with keycloakId: {}", keycloakId);
         }
 
         // Set/update user data
