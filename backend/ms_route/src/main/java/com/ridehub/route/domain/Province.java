@@ -30,7 +30,7 @@ public class Province implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "province_code", nullable = false)
+    @Column(name = "province_code", nullable = false, unique = true)
     private String provinceCode;
 
     @NotNull

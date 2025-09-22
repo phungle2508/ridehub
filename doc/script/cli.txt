@@ -1,5 +1,5 @@
 cd backend
-jhipster jdl ../ticket-store.jdl  --skip-install --force
+jhipster jdl ../ridehub.jdl  --skip-install --force
 
 cd ../
 ./git-restore.sh

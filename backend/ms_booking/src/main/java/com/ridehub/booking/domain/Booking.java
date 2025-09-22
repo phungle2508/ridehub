@@ -48,8 +48,8 @@ public class Booking implements Serializable {
     private BigDecimal totalAmount;
 
     @NotNull
-    @Column(name = "created_time", nullable = false)
-    private Instant createdTime;
+    @Column(name = "booked_at", nullable = false)
+    private Instant bookedAt;
 
     @NotNull
     @JdbcTypeCode(SqlTypes.VARCHAR)
@@ -78,7 +78,7 @@ public class Booking implements Serializable {
     @JoinColumn(unique = true)
     private Invoice invoice;
 
-    @JsonIgnoreProperties(value = { "booking" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "webhooks", "booking" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(unique = true)
     private PaymentTransaction paymentTransaction;
@@ -92,6 +92,11 @@ public class Booking implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "booking" }, allowSetters = true)
     private Set<AppliedPromotion> appliedPromos = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "booking")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "booking" }, allowSetters = true)
+    private Set<PricingSnapshot> pricingSnapshots = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -160,17 +165,17 @@ public class Booking implements Serializable {
         this.totalAmount = totalAmount;
     }
 
-    public Instant getCreatedTime() {
-        return this.createdTime;
+    public Instant getBookedAt() {
+        return this.bookedAt;
     }
 
-    public Booking createdTime(Instant createdTime) {
-        this.setCreatedTime(createdTime);
+    public Booking bookedAt(Instant bookedAt) {
+        this.setBookedAt(bookedAt);
         return this;
     }
 
-    public void setCreatedTime(Instant createdTime) {
-        this.createdTime = createdTime;
+    public void setBookedAt(Instant bookedAt) {
+        this.bookedAt = bookedAt;
     }
 
     public UUID getCustomerId() {
@@ -339,6 +344,37 @@ public class Booking implements Serializable {
         return this;
     }
 
+    public Set<PricingSnapshot> getPricingSnapshots() {
+        return this.pricingSnapshots;
+    }
+
+    public void setPricingSnapshots(Set<PricingSnapshot> pricingSnapshots) {
+        if (this.pricingSnapshots != null) {
+            this.pricingSnapshots.forEach(i -> i.setBooking(null));
+        }
+        if (pricingSnapshots != null) {
+            pricingSnapshots.forEach(i -> i.setBooking(this));
+        }
+        this.pricingSnapshots = pricingSnapshots;
+    }
+
+    public Booking pricingSnapshots(Set<PricingSnapshot> pricingSnapshots) {
+        this.setPricingSnapshots(pricingSnapshots);
+        return this;
+    }
+
+    public Booking addPricingSnapshots(PricingSnapshot pricingSnapshot) {
+        this.pricingSnapshots.add(pricingSnapshot);
+        pricingSnapshot.setBooking(this);
+        return this;
+    }
+
+    public Booking removePricingSnapshots(PricingSnapshot pricingSnapshot) {
+        this.pricingSnapshots.remove(pricingSnapshot);
+        pricingSnapshot.setBooking(null);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -367,7 +403,7 @@ public class Booking implements Serializable {
             ", status='" + getStatus() + "'" +
             ", quantity=" + getQuantity() +
             ", totalAmount=" + getTotalAmount() +
-            ", createdTime='" + getCreatedTime() + "'" +
+            ", bookedAt='" + getBookedAt() + "'" +
             ", customerId='" + getCustomerId() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

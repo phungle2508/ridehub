@@ -20,9 +20,9 @@
       "ConditionLocationItem"
     ],
     "jhipsterVersion": "8.11.0",
-    "jwtSecretKey": "MTU1Yzc3YWExZjBlYjVmZjQyY2RhM2I4YmEzMjcxM2UwNTM2ODQ3ODliZjU2OWNlMmY5MWI0OGJkMWJkNjQ3ZjQyMGU2MDJmNzQwOGViMGZlZDcwMTQwOGRlNTgxOWU5NzQ5NWMwYzNkYWUyODA5YTg5ODI1MjdjMjU4YTFlOWI=",
+    "jwtSecretKey": "NTdhNzg1MWM4YTVhN2ExOGE1NDMwNWVlYzhkMDc1Y2U0MTcyYzM4ZmFiNGQzYTRiZDM1NmNhZTI2OTA1NjM1Y2RkMjU1NjIxY2ZmMzE0MzQzNmYxZGRmZTU1OTU4YWM1ZDhmOWUwMTU1MzhhYjgxYTI0Y2RjMWQ2OTRjN2NlZTc=",
     "languages": ["en"],
-    "lastLiquibaseTimestamp": 1758472855000,
+    "lastLiquibaseTimestamp": 1758541098000,
     "messageBroker": "kafka",
     "monorepository": true,
     "nativeLanguage": "en",

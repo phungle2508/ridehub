@@ -47,6 +47,17 @@ class AppliedPromotionResourceIT {
     private static final String DEFAULT_PROMOTION_CODE = "AAAAAAAAAA";
     private static final String UPDATED_PROMOTION_CODE = "BBBBBBBBBB";
 
+    private static final String DEFAULT_POLICY_TYPE = "AAAAAAAAAA";
+    private static final String UPDATED_POLICY_TYPE = "BBBBBBBBBB";
+
+    private static final Integer DEFAULT_PERCENT = 1;
+    private static final Integer UPDATED_PERCENT = 2;
+    private static final Integer SMALLER_PERCENT = 1 - 1;
+
+    private static final BigDecimal DEFAULT_MAX_OFF = new BigDecimal(1);
+    private static final BigDecimal UPDATED_MAX_OFF = new BigDecimal(2);
+    private static final BigDecimal SMALLER_MAX_OFF = new BigDecimal(1 - 1);
+
     private static final BigDecimal DEFAULT_DISCOUNT_AMOUNT = new BigDecimal(1);
     private static final BigDecimal UPDATED_DISCOUNT_AMOUNT = new BigDecimal(2);
     private static final BigDecimal SMALLER_DISCOUNT_AMOUNT = new BigDecimal(1 - 1);
@@ -104,6 +115,9 @@ class AppliedPromotionResourceIT {
         AppliedPromotion appliedPromotion = new AppliedPromotion()
             .promotionId(DEFAULT_PROMOTION_ID)
             .promotionCode(DEFAULT_PROMOTION_CODE)
+            .policyType(DEFAULT_POLICY_TYPE)
+            .percent(DEFAULT_PERCENT)
+            .maxOff(DEFAULT_MAX_OFF)
             .discountAmount(DEFAULT_DISCOUNT_AMOUNT)
             .appliedAt(DEFAULT_APPLIED_AT)
             .createdAt(DEFAULT_CREATED_AT)
@@ -134,6 +148,9 @@ class AppliedPromotionResourceIT {
         AppliedPromotion updatedAppliedPromotion = new AppliedPromotion()
             .promotionId(UPDATED_PROMOTION_ID)
             .promotionCode(UPDATED_PROMOTION_CODE)
+            .policyType(UPDATED_POLICY_TYPE)
+            .percent(UPDATED_PERCENT)
+            .maxOff(UPDATED_MAX_OFF)
             .discountAmount(UPDATED_DISCOUNT_AMOUNT)
             .appliedAt(UPDATED_APPLIED_AT)
             .createdAt(UPDATED_CREATED_AT)
@@ -306,6 +323,9 @@ class AppliedPromotionResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(appliedPromotion.getId().intValue())))
             .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.toString())))
             .andExpect(jsonPath("$.[*].promotionCode").value(hasItem(DEFAULT_PROMOTION_CODE)))
+            .andExpect(jsonPath("$.[*].policyType").value(hasItem(DEFAULT_POLICY_TYPE)))
+            .andExpect(jsonPath("$.[*].percent").value(hasItem(DEFAULT_PERCENT)))
+            .andExpect(jsonPath("$.[*].maxOff").value(hasItem(sameNumber(DEFAULT_MAX_OFF))))
             .andExpect(jsonPath("$.[*].discountAmount").value(hasItem(sameNumber(DEFAULT_DISCOUNT_AMOUNT))))
             .andExpect(jsonPath("$.[*].appliedAt").value(hasItem(DEFAULT_APPLIED_AT.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
@@ -329,6 +349,9 @@ class AppliedPromotionResourceIT {
             .andExpect(jsonPath("$.id").value(appliedPromotion.getId().intValue()))
             .andExpect(jsonPath("$.promotionId").value(DEFAULT_PROMOTION_ID.toString()))
             .andExpect(jsonPath("$.promotionCode").value(DEFAULT_PROMOTION_CODE))
+            .andExpect(jsonPath("$.policyType").value(DEFAULT_POLICY_TYPE))
+            .andExpect(jsonPath("$.percent").value(DEFAULT_PERCENT))
+            .andExpect(jsonPath("$.maxOff").value(sameNumber(DEFAULT_MAX_OFF)))
             .andExpect(jsonPath("$.discountAmount").value(sameNumber(DEFAULT_DISCOUNT_AMOUNT)))
             .andExpect(jsonPath("$.appliedAt").value(DEFAULT_APPLIED_AT.toString()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
@@ -446,6 +469,202 @@ class AppliedPromotionResourceIT {
             "promotionCode.doesNotContain=" + UPDATED_PROMOTION_CODE,
             "promotionCode.doesNotContain=" + DEFAULT_PROMOTION_CODE
         );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPolicyTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where policyType equals to
+        defaultAppliedPromotionFiltering("policyType.equals=" + DEFAULT_POLICY_TYPE, "policyType.equals=" + UPDATED_POLICY_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPolicyTypeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where policyType in
+        defaultAppliedPromotionFiltering(
+            "policyType.in=" + DEFAULT_POLICY_TYPE + "," + UPDATED_POLICY_TYPE,
+            "policyType.in=" + UPDATED_POLICY_TYPE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPolicyTypeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where policyType is not null
+        defaultAppliedPromotionFiltering("policyType.specified=true", "policyType.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPolicyTypeContainsSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where policyType contains
+        defaultAppliedPromotionFiltering("policyType.contains=" + DEFAULT_POLICY_TYPE, "policyType.contains=" + UPDATED_POLICY_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPolicyTypeNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where policyType does not contain
+        defaultAppliedPromotionFiltering(
+            "policyType.doesNotContain=" + UPDATED_POLICY_TYPE,
+            "policyType.doesNotContain=" + DEFAULT_POLICY_TYPE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPercentIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where percent equals to
+        defaultAppliedPromotionFiltering("percent.equals=" + DEFAULT_PERCENT, "percent.equals=" + UPDATED_PERCENT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPercentIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where percent in
+        defaultAppliedPromotionFiltering("percent.in=" + DEFAULT_PERCENT + "," + UPDATED_PERCENT, "percent.in=" + UPDATED_PERCENT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPercentIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where percent is not null
+        defaultAppliedPromotionFiltering("percent.specified=true", "percent.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPercentIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where percent is greater than or equal to
+        defaultAppliedPromotionFiltering("percent.greaterThanOrEqual=" + DEFAULT_PERCENT, "percent.greaterThanOrEqual=" + UPDATED_PERCENT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPercentIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where percent is less than or equal to
+        defaultAppliedPromotionFiltering("percent.lessThanOrEqual=" + DEFAULT_PERCENT, "percent.lessThanOrEqual=" + SMALLER_PERCENT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPercentIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where percent is less than
+        defaultAppliedPromotionFiltering("percent.lessThan=" + UPDATED_PERCENT, "percent.lessThan=" + DEFAULT_PERCENT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPercentIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where percent is greater than
+        defaultAppliedPromotionFiltering("percent.greaterThan=" + SMALLER_PERCENT, "percent.greaterThan=" + DEFAULT_PERCENT);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByMaxOffIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where maxOff equals to
+        defaultAppliedPromotionFiltering("maxOff.equals=" + DEFAULT_MAX_OFF, "maxOff.equals=" + UPDATED_MAX_OFF);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByMaxOffIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where maxOff in
+        defaultAppliedPromotionFiltering("maxOff.in=" + DEFAULT_MAX_OFF + "," + UPDATED_MAX_OFF, "maxOff.in=" + UPDATED_MAX_OFF);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByMaxOffIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where maxOff is not null
+        defaultAppliedPromotionFiltering("maxOff.specified=true", "maxOff.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByMaxOffIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where maxOff is greater than or equal to
+        defaultAppliedPromotionFiltering("maxOff.greaterThanOrEqual=" + DEFAULT_MAX_OFF, "maxOff.greaterThanOrEqual=" + UPDATED_MAX_OFF);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByMaxOffIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where maxOff is less than or equal to
+        defaultAppliedPromotionFiltering("maxOff.lessThanOrEqual=" + DEFAULT_MAX_OFF, "maxOff.lessThanOrEqual=" + SMALLER_MAX_OFF);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByMaxOffIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where maxOff is less than
+        defaultAppliedPromotionFiltering("maxOff.lessThan=" + UPDATED_MAX_OFF, "maxOff.lessThan=" + DEFAULT_MAX_OFF);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByMaxOffIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where maxOff is greater than
+        defaultAppliedPromotionFiltering("maxOff.greaterThan=" + SMALLER_MAX_OFF, "maxOff.greaterThan=" + DEFAULT_MAX_OFF);
     }
 
     @Test
@@ -772,6 +991,9 @@ class AppliedPromotionResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(appliedPromotion.getId().intValue())))
             .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.toString())))
             .andExpect(jsonPath("$.[*].promotionCode").value(hasItem(DEFAULT_PROMOTION_CODE)))
+            .andExpect(jsonPath("$.[*].policyType").value(hasItem(DEFAULT_POLICY_TYPE)))
+            .andExpect(jsonPath("$.[*].percent").value(hasItem(DEFAULT_PERCENT)))
+            .andExpect(jsonPath("$.[*].maxOff").value(hasItem(sameNumber(DEFAULT_MAX_OFF))))
             .andExpect(jsonPath("$.[*].discountAmount").value(hasItem(sameNumber(DEFAULT_DISCOUNT_AMOUNT))))
             .andExpect(jsonPath("$.[*].appliedAt").value(hasItem(DEFAULT_APPLIED_AT.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
@@ -829,6 +1051,9 @@ class AppliedPromotionResourceIT {
         updatedAppliedPromotion
             .promotionId(UPDATED_PROMOTION_ID)
             .promotionCode(UPDATED_PROMOTION_CODE)
+            .policyType(UPDATED_POLICY_TYPE)
+            .percent(UPDATED_PERCENT)
+            .maxOff(UPDATED_MAX_OFF)
             .discountAmount(UPDATED_DISCOUNT_AMOUNT)
             .appliedAt(UPDATED_APPLIED_AT)
             .createdAt(UPDATED_CREATED_AT)
@@ -932,7 +1157,8 @@ class AppliedPromotionResourceIT {
 
         partialUpdatedAppliedPromotion
             .promotionCode(UPDATED_PROMOTION_CODE)
-            .discountAmount(UPDATED_DISCOUNT_AMOUNT)
+            .policyType(UPDATED_POLICY_TYPE)
+            .createdAt(UPDATED_CREATED_AT)
             .deletedAt(UPDATED_DELETED_AT);
 
         restAppliedPromotionMockMvc
@@ -968,6 +1194,9 @@ class AppliedPromotionResourceIT {
         partialUpdatedAppliedPromotion
             .promotionId(UPDATED_PROMOTION_ID)
             .promotionCode(UPDATED_PROMOTION_CODE)
+            .policyType(UPDATED_POLICY_TYPE)
+            .percent(UPDATED_PERCENT)
+            .maxOff(UPDATED_MAX_OFF)
             .discountAmount(UPDATED_DISCOUNT_AMOUNT)
             .appliedAt(UPDATED_APPLIED_AT)
             .createdAt(UPDATED_CREATED_AT)

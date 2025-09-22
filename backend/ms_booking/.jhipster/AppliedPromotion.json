@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921163655"
+    "changelogDate": "20250922113418"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -15,6 +15,18 @@
     {
       "fieldName": "promotionCode",
       "fieldType": "String"
+    },
+    {
+      "fieldName": "policyType",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "percent",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "maxOff",
+      "fieldType": "BigDecimal"
     },
     {
       "fieldName": "discountAmount",

@@ -30,7 +30,7 @@ public class Ward implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "ward_code", nullable = false)
+    @Column(name = "ward_code", nullable = false, unique = true)
     private String wardCode;
 
     @NotNull

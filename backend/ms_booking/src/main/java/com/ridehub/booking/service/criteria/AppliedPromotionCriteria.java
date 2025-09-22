@@ -28,6 +28,12 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
 
     private StringFilter promotionCode;
 
+    private StringFilter policyType;
+
+    private IntegerFilter percent;
+
+    private BigDecimalFilter maxOff;
+
     private BigDecimalFilter discountAmount;
 
     private InstantFilter appliedAt;
@@ -52,6 +58,9 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.promotionId = other.optionalPromotionId().map(UUIDFilter::copy).orElse(null);
         this.promotionCode = other.optionalPromotionCode().map(StringFilter::copy).orElse(null);
+        this.policyType = other.optionalPolicyType().map(StringFilter::copy).orElse(null);
+        this.percent = other.optionalPercent().map(IntegerFilter::copy).orElse(null);
+        this.maxOff = other.optionalMaxOff().map(BigDecimalFilter::copy).orElse(null);
         this.discountAmount = other.optionalDiscountAmount().map(BigDecimalFilter::copy).orElse(null);
         this.appliedAt = other.optionalAppliedAt().map(InstantFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
@@ -123,6 +132,63 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
 
     public void setPromotionCode(StringFilter promotionCode) {
         this.promotionCode = promotionCode;
+    }
+
+    public StringFilter getPolicyType() {
+        return policyType;
+    }
+
+    public Optional<StringFilter> optionalPolicyType() {
+        return Optional.ofNullable(policyType);
+    }
+
+    public StringFilter policyType() {
+        if (policyType == null) {
+            setPolicyType(new StringFilter());
+        }
+        return policyType;
+    }
+
+    public void setPolicyType(StringFilter policyType) {
+        this.policyType = policyType;
+    }
+
+    public IntegerFilter getPercent() {
+        return percent;
+    }
+
+    public Optional<IntegerFilter> optionalPercent() {
+        return Optional.ofNullable(percent);
+    }
+
+    public IntegerFilter percent() {
+        if (percent == null) {
+            setPercent(new IntegerFilter());
+        }
+        return percent;
+    }
+
+    public void setPercent(IntegerFilter percent) {
+        this.percent = percent;
+    }
+
+    public BigDecimalFilter getMaxOff() {
+        return maxOff;
+    }
+
+    public Optional<BigDecimalFilter> optionalMaxOff() {
+        return Optional.ofNullable(maxOff);
+    }
+
+    public BigDecimalFilter maxOff() {
+        if (maxOff == null) {
+            setMaxOff(new BigDecimalFilter());
+        }
+        return maxOff;
+    }
+
+    public void setMaxOff(BigDecimalFilter maxOff) {
+        this.maxOff = maxOff;
     }
 
     public BigDecimalFilter getDiscountAmount() {
@@ -309,6 +375,9 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(promotionId, that.promotionId) &&
             Objects.equals(promotionCode, that.promotionCode) &&
+            Objects.equals(policyType, that.policyType) &&
+            Objects.equals(percent, that.percent) &&
+            Objects.equals(maxOff, that.maxOff) &&
             Objects.equals(discountAmount, that.discountAmount) &&
             Objects.equals(appliedAt, that.appliedAt) &&
             Objects.equals(createdAt, that.createdAt) &&
@@ -327,6 +396,9 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
             id,
             promotionId,
             promotionCode,
+            policyType,
+            percent,
+            maxOff,
             discountAmount,
             appliedAt,
             createdAt,
@@ -346,6 +418,9 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalPromotionId().map(f -> "promotionId=" + f + ", ").orElse("") +
             optionalPromotionCode().map(f -> "promotionCode=" + f + ", ").orElse("") +
+            optionalPolicyType().map(f -> "policyType=" + f + ", ").orElse("") +
+            optionalPercent().map(f -> "percent=" + f + ", ").orElse("") +
+            optionalMaxOff().map(f -> "maxOff=" + f + ", ").orElse("") +
             optionalDiscountAmount().map(f -> "discountAmount=" + f + ", ").orElse("") +
             optionalAppliedAt().map(f -> "appliedAt=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +

@@ -87,6 +87,7 @@ class PaymentTransactionCriteriaTest {
         paymentTransactionCriteria.isDeleted();
         paymentTransactionCriteria.deletedAt();
         paymentTransactionCriteria.deletedBy();
+        paymentTransactionCriteria.webhooksId();
         paymentTransactionCriteria.bookingId();
         paymentTransactionCriteria.distinct();
     }
@@ -106,6 +107,7 @@ class PaymentTransactionCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getWebhooksId()) &&
                 condition.apply(criteria.getBookingId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -130,6 +132,7 @@ class PaymentTransactionCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getWebhooksId(), copy.getWebhooksId()) &&
                 condition.apply(criteria.getBookingId(), copy.getBookingId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

@@ -78,7 +78,6 @@ class TripSeatCriteriaTest {
         tripSeatCriteria.id();
         tripSeatCriteria.seatNo();
         tripSeatCriteria.floorNo();
-        tripSeatCriteria.booked();
         tripSeatCriteria.priceFactor();
         tripSeatCriteria.createdAt();
         tripSeatCriteria.updatedAt();
@@ -95,7 +94,6 @@ class TripSeatCriteriaTest {
                 condition.apply(criteria.getId()) &&
                 condition.apply(criteria.getSeatNo()) &&
                 condition.apply(criteria.getFloorNo()) &&
-                condition.apply(criteria.getBooked()) &&
                 condition.apply(criteria.getPriceFactor()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
@@ -114,7 +112,6 @@ class TripSeatCriteriaTest {
                 condition.apply(criteria.getId(), copy.getId()) &&
                 condition.apply(criteria.getSeatNo(), copy.getSeatNo()) &&
                 condition.apply(criteria.getFloorNo(), copy.getFloorNo()) &&
-                condition.apply(criteria.getBooked(), copy.getBooked()) &&
                 condition.apply(criteria.getPriceFactor(), copy.getPriceFactor()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&

@@ -78,6 +78,9 @@ class AppliedPromotionCriteriaTest {
         appliedPromotionCriteria.id();
         appliedPromotionCriteria.promotionId();
         appliedPromotionCriteria.promotionCode();
+        appliedPromotionCriteria.policyType();
+        appliedPromotionCriteria.percent();
+        appliedPromotionCriteria.maxOff();
         appliedPromotionCriteria.discountAmount();
         appliedPromotionCriteria.appliedAt();
         appliedPromotionCriteria.createdAt();
@@ -95,6 +98,9 @@ class AppliedPromotionCriteriaTest {
                 condition.apply(criteria.getId()) &&
                 condition.apply(criteria.getPromotionId()) &&
                 condition.apply(criteria.getPromotionCode()) &&
+                condition.apply(criteria.getPolicyType()) &&
+                condition.apply(criteria.getPercent()) &&
+                condition.apply(criteria.getMaxOff()) &&
                 condition.apply(criteria.getDiscountAmount()) &&
                 condition.apply(criteria.getAppliedAt()) &&
                 condition.apply(criteria.getCreatedAt()) &&
@@ -117,6 +123,9 @@ class AppliedPromotionCriteriaTest {
                 condition.apply(criteria.getId(), copy.getId()) &&
                 condition.apply(criteria.getPromotionId(), copy.getPromotionId()) &&
                 condition.apply(criteria.getPromotionCode(), copy.getPromotionCode()) &&
+                condition.apply(criteria.getPolicyType(), copy.getPolicyType()) &&
+                condition.apply(criteria.getPercent(), copy.getPercent()) &&
+                condition.apply(criteria.getMaxOff(), copy.getMaxOff()) &&
                 condition.apply(criteria.getDiscountAmount(), copy.getDiscountAmount()) &&
                 condition.apply(criteria.getAppliedAt(), copy.getAppliedAt()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&

@@ -82,6 +82,8 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter webhooksId;
+
     private LongFilter bookingId;
 
     private Boolean distinct;
@@ -101,6 +103,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.webhooksId = other.optionalWebhooksId().map(LongFilter::copy).orElse(null);
         this.bookingId = other.optionalBookingId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -338,6 +341,25 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getWebhooksId() {
+        return webhooksId;
+    }
+
+    public Optional<LongFilter> optionalWebhooksId() {
+        return Optional.ofNullable(webhooksId);
+    }
+
+    public LongFilter webhooksId() {
+        if (webhooksId == null) {
+            setWebhooksId(new LongFilter());
+        }
+        return webhooksId;
+    }
+
+    public void setWebhooksId(LongFilter webhooksId) {
+        this.webhooksId = webhooksId;
+    }
+
     public LongFilter getBookingId() {
         return bookingId;
     }
@@ -398,6 +420,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(webhooksId, that.webhooksId) &&
             Objects.equals(bookingId, that.bookingId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -418,6 +441,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
             isDeleted,
             deletedAt,
             deletedBy,
+            webhooksId,
             bookingId,
             distinct
         );
@@ -439,6 +463,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalWebhooksId().map(f -> "webhooksId=" + f + ", ").orElse("") +
             optionalBookingId().map(f -> "bookingId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

@@ -7,6 +7,7 @@ enum PaymentStatus { INITIATED, PROCESSING, SUCCESS, FAILED, REFUNDED }
 enum StaffStatus { ACTIVE, INACTIVE }
 enum Gender { MALE, FEMALE, OTHER }
 enum VehicleType { STANDARD_BUS, LIMOUSINE }
+enum LockStatus { HELD, EXPIRED, COMMITTED } // NEW
 
 // ======================================================
 // Applications
@@ -57,7 +58,7 @@ application {
     serverPort 8082
     enableSwaggerCodegen true
   }
-  entities Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant
+  entities Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant, SeatLock
 }
 
 application {
@@ -75,7 +76,7 @@ application {
     serverPort 8083
     enableSwaggerCodegen true
   }
-  entities Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion
+  entities Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion, PricingSnapshot, PaymentWebhookLog
 }
 
 application {
@@ -97,16 +98,11 @@ application {
 }
 
 // ======================================================
-// Shared audit/soft-delete fields are inlined
-//   createdAt Instant required
-//   updatedAt Instant
-//   isDeleted Boolean
-//   deletedAt Instant
-//   deletedBy UUID
+// Entities
 // ======================================================
 
 // =============================
-// ms_user (Identity & Profile)
+// ms_user
 // =============================
 entity AppUser {
   keycloakId UUID required unique
@@ -139,11 +135,11 @@ relationship OneToOne {
   AppUser{profile} to Profile{user required}
 }
 
-// ================================================
-// ms_route (Address, Stations, Routes, Fleet, Trips)
-// ================================================
+// =============================
+// ms_route
+// =============================
 entity Province {
-  provinceCode String required
+  provinceCode String required unique   // <-- thêm unique
   name String required
   nameEn String
   fullName String
@@ -159,7 +155,7 @@ entity Province {
 }
 
 entity District {
-  districtCode String required
+  districtCode String required unique   // <-- thêm unique
   name String required
   nameEn String
   fullName String
@@ -174,7 +170,7 @@ entity District {
 }
 
 entity Ward {
-  wardCode String required
+  wardCode String required unique       // <-- thêm unique
   name String required
   nameEn String
   fullName String
@@ -217,13 +213,12 @@ entity Station {
   deletedBy UUID
 }
 
-// Station <-> Address is 1-1
 relationship OneToOne {
   Station{address required} to Address{station}
 }
 
 entity Route {
-  routeCode String
+  routeCode String required unique      // <-- thêm required unique
   distanceKm BigDecimal
   createdAt Instant required
   updatedAt Instant
@@ -259,7 +254,6 @@ entity Vehicle {
   deletedBy UUID
 }
 
-// Vehicle <-> SeatMap is 1-1
 relationship OneToOne {
   Vehicle{seatMap required} to SeatMap{vehicle}
 }
@@ -287,7 +281,7 @@ entity Seat {
 }
 
 entity Trip {
-  tripCode String
+  tripCode String required unique       // <-- thêm required unique
   departureTime Instant required
   arrivalTime Instant required
   baseFare BigDecimal required
@@ -301,7 +295,7 @@ entity Trip {
 entity TripSeat {
   seatNo String required
   floorNo Integer required
-  booked Boolean
+  // booked Boolean <-- bỏ cờ này
   priceFactor BigDecimal
   createdAt Instant required
   updatedAt Instant
@@ -355,9 +349,23 @@ relationship OneToOne {
   Trip{attendant} to Attendant{trip}
 }
 
-// =======================================
-// ms_booking (Booking, Ticket, Invoice, Tx, AppliedPromotion)
-// =======================================
+entity SeatLock {
+  tripId UUID required
+  seatNo String required
+  userId UUID
+  status LockStatus required
+  expiresAt Instant required
+  idempotencyKey String
+  createdAt Instant required
+  updatedAt Instant
+  isDeleted Boolean
+  deletedAt Instant
+  deletedBy UUID
+}
+
+// =============================
+// ms_booking
+// =============================
 entity Ticket {
   ticketCode String required unique
   price BigDecimal required
@@ -365,7 +373,6 @@ entity Ticket {
   timeFrom Instant
   timeTo Instant
   checkedIn Boolean
-  // cross-service ids (no FK):
   tripId UUID required
   routeId UUID required
   tripSeatId UUID required
@@ -381,8 +388,7 @@ entity Booking {
   status BookingStatus required
   quantity Integer
   totalAmount BigDecimal required
-  createdTime Instant required
-  // cross-service id:
+  bookedAt Instant required              // <-- đổi createdTime thành bookedAt
   customerId UUID required
   createdAt Instant required
   updatedAt Instant
@@ -418,11 +424,26 @@ entity PaymentTransaction {
   deletedBy UUID
 }
 
-// Decoupled join (stays in ms_booking)
+entity PricingSnapshot {
+  baseFare BigDecimal required
+  vehicleFactor BigDecimal
+  floorFactor BigDecimal
+  seatFactor BigDecimal
+  finalPrice BigDecimal required
+  createdAt Instant required
+  updatedAt Instant
+  isDeleted Boolean
+  deletedAt Instant
+  deletedBy UUID
+}
+
 entity AppliedPromotion {
-  promotionId UUID required           // logical ref to ms_promotion.promotion.id
-  promotionCode String                // denormalized for audit
-  discountAmount BigDecimal required  // computed amount applied
+  promotionId UUID required
+  promotionCode String
+  policyType String
+  percent Integer
+  maxOff BigDecimal
+  discountAmount BigDecimal required
   appliedAt Instant required
   createdAt Instant required
   updatedAt Instant
@@ -431,9 +452,23 @@ entity AppliedPromotion {
   deletedBy UUID
 }
 
+entity PaymentWebhookLog {
+  provider String
+  payloadHash String required unique
+  receivedAt Instant required
+  processingStatus String
+  createdAt Instant required
+  updatedAt Instant
+  isDeleted Boolean
+  deletedAt Instant
+  deletedBy UUID
+}
+
 relationship OneToMany {
-  Booking{tickets}       to Ticket{booking required},
-  Booking{appliedPromos} to AppliedPromotion{booking required}
+  Booking{tickets}           to Ticket{booking required},
+  Booking{appliedPromos}     to AppliedPromotion{booking required},
+  Booking{pricingSnapshots}  to PricingSnapshot{booking required},
+  PaymentTransaction{webhooks} to PaymentWebhookLog{paymentTransaction required}
 }
 
 relationship OneToOne {
@@ -441,9 +476,9 @@ relationship OneToOne {
   Booking{paymentTransaction} to PaymentTransaction{booking}
 }
 
-// ===========================================
-// ms_promotion (Promotions & Conditions)
-// ===========================================
+// =============================
+// ms_promotion
+// =============================
 entity Promotion {
   code String required unique
   description String
@@ -478,7 +513,6 @@ entity PercentOffTotal {
   deletedBy UUID
 }
 
-// Parent "condition" holders (list items live in separate entities)
 entity ConditionByRoute {
   createdAt Instant required
   updatedAt Instant
@@ -486,7 +520,6 @@ entity ConditionByRoute {
   deletedAt Instant
   deletedBy UUID
 }
-
 entity ConditionByDate {
   createdAt Instant required
   updatedAt Instant
@@ -494,7 +527,6 @@ entity ConditionByDate {
   deletedAt Instant
   deletedBy UUID
 }
-
 entity ConditionByLocation {
   createdAt Instant required
   updatedAt Instant
@@ -503,7 +535,6 @@ entity ConditionByLocation {
   deletedBy UUID
 }
 
-// List item entities to model plural fields from PUML
 entity ConditionRouteItem {
   routeId UUID required
   createdAt Instant required
@@ -512,7 +543,6 @@ entity ConditionRouteItem {
   deletedAt Instant
   deletedBy UUID
 }
-
 entity ConditionDateItem {
   specificDate LocalDate
   weekday Integer
@@ -522,7 +552,6 @@ entity ConditionDateItem {
   deletedAt Instant
   deletedBy UUID
 }
-
 entity ConditionLocationItem {
   provinceId UUID
   districtId UUID
@@ -550,12 +579,12 @@ relationship OneToMany {
 // Microservice mappings
 // ======================================================
 microservice AppUser, Profile with ms_user
-microservice Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant with ms_route
-microservice Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion with ms_booking
+microservice Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant, SeatLock with ms_route
+microservice Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion, PricingSnapshot, PaymentWebhookLog with ms_booking
 microservice Promotion, BuyNGetMFree, PercentOffTotal, ConditionByRoute, ConditionByDate, ConditionByLocation, ConditionRouteItem, ConditionDateItem, ConditionLocationItem with ms_promotion
 
 // ======================================================
-// Global options (use modern 'pagination')
+// Global options
 // ======================================================
 dto * with mapstruct
 service * with serviceImpl
@@ -573,3 +602,10 @@ deployment {
   appsFolders [gateway, ms_user, ms_route, ms_booking, ms_promotion]
   dockerRepositoryName "ridehub"
 }
+
+// ===========================
+// NOTES (manual constraints)
+// ===========================
+// - Create composite unique on SeatLock(tripId, seatNo) when status in (HELD, COMMITTED) via Liquibase/Flyway.
+// - Consider Outbox tables in ms_route/ms_booking for Kafka publish-after-commit.
+// - Add proper indexes: Trip(departureTime, route_id), Booking(bookingCode), PaymentWebhookLog(payloadHash).

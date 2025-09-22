@@ -57,8 +57,8 @@ class BookingResourceIT {
     private static final BigDecimal UPDATED_TOTAL_AMOUNT = new BigDecimal(2);
     private static final BigDecimal SMALLER_TOTAL_AMOUNT = new BigDecimal(1 - 1);
 
-    private static final Instant DEFAULT_CREATED_TIME = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_CREATED_TIME = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant DEFAULT_BOOKED_AT = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_BOOKED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
     private static final UUID DEFAULT_CUSTOMER_ID = UUID.randomUUID();
     private static final UUID UPDATED_CUSTOMER_ID = UUID.randomUUID();
@@ -115,7 +115,7 @@ class BookingResourceIT {
             .status(DEFAULT_STATUS)
             .quantity(DEFAULT_QUANTITY)
             .totalAmount(DEFAULT_TOTAL_AMOUNT)
-            .createdTime(DEFAULT_CREATED_TIME)
+            .bookedAt(DEFAULT_BOOKED_AT)
             .customerId(DEFAULT_CUSTOMER_ID)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
@@ -136,7 +136,7 @@ class BookingResourceIT {
             .status(UPDATED_STATUS)
             .quantity(UPDATED_QUANTITY)
             .totalAmount(UPDATED_TOTAL_AMOUNT)
-            .createdTime(UPDATED_CREATED_TIME)
+            .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
@@ -255,10 +255,10 @@ class BookingResourceIT {
 
     @Test
     @Transactional
-    void checkCreatedTimeIsRequired() throws Exception {
+    void checkBookedAtIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null
-        booking.setCreatedTime(null);
+        booking.setBookedAt(null);
 
         // Create the Booking, which fails.
         BookingDTO bookingDTO = bookingMapper.toDto(booking);
@@ -320,7 +320,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].quantity").value(hasItem(DEFAULT_QUANTITY)))
             .andExpect(jsonPath("$.[*].totalAmount").value(hasItem(sameNumber(DEFAULT_TOTAL_AMOUNT))))
-            .andExpect(jsonPath("$.[*].createdTime").value(hasItem(DEFAULT_CREATED_TIME.toString())))
+            .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
             .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
@@ -345,7 +345,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
             .andExpect(jsonPath("$.quantity").value(DEFAULT_QUANTITY))
             .andExpect(jsonPath("$.totalAmount").value(sameNumber(DEFAULT_TOTAL_AMOUNT)))
-            .andExpect(jsonPath("$.createdTime").value(DEFAULT_CREATED_TIME.toString()))
+            .andExpect(jsonPath("$.bookedAt").value(DEFAULT_BOOKED_AT.toString()))
             .andExpect(jsonPath("$.customerId").value(DEFAULT_CUSTOMER_ID.toString()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
@@ -603,35 +603,32 @@ class BookingResourceIT {
 
     @Test
     @Transactional
-    void getAllBookingsByCreatedTimeIsEqualToSomething() throws Exception {
+    void getAllBookingsByBookedAtIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedBooking = bookingRepository.saveAndFlush(booking);
 
-        // Get all the bookingList where createdTime equals to
-        defaultBookingFiltering("createdTime.equals=" + DEFAULT_CREATED_TIME, "createdTime.equals=" + UPDATED_CREATED_TIME);
+        // Get all the bookingList where bookedAt equals to
+        defaultBookingFiltering("bookedAt.equals=" + DEFAULT_BOOKED_AT, "bookedAt.equals=" + UPDATED_BOOKED_AT);
     }
 
     @Test
     @Transactional
-    void getAllBookingsByCreatedTimeIsInShouldWork() throws Exception {
+    void getAllBookingsByBookedAtIsInShouldWork() throws Exception {
         // Initialize the database
         insertedBooking = bookingRepository.saveAndFlush(booking);
 
-        // Get all the bookingList where createdTime in
-        defaultBookingFiltering(
-            "createdTime.in=" + DEFAULT_CREATED_TIME + "," + UPDATED_CREATED_TIME,
-            "createdTime.in=" + UPDATED_CREATED_TIME
-        );
+        // Get all the bookingList where bookedAt in
+        defaultBookingFiltering("bookedAt.in=" + DEFAULT_BOOKED_AT + "," + UPDATED_BOOKED_AT, "bookedAt.in=" + UPDATED_BOOKED_AT);
     }
 
     @Test
     @Transactional
-    void getAllBookingsByCreatedTimeIsNullOrNotNull() throws Exception {
+    void getAllBookingsByBookedAtIsNullOrNotNull() throws Exception {
         // Initialize the database
         insertedBooking = bookingRepository.saveAndFlush(booking);
 
-        // Get all the bookingList where createdTime is not null
-        defaultBookingFiltering("createdTime.specified=true", "createdTime.specified=false");
+        // Get all the bookingList where bookedAt is not null
+        defaultBookingFiltering("bookedAt.specified=true", "bookedAt.specified=false");
     }
 
     @Test
@@ -876,7 +873,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].quantity").value(hasItem(DEFAULT_QUANTITY)))
             .andExpect(jsonPath("$.[*].totalAmount").value(hasItem(sameNumber(DEFAULT_TOTAL_AMOUNT))))
-            .andExpect(jsonPath("$.[*].createdTime").value(hasItem(DEFAULT_CREATED_TIME.toString())))
+            .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
             .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
@@ -935,7 +932,7 @@ class BookingResourceIT {
             .status(UPDATED_STATUS)
             .quantity(UPDATED_QUANTITY)
             .totalAmount(UPDATED_TOTAL_AMOUNT)
-            .createdTime(UPDATED_CREATED_TIME)
+            .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
@@ -1072,7 +1069,7 @@ class BookingResourceIT {
             .status(UPDATED_STATUS)
             .quantity(UPDATED_QUANTITY)
             .totalAmount(UPDATED_TOTAL_AMOUNT)
-            .createdTime(UPDATED_CREATED_TIME)
+            .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)

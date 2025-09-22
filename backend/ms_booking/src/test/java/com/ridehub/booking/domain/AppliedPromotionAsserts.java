@@ -50,6 +50,11 @@ public class AppliedPromotionAsserts {
             .as("Verify AppliedPromotion relevant properties")
             .satisfies(a -> assertThat(a.getPromotionId()).as("check promotionId").isEqualTo(expected.getPromotionId()))
             .satisfies(a -> assertThat(a.getPromotionCode()).as("check promotionCode").isEqualTo(expected.getPromotionCode()))
+            .satisfies(a -> assertThat(a.getPolicyType()).as("check policyType").isEqualTo(expected.getPolicyType()))
+            .satisfies(a -> assertThat(a.getPercent()).as("check percent").isEqualTo(expected.getPercent()))
+            .satisfies(a ->
+                assertThat(a.getMaxOff()).as("check maxOff").usingComparator(bigDecimalCompareTo).isEqualTo(expected.getMaxOff())
+            )
             .satisfies(a ->
                 assertThat(a.getDiscountAmount())
                     .as("check discountAmount")

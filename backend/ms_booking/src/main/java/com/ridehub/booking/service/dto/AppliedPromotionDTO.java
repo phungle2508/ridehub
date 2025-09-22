@@ -20,6 +20,12 @@ public class AppliedPromotionDTO implements Serializable {
 
     private String promotionCode;
 
+    private String policyType;
+
+    private Integer percent;
+
+    private BigDecimal maxOff;
+
     @NotNull
     private BigDecimal discountAmount;
 
@@ -62,6 +68,30 @@ public class AppliedPromotionDTO implements Serializable {
 
     public void setPromotionCode(String promotionCode) {
         this.promotionCode = promotionCode;
+    }
+
+    public String getPolicyType() {
+        return policyType;
+    }
+
+    public void setPolicyType(String policyType) {
+        this.policyType = policyType;
+    }
+
+    public Integer getPercent() {
+        return percent;
+    }
+
+    public void setPercent(Integer percent) {
+        this.percent = percent;
+    }
+
+    public BigDecimal getMaxOff() {
+        return maxOff;
+    }
+
+    public void setMaxOff(BigDecimal maxOff) {
+        this.maxOff = maxOff;
     }
 
     public BigDecimal getDiscountAmount() {
@@ -156,6 +186,9 @@ public class AppliedPromotionDTO implements Serializable {
             "id=" + getId() +
             ", promotionId='" + getPromotionId() + "'" +
             ", promotionCode='" + getPromotionCode() + "'" +
+            ", policyType='" + getPolicyType() + "'" +
+            ", percent=" + getPercent() +
+            ", maxOff=" + getMaxOff() +
             ", discountAmount=" + getDiscountAmount() +
             ", appliedAt='" + getAppliedAt() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +

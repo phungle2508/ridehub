@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921163355"
+    "changelogDate": "20250922113118"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -10,7 +10,7 @@
     {
       "fieldName": "districtCode",
       "fieldType": "String",
-      "fieldValidateRules": ["required"]
+      "fieldValidateRules": ["required", "unique"]
     },
     {
       "fieldName": "name",

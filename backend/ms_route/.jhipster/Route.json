@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921163755"
+    "changelogDate": "20250922113518"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -9,7 +9,8 @@
   "fields": [
     {
       "fieldName": "routeCode",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique"]
     },
     {
       "fieldName": "distanceKm",

@@ -23,12 +23,13 @@
       "TripSeat",
       "Staff",
       "Driver",
-      "Attendant"
+      "Attendant",
+      "SeatLock"
     ],
     "jhipsterVersion": "8.11.0",
-    "jwtSecretKey": "NGQ2NDA1MWQ1NzJjOGVkMTYzNjE5NDI3OTczYTgxMjdlMjc2NmEwNWNkNTcxY2RlNzgxNWNjNjFiMGE2YTBiY2RkZWUzZWZlMTZkOWNhNDEzOWMyMGM3Y2U0ZWFiOGJjYTAzNTA1NTg2ZWM2ZjliZmZiNDQwOWJkZTIxMGU5NTk=",
+    "jwtSecretKey": "YTJlMzY2Mjc4OGQzMTIyMDVmZWZmNTVmYjczM2JmMzNmNDlmNjk0NWRhODIwZWJmMDZiMTUzNmJmODIwYjEyM2NmMzEwMWJjNzU3ZjIwYjdkMzI2OWI2ZTI5NmJmMWI1YTAyYTZiNzU1M2FmMDMzZjYxMzgwMjgxNmNiMmNiMDc=",
     "languages": ["en"],
-    "lastLiquibaseTimestamp": 1758473215000,
+    "lastLiquibaseTimestamp": 1758541518000,
     "messageBroker": "kafka",
     "monorepository": true,
     "nativeLanguage": "en",

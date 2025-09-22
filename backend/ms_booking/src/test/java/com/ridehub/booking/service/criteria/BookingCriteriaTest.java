@@ -80,7 +80,7 @@ class BookingCriteriaTest {
         bookingCriteria.status();
         bookingCriteria.quantity();
         bookingCriteria.totalAmount();
-        bookingCriteria.createdTime();
+        bookingCriteria.bookedAt();
         bookingCriteria.customerId();
         bookingCriteria.createdAt();
         bookingCriteria.updatedAt();
@@ -91,6 +91,7 @@ class BookingCriteriaTest {
         bookingCriteria.paymentTransactionId();
         bookingCriteria.ticketsId();
         bookingCriteria.appliedPromosId();
+        bookingCriteria.pricingSnapshotsId();
         bookingCriteria.distinct();
     }
 
@@ -102,7 +103,7 @@ class BookingCriteriaTest {
                 condition.apply(criteria.getStatus()) &&
                 condition.apply(criteria.getQuantity()) &&
                 condition.apply(criteria.getTotalAmount()) &&
-                condition.apply(criteria.getCreatedTime()) &&
+                condition.apply(criteria.getBookedAt()) &&
                 condition.apply(criteria.getCustomerId()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
@@ -113,6 +114,7 @@ class BookingCriteriaTest {
                 condition.apply(criteria.getPaymentTransactionId()) &&
                 condition.apply(criteria.getTicketsId()) &&
                 condition.apply(criteria.getAppliedPromosId()) &&
+                condition.apply(criteria.getPricingSnapshotsId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -126,7 +128,7 @@ class BookingCriteriaTest {
                 condition.apply(criteria.getStatus(), copy.getStatus()) &&
                 condition.apply(criteria.getQuantity(), copy.getQuantity()) &&
                 condition.apply(criteria.getTotalAmount(), copy.getTotalAmount()) &&
-                condition.apply(criteria.getCreatedTime(), copy.getCreatedTime()) &&
+                condition.apply(criteria.getBookedAt(), copy.getBookedAt()) &&
                 condition.apply(criteria.getCustomerId(), copy.getCustomerId()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
@@ -137,6 +139,7 @@ class BookingCriteriaTest {
                 condition.apply(criteria.getPaymentTransactionId(), copy.getPaymentTransactionId()) &&
                 condition.apply(criteria.getTicketsId(), copy.getTicketsId()) &&
                 condition.apply(criteria.getAppliedPromosId(), copy.getAppliedPromosId()) &&
+                condition.apply(criteria.getPricingSnapshotsId(), copy.getPricingSnapshotsId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

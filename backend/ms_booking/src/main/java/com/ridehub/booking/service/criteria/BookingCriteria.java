@@ -50,7 +50,7 @@ public class BookingCriteria implements Serializable, Criteria {
 
     private BigDecimalFilter totalAmount;
 
-    private InstantFilter createdTime;
+    private InstantFilter bookedAt;
 
     private UUIDFilter customerId;
 
@@ -72,6 +72,8 @@ public class BookingCriteria implements Serializable, Criteria {
 
     private LongFilter appliedPromosId;
 
+    private LongFilter pricingSnapshotsId;
+
     private Boolean distinct;
 
     public BookingCriteria() {}
@@ -82,7 +84,7 @@ public class BookingCriteria implements Serializable, Criteria {
         this.status = other.optionalStatus().map(BookingStatusFilter::copy).orElse(null);
         this.quantity = other.optionalQuantity().map(IntegerFilter::copy).orElse(null);
         this.totalAmount = other.optionalTotalAmount().map(BigDecimalFilter::copy).orElse(null);
-        this.createdTime = other.optionalCreatedTime().map(InstantFilter::copy).orElse(null);
+        this.bookedAt = other.optionalBookedAt().map(InstantFilter::copy).orElse(null);
         this.customerId = other.optionalCustomerId().map(UUIDFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
@@ -93,6 +95,7 @@ public class BookingCriteria implements Serializable, Criteria {
         this.paymentTransactionId = other.optionalPaymentTransactionId().map(LongFilter::copy).orElse(null);
         this.ticketsId = other.optionalTicketsId().map(LongFilter::copy).orElse(null);
         this.appliedPromosId = other.optionalAppliedPromosId().map(LongFilter::copy).orElse(null);
+        this.pricingSnapshotsId = other.optionalPricingSnapshotsId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -196,23 +199,23 @@ public class BookingCriteria implements Serializable, Criteria {
         this.totalAmount = totalAmount;
     }
 
-    public InstantFilter getCreatedTime() {
-        return createdTime;
+    public InstantFilter getBookedAt() {
+        return bookedAt;
     }
 
-    public Optional<InstantFilter> optionalCreatedTime() {
-        return Optional.ofNullable(createdTime);
+    public Optional<InstantFilter> optionalBookedAt() {
+        return Optional.ofNullable(bookedAt);
     }
 
-    public InstantFilter createdTime() {
-        if (createdTime == null) {
-            setCreatedTime(new InstantFilter());
+    public InstantFilter bookedAt() {
+        if (bookedAt == null) {
+            setBookedAt(new InstantFilter());
         }
-        return createdTime;
+        return bookedAt;
     }
 
-    public void setCreatedTime(InstantFilter createdTime) {
-        this.createdTime = createdTime;
+    public void setBookedAt(InstantFilter bookedAt) {
+        this.bookedAt = bookedAt;
     }
 
     public UUIDFilter getCustomerId() {
@@ -405,6 +408,25 @@ public class BookingCriteria implements Serializable, Criteria {
         this.appliedPromosId = appliedPromosId;
     }
 
+    public LongFilter getPricingSnapshotsId() {
+        return pricingSnapshotsId;
+    }
+
+    public Optional<LongFilter> optionalPricingSnapshotsId() {
+        return Optional.ofNullable(pricingSnapshotsId);
+    }
+
+    public LongFilter pricingSnapshotsId() {
+        if (pricingSnapshotsId == null) {
+            setPricingSnapshotsId(new LongFilter());
+        }
+        return pricingSnapshotsId;
+    }
+
+    public void setPricingSnapshotsId(LongFilter pricingSnapshotsId) {
+        this.pricingSnapshotsId = pricingSnapshotsId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -439,7 +461,7 @@ public class BookingCriteria implements Serializable, Criteria {
             Objects.equals(status, that.status) &&
             Objects.equals(quantity, that.quantity) &&
             Objects.equals(totalAmount, that.totalAmount) &&
-            Objects.equals(createdTime, that.createdTime) &&
+            Objects.equals(bookedAt, that.bookedAt) &&
             Objects.equals(customerId, that.customerId) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
@@ -450,6 +472,7 @@ public class BookingCriteria implements Serializable, Criteria {
             Objects.equals(paymentTransactionId, that.paymentTransactionId) &&
             Objects.equals(ticketsId, that.ticketsId) &&
             Objects.equals(appliedPromosId, that.appliedPromosId) &&
+            Objects.equals(pricingSnapshotsId, that.pricingSnapshotsId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -462,7 +485,7 @@ public class BookingCriteria implements Serializable, Criteria {
             status,
             quantity,
             totalAmount,
-            createdTime,
+            bookedAt,
             customerId,
             createdAt,
             updatedAt,
@@ -473,6 +496,7 @@ public class BookingCriteria implements Serializable, Criteria {
             paymentTransactionId,
             ticketsId,
             appliedPromosId,
+            pricingSnapshotsId,
             distinct
         );
     }
@@ -486,7 +510,7 @@ public class BookingCriteria implements Serializable, Criteria {
             optionalStatus().map(f -> "status=" + f + ", ").orElse("") +
             optionalQuantity().map(f -> "quantity=" + f + ", ").orElse("") +
             optionalTotalAmount().map(f -> "totalAmount=" + f + ", ").orElse("") +
-            optionalCreatedTime().map(f -> "createdTime=" + f + ", ").orElse("") +
+            optionalBookedAt().map(f -> "bookedAt=" + f + ", ").orElse("") +
             optionalCustomerId().map(f -> "customerId=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
@@ -497,6 +521,7 @@ public class BookingCriteria implements Serializable, Criteria {
             optionalPaymentTransactionId().map(f -> "paymentTransactionId=" + f + ", ").orElse("") +
             optionalTicketsId().map(f -> "ticketsId=" + f + ", ").orElse("") +
             optionalAppliedPromosId().map(f -> "appliedPromosId=" + f + ", ").orElse("") +
+            optionalPricingSnapshotsId().map(f -> "pricingSnapshotsId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

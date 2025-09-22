@@ -74,7 +74,6 @@ public class TripSeatQueryService extends QueryService<TripSeat> {
                 buildRangeSpecification(criteria.getId(), TripSeat_.id),
                 buildStringSpecification(criteria.getSeatNo(), TripSeat_.seatNo),
                 buildRangeSpecification(criteria.getFloorNo(), TripSeat_.floorNo),
-                buildSpecification(criteria.getBooked(), TripSeat_.booked),
                 buildRangeSpecification(criteria.getPriceFactor(), TripSeat_.priceFactor),
                 buildRangeSpecification(criteria.getCreatedAt(), TripSeat_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), TripSeat_.updatedAt),

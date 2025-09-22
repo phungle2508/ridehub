@@ -61,7 +61,7 @@ public class Invoice implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos", "pricingSnapshots" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "invoice")
     private Booking booking;
 

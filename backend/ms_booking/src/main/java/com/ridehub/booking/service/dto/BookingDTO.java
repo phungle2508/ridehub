@@ -28,7 +28,7 @@ public class BookingDTO implements Serializable {
     private BigDecimal totalAmount;
 
     @NotNull
-    private Instant createdTime;
+    private Instant bookedAt;
 
     @NotNull
     private UUID customerId;
@@ -88,12 +88,12 @@ public class BookingDTO implements Serializable {
         this.totalAmount = totalAmount;
     }
 
-    public Instant getCreatedTime() {
-        return createdTime;
+    public Instant getBookedAt() {
+        return bookedAt;
     }
 
-    public void setCreatedTime(Instant createdTime) {
-        this.createdTime = createdTime;
+    public void setBookedAt(Instant bookedAt) {
+        this.bookedAt = bookedAt;
     }
 
     public UUID getCustomerId() {
@@ -190,7 +190,7 @@ public class BookingDTO implements Serializable {
             ", status='" + getStatus() + "'" +
             ", quantity=" + getQuantity() +
             ", totalAmount=" + getTotalAmount() +
-            ", createdTime='" + getCreatedTime() + "'" +
+            ", bookedAt='" + getBookedAt() + "'" +
             ", customerId='" + getCustomerId() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

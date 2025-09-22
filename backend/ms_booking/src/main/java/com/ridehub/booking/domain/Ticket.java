@@ -82,7 +82,7 @@ public class Ticket implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos", "pricingSnapshots" }, allowSetters = true)
     private Booking booking;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

@@ -28,7 +28,8 @@ public class Trip implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "trip_code")
+    @NotNull
+    @Column(name = "trip_code", nullable = false, unique = true)
     private String tripCode;
 
     @NotNull

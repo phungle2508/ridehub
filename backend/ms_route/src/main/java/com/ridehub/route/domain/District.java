@@ -30,7 +30,7 @@ public class District implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "district_code", nullable = false)
+    @Column(name = "district_code", nullable = false, unique = true)
     private String districtCode;
 
     @NotNull

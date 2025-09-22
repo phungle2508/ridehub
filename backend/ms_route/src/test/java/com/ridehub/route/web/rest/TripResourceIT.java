@@ -213,6 +213,23 @@ class TripResourceIT {
 
     @Test
     @Transactional
+    void checkTripCodeIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        // set the field null
+        trip.setTripCode(null);
+
+        // Create the Trip, which fails.
+        TripDTO tripDTO = tripMapper.toDto(trip);
+
+        restTripMockMvc
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(tripDTO)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     void checkDepartureTimeIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null

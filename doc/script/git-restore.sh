@@ -2,15 +2,26 @@
 set -euo pipefail
 shopt -s globstar nullglob
 
-# Ensure submodules are initialized
-git submodule update --init --recursive
+# Xác định repo root (để restore khi không còn submodule)
+repo_root="$(git rev-parse --show-toplevel)"
 
-# Iterate over microservices and the gateway submodule
+# Đảm bảo submodule (nếu còn) đã init nhưng không lỗi nếu không có
+git submodule update --init --recursive || true
+
+# Hàm chạy git restore an toàn
+restore_paths() {
+  local workdir="$1"; shift
+  if [[ -d "$workdir/.git" || -f "$workdir/.git" ]]; then
+    git -C "$workdir" restore --source=HEAD --staged --worktree -- "$@" || true
+  else
+    git -C "$repo_root" restore --source=HEAD --staged --worktree -- "$@" || true
+  fi
+}
+
 for sm in backend/ms_* backend/gateway; do
-  [[ -d "$sm/.git" || -f "$sm/.git" ]] || continue
+  [[ -d "$sm" ]] || continue
   echo "==> Restoring in $sm"
 
-  # Pick patterns per submodule type
   if [[ "$sm" == backend/ms_* ]]; then
     patterns=(
       "src/main/java/com/ridehub/*/broker/*"
@@ -20,29 +31,31 @@ for sm in backend/ms_* backend/gateway; do
       "src/main/resources/config/bootstrap.yml"
       "src/main/resources/config/application-dev.yml"
       "src/main/java/com/ridehub/*/web/rest/Ms*KafkaResource.java"
+      "src/main/java/com/ridehub/*/config/ConsulSSHTunnel.java"
+      "src/main/java/com/ridehub/*/config/FeignClientConfiguration.java"
     )
-  else # gateway
+  else
     patterns=(
+      "src/main/java/com/ridehub/gateway/config/ConsulSSHTunnel.java"
       "src/main/resources/logback-spring.xml"
       "pom.xml"
       "src/main/resources/config/*"
     )
   fi
 
-  files=()
-  for pat in "${patterns[@]}"; do
-    matches=( "$sm"/$pat )
-    for f in "${matches[@]}"; do
-      # build path relative to submodule root for git -C
-      rel="${f#$sm/}"
-      files+=( "$rel" )
+  pathspecs=()
+  if [[ -d "$sm/.git" || -f "$sm/.git" ]]; then
+    # Submodule: chạy từ trong submodule → KHÔNG prefix $sm
+    for pat in "${patterns[@]}"; do
+      pathspecs+=( ":(glob)$pat" )
     done
-  done
-
-  if (( ${#files[@]} )); then
-    # Restore both index and working tree, ignore missing
-    git -C "$sm" restore --staged --worktree -- "${files[@]}" || true
   else
-    echo "   (no matching files to restore)"
+    # Thư mục thường: chạy từ repo root → prefix $sm
+    for pat in "${patterns[@]}"; do
+      pathspecs+=( ":(glob)$sm/$pat" )
+    done
   fi
+
+  # Gọi restore 1 phát với pathspec (không để bash expand)
+  restore_paths "$sm" "${pathspecs[@]}"
 done

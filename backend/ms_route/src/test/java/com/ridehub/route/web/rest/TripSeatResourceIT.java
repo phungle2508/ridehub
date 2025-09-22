@@ -48,9 +48,6 @@ class TripSeatResourceIT {
     private static final Integer UPDATED_FLOOR_NO = 2;
     private static final Integer SMALLER_FLOOR_NO = 1 - 1;
 
-    private static final Boolean DEFAULT_BOOKED = false;
-    private static final Boolean UPDATED_BOOKED = true;
-
     private static final BigDecimal DEFAULT_PRICE_FACTOR = new BigDecimal(1);
     private static final BigDecimal UPDATED_PRICE_FACTOR = new BigDecimal(2);
     private static final BigDecimal SMALLER_PRICE_FACTOR = new BigDecimal(1 - 1);
@@ -105,7 +102,6 @@ class TripSeatResourceIT {
         TripSeat tripSeat = new TripSeat()
             .seatNo(DEFAULT_SEAT_NO)
             .floorNo(DEFAULT_FLOOR_NO)
-            .booked(DEFAULT_BOOKED)
             .priceFactor(DEFAULT_PRICE_FACTOR)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
@@ -135,7 +131,6 @@ class TripSeatResourceIT {
         TripSeat updatedTripSeat = new TripSeat()
             .seatNo(UPDATED_SEAT_NO)
             .floorNo(UPDATED_FLOOR_NO)
-            .booked(UPDATED_BOOKED)
             .priceFactor(UPDATED_PRICE_FACTOR)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
@@ -277,7 +272,6 @@ class TripSeatResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(tripSeat.getId().intValue())))
             .andExpect(jsonPath("$.[*].seatNo").value(hasItem(DEFAULT_SEAT_NO)))
             .andExpect(jsonPath("$.[*].floorNo").value(hasItem(DEFAULT_FLOOR_NO)))
-            .andExpect(jsonPath("$.[*].booked").value(hasItem(DEFAULT_BOOKED)))
             .andExpect(jsonPath("$.[*].priceFactor").value(hasItem(sameNumber(DEFAULT_PRICE_FACTOR))))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
@@ -300,7 +294,6 @@ class TripSeatResourceIT {
             .andExpect(jsonPath("$.id").value(tripSeat.getId().intValue()))
             .andExpect(jsonPath("$.seatNo").value(DEFAULT_SEAT_NO))
             .andExpect(jsonPath("$.floorNo").value(DEFAULT_FLOOR_NO))
-            .andExpect(jsonPath("$.booked").value(DEFAULT_BOOKED))
             .andExpect(jsonPath("$.priceFactor").value(sameNumber(DEFAULT_PRICE_FACTOR)))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
@@ -442,36 +435,6 @@ class TripSeatResourceIT {
 
         // Get all the tripSeatList where floorNo is greater than
         defaultTripSeatFiltering("floorNo.greaterThan=" + SMALLER_FLOOR_NO, "floorNo.greaterThan=" + DEFAULT_FLOOR_NO);
-    }
-
-    @Test
-    @Transactional
-    void getAllTripSeatsByBookedIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedTripSeat = tripSeatRepository.saveAndFlush(tripSeat);
-
-        // Get all the tripSeatList where booked equals to
-        defaultTripSeatFiltering("booked.equals=" + DEFAULT_BOOKED, "booked.equals=" + UPDATED_BOOKED);
-    }
-
-    @Test
-    @Transactional
-    void getAllTripSeatsByBookedIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedTripSeat = tripSeatRepository.saveAndFlush(tripSeat);
-
-        // Get all the tripSeatList where booked in
-        defaultTripSeatFiltering("booked.in=" + DEFAULT_BOOKED + "," + UPDATED_BOOKED, "booked.in=" + UPDATED_BOOKED);
-    }
-
-    @Test
-    @Transactional
-    void getAllTripSeatsByBookedIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedTripSeat = tripSeatRepository.saveAndFlush(tripSeat);
-
-        // Get all the tripSeatList where booked is not null
-        defaultTripSeatFiltering("booked.specified=true", "booked.specified=false");
     }
 
     @Test
@@ -741,7 +704,6 @@ class TripSeatResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(tripSeat.getId().intValue())))
             .andExpect(jsonPath("$.[*].seatNo").value(hasItem(DEFAULT_SEAT_NO)))
             .andExpect(jsonPath("$.[*].floorNo").value(hasItem(DEFAULT_FLOOR_NO)))
-            .andExpect(jsonPath("$.[*].booked").value(hasItem(DEFAULT_BOOKED)))
             .andExpect(jsonPath("$.[*].priceFactor").value(hasItem(sameNumber(DEFAULT_PRICE_FACTOR))))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
@@ -798,7 +760,6 @@ class TripSeatResourceIT {
         updatedTripSeat
             .seatNo(UPDATED_SEAT_NO)
             .floorNo(UPDATED_FLOOR_NO)
-            .booked(UPDATED_BOOKED)
             .priceFactor(UPDATED_PRICE_FACTOR)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
@@ -900,9 +861,8 @@ class TripSeatResourceIT {
         partialUpdatedTripSeat
             .seatNo(UPDATED_SEAT_NO)
             .floorNo(UPDATED_FLOOR_NO)
-            .booked(UPDATED_BOOKED)
             .priceFactor(UPDATED_PRICE_FACTOR)
-            .isDeleted(UPDATED_IS_DELETED)
+            .createdAt(UPDATED_CREATED_AT)
             .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
 
@@ -936,7 +896,6 @@ class TripSeatResourceIT {
         partialUpdatedTripSeat
             .seatNo(UPDATED_SEAT_NO)
             .floorNo(UPDATED_FLOOR_NO)
-            .booked(UPDATED_BOOKED)
             .priceFactor(UPDATED_PRICE_FACTOR)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)

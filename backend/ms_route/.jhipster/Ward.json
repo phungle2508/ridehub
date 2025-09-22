@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921163455"
+    "changelogDate": "20250922113218"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -10,7 +10,7 @@
     {
       "fieldName": "wardCode",
       "fieldType": "String",
-      "fieldValidateRules": ["required"]
+      "fieldValidateRules": ["required", "unique"]
     },
     {
       "fieldName": "name",

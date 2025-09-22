@@ -6,3 +6,6 @@ microservices/nginx/letsencrypt/*
 microservices/kafka/ssl/*
 .vscode/
 .idea/*
+
+# SPI directory is part of main repo - ensure it's tracked
+# spi/ should be included in version control

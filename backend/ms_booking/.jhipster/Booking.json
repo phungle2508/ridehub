@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921163255"
+    "changelogDate": "20250922113018"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -28,7 +28,7 @@
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "createdTime",
+      "fieldName": "bookedAt",
       "fieldType": "Instant",
       "fieldValidateRules": ["required"]
     },
@@ -89,6 +89,13 @@
       "otherEntityName": "appliedPromotion",
       "otherEntityRelationshipName": "booking",
       "relationshipName": "appliedPromos",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "pricingSnapshot",
+      "otherEntityRelationshipName": "booking",
+      "relationshipName": "pricingSnapshots",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     }

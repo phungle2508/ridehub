@@ -28,8 +28,6 @@ public class TripSeatCriteria implements Serializable, Criteria {
 
     private IntegerFilter floorNo;
 
-    private BooleanFilter booked;
-
     private BigDecimalFilter priceFactor;
 
     private InstantFilter createdAt;
@@ -52,7 +50,6 @@ public class TripSeatCriteria implements Serializable, Criteria {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.seatNo = other.optionalSeatNo().map(StringFilter::copy).orElse(null);
         this.floorNo = other.optionalFloorNo().map(IntegerFilter::copy).orElse(null);
-        this.booked = other.optionalBooked().map(BooleanFilter::copy).orElse(null);
         this.priceFactor = other.optionalPriceFactor().map(BigDecimalFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
@@ -123,25 +120,6 @@ public class TripSeatCriteria implements Serializable, Criteria {
 
     public void setFloorNo(IntegerFilter floorNo) {
         this.floorNo = floorNo;
-    }
-
-    public BooleanFilter getBooked() {
-        return booked;
-    }
-
-    public Optional<BooleanFilter> optionalBooked() {
-        return Optional.ofNullable(booked);
-    }
-
-    public BooleanFilter booked() {
-        if (booked == null) {
-            setBooked(new BooleanFilter());
-        }
-        return booked;
-    }
-
-    public void setBooked(BooleanFilter booked) {
-        this.booked = booked;
     }
 
     public BigDecimalFilter getPriceFactor() {
@@ -309,7 +287,6 @@ public class TripSeatCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(seatNo, that.seatNo) &&
             Objects.equals(floorNo, that.floorNo) &&
-            Objects.equals(booked, that.booked) &&
             Objects.equals(priceFactor, that.priceFactor) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
@@ -323,20 +300,7 @@ public class TripSeatCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-            id,
-            seatNo,
-            floorNo,
-            booked,
-            priceFactor,
-            createdAt,
-            updatedAt,
-            isDeleted,
-            deletedAt,
-            deletedBy,
-            tripId,
-            distinct
-        );
+        return Objects.hash(id, seatNo, floorNo, priceFactor, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, tripId, distinct);
     }
 
     // prettier-ignore
@@ -346,7 +310,6 @@ public class TripSeatCriteria implements Serializable, Criteria {
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalSeatNo().map(f -> "seatNo=" + f + ", ").orElse("") +
             optionalFloorNo().map(f -> "floorNo=" + f + ", ").orElse("") +
-            optionalBooked().map(f -> "booked=" + f + ", ").orElse("") +
             optionalPriceFactor().map(f -> "priceFactor=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +

@@ -133,7 +133,7 @@ spring:
           group: ms-promotion
   docker:
     compose:
-      enabled: false
+      enabled: true
       lifecycle-management: start-only
       file: src/main/docker/mysql.yml
   profiles:

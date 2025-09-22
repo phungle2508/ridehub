@@ -36,9 +36,6 @@ public class TripSeat implements Serializable {
     @Column(name = "floor_no", nullable = false)
     private Integer floorNo;
 
-    @Column(name = "booked")
-    private Boolean booked;
-
     @Column(name = "price_factor", precision = 21, scale = 2)
     private BigDecimal priceFactor;
 
@@ -103,19 +100,6 @@ public class TripSeat implements Serializable {
 
     public void setFloorNo(Integer floorNo) {
         this.floorNo = floorNo;
-    }
-
-    public Boolean getBooked() {
-        return this.booked;
-    }
-
-    public TripSeat booked(Boolean booked) {
-        this.setBooked(booked);
-        return this;
-    }
-
-    public void setBooked(Boolean booked) {
-        this.booked = booked;
     }
 
     public BigDecimal getPriceFactor() {
@@ -235,7 +219,6 @@ public class TripSeat implements Serializable {
             "id=" + getId() +
             ", seatNo='" + getSeatNo() + "'" +
             ", floorNo=" + getFloorNo() +
-            ", booked='" + getBooked() + "'" +
             ", priceFactor=" + getPriceFactor() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

@@ -15,6 +15,7 @@ public class TripDTO implements Serializable {
 
     private Long id;
 
+    @NotNull
     private String tripCode;
 
     @NotNull

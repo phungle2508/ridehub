@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921163555"
+    "changelogDate": "20250922113318"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -60,6 +60,13 @@
   "microserviceName": "ms_booking",
   "name": "PaymentTransaction",
   "relationships": [
+    {
+      "otherEntityName": "paymentWebhookLog",
+      "otherEntityRelationshipName": "paymentTransaction",
+      "relationshipName": "webhooks",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
     {
       "otherEntityName": "booking",
       "otherEntityRelationshipName": "paymentTransaction",

@@ -8,6 +8,8 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -68,7 +70,12 @@ public class PaymentTransaction implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos" }, allowSetters = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "paymentTransaction")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "paymentTransaction" }, allowSetters = true)
+    private Set<PaymentWebhookLog> webhooks = new HashSet<>();
+
+    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos", "pricingSnapshots" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "paymentTransaction")
     private Booking booking;
 
@@ -228,6 +235,37 @@ public class PaymentTransaction implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public Set<PaymentWebhookLog> getWebhooks() {
+        return this.webhooks;
+    }
+
+    public void setWebhooks(Set<PaymentWebhookLog> paymentWebhookLogs) {
+        if (this.webhooks != null) {
+            this.webhooks.forEach(i -> i.setPaymentTransaction(null));
+        }
+        if (paymentWebhookLogs != null) {
+            paymentWebhookLogs.forEach(i -> i.setPaymentTransaction(this));
+        }
+        this.webhooks = paymentWebhookLogs;
+    }
+
+    public PaymentTransaction webhooks(Set<PaymentWebhookLog> paymentWebhookLogs) {
+        this.setWebhooks(paymentWebhookLogs);
+        return this;
+    }
+
+    public PaymentTransaction addWebhooks(PaymentWebhookLog paymentWebhookLog) {
+        this.webhooks.add(paymentWebhookLog);
+        paymentWebhookLog.setPaymentTransaction(this);
+        return this;
+    }
+
+    public PaymentTransaction removeWebhooks(PaymentWebhookLog paymentWebhookLog) {
+        this.webhooks.remove(paymentWebhookLog);
+        paymentWebhookLog.setPaymentTransaction(null);
+        return this;
     }
 
     public Booking getBooking() {

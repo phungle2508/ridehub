@@ -50,7 +50,6 @@ public class TripSeatAsserts {
             .as("Verify TripSeat relevant properties")
             .satisfies(a -> assertThat(a.getSeatNo()).as("check seatNo").isEqualTo(expected.getSeatNo()))
             .satisfies(a -> assertThat(a.getFloorNo()).as("check floorNo").isEqualTo(expected.getFloorNo()))
-            .satisfies(a -> assertThat(a.getBooked()).as("check booked").isEqualTo(expected.getBooked()))
             .satisfies(a ->
                 assertThat(a.getPriceFactor())
                     .as("check priceFactor")

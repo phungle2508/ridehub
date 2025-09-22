@@ -2,9 +2,12 @@ package com.ridehub.booking.domain;
 
 import static com.ridehub.booking.domain.BookingTestSamples.*;
 import static com.ridehub.booking.domain.PaymentTransactionTestSamples.*;
+import static com.ridehub.booking.domain.PaymentWebhookLogTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.booking.web.rest.TestUtil;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class PaymentTransactionTest {
@@ -21,6 +24,28 @@ class PaymentTransactionTest {
 
         paymentTransaction2 = getPaymentTransactionSample2();
         assertThat(paymentTransaction1).isNotEqualTo(paymentTransaction2);
+    }
+
+    @Test
+    void webhooksTest() {
+        PaymentTransaction paymentTransaction = getPaymentTransactionRandomSampleGenerator();
+        PaymentWebhookLog paymentWebhookLogBack = getPaymentWebhookLogRandomSampleGenerator();
+
+        paymentTransaction.addWebhooks(paymentWebhookLogBack);
+        assertThat(paymentTransaction.getWebhooks()).containsOnly(paymentWebhookLogBack);
+        assertThat(paymentWebhookLogBack.getPaymentTransaction()).isEqualTo(paymentTransaction);
+
+        paymentTransaction.removeWebhooks(paymentWebhookLogBack);
+        assertThat(paymentTransaction.getWebhooks()).doesNotContain(paymentWebhookLogBack);
+        assertThat(paymentWebhookLogBack.getPaymentTransaction()).isNull();
+
+        paymentTransaction.webhooks(new HashSet<>(Set.of(paymentWebhookLogBack)));
+        assertThat(paymentTransaction.getWebhooks()).containsOnly(paymentWebhookLogBack);
+        assertThat(paymentWebhookLogBack.getPaymentTransaction()).isEqualTo(paymentTransaction);
+
+        paymentTransaction.setWebhooks(new HashSet<>());
+        assertThat(paymentTransaction.getWebhooks()).doesNotContain(paymentWebhookLogBack);
+        assertThat(paymentWebhookLogBack.getPaymentTransaction()).isNull();
     }
 
     @Test

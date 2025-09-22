@@ -54,3 +54,47 @@ Extra on
 
 
 soft delete
+
+
+
+
+
+
+
+
+3 trieu
+    200k
+
+
+
+thoi gian : 5 tuan
+
+tuan 1 (t4) : 
+    login
+    admin: 
+        tram api tram(1,2,3,4)
+        tuyen xe
+        ve 
+        map
+        xe 
+
+--> fe (mobile + web)
+
+tuan 2 (t4) : promotion                                        
+            thanh toan                                
+tuan 3 (t4) : 
+            dat ve
+            hoa don
+tuan 4 (t4) : 
+            thong ke 
+            search
+tuan 5 (t4) : 
+
+
+
+
+
+
+
+
+data

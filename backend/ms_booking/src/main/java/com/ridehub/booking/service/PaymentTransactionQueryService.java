@@ -86,6 +86,9 @@ public class PaymentTransactionQueryService extends QueryService<PaymentTransact
                 buildSpecification(criteria.getIsDeleted(), PaymentTransaction_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), PaymentTransaction_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), PaymentTransaction_.deletedBy),
+                buildSpecification(criteria.getWebhooksId(), root ->
+                    root.join(PaymentTransaction_.webhooks, JoinType.LEFT).get(PaymentWebhookLog_.id)
+                ),
                 buildSpecification(criteria.getBookingId(), root -> root.join(PaymentTransaction_.booking, JoinType.LEFT).get(Booking_.id))
             );
         }

@@ -21,8 +21,6 @@ public class TripSeatDTO implements Serializable {
     @NotNull
     private Integer floorNo;
 
-    private Boolean booked;
-
     private BigDecimal priceFactor;
 
     @NotNull
@@ -61,14 +59,6 @@ public class TripSeatDTO implements Serializable {
 
     public void setFloorNo(Integer floorNo) {
         this.floorNo = floorNo;
-    }
-
-    public Boolean getBooked() {
-        return booked;
-    }
-
-    public void setBooked(Boolean booked) {
-        this.booked = booked;
     }
 
     public BigDecimal getPriceFactor() {
@@ -155,7 +145,6 @@ public class TripSeatDTO implements Serializable {
             "id=" + getId() +
             ", seatNo='" + getSeatNo() + "'" +
             ", floorNo=" + getFloorNo() +
-            ", booked='" + getBooked() + "'" +
             ", priceFactor=" + getPriceFactor() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

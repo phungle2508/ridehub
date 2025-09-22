@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921164355"
+    "changelogDate": "20250922114118"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -16,10 +16,6 @@
       "fieldName": "floorNo",
       "fieldType": "Integer",
       "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "booked",
-      "fieldType": "Boolean"
     },
     {
       "fieldName": "priceFactor",

@@ -228,6 +228,27 @@ class RouteResourceIT {
 
     @Test
     @Transactional
+    void checkRouteCodeIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        int searchDatabaseSizeBefore = IterableUtil.sizeOf(routeSearchRepository.findAll());
+        // set the field null
+        route.setRouteCode(null);
+
+        // Create the Route, which fails.
+        RouteDTO routeDTO = routeMapper.toDto(route);
+
+        restRouteMockMvc
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(routeDTO)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+
+        int searchDatabaseSizeAfter = IterableUtil.sizeOf(routeSearchRepository.findAll());
+        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
+    }
+
+    @Test
+    @Transactional
     void checkCreatedAtIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(routeSearchRepository.findAll());

@@ -1,5 +1,5 @@
 @startuml
-title RideHub – 4 Microservices\n(DB per service, Central Redis, Single Kafka, Vehicle-type Pricing)
+title RideHub – 4 Microservices\n(DB per service, Central Redis, Single Kafka, Vehicle-type Pricing + Locks/Saga/Snapshots)
 
 left to right direction
 hide methods
@@ -54,6 +54,12 @@ enum Gender {
 enum VehicleType {
   STANDARD_BUS
   LIMOUSINE
+}
+
+enum LockStatus {
+  HELD
+  EXPIRED
+  COMMITTED
 }
 
 ' =============================
@@ -113,7 +119,7 @@ User "1" o-- "1" Profile : "owns"
 ' =============================
 '          MS-ROUTE
 ' =============================
-package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff)" as MS_ROUTE {
+package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLock)" as MS_ROUTE {
 
   ' ----- Vietnam Address Hierarchy -----
   class Province extends BaseEntity {
@@ -207,11 +213,9 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff)" as MS_
     +priceFactor: double
   }
 
+  ' ---- Staff (chỉ thuộc tính vận hành, PII chính ở ms-user) ----
   abstract class Staff extends BaseEntity {
-    +name: String
-    +age: int
-    +gender: Gender
-    +phoneNumber: String
+    +userId: UUID
     +status: StaffStatus
   }
 
@@ -221,6 +225,16 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff)" as MS_
   }
 
   class Attendant extends Staff
+
+  ' ---- SeatLock: nguồn sự thật giữ chỗ ----
+  class SeatLock extends BaseEntity {
+    +tripId: UUID
+    +seatNo: String
+    +userId: UUID
+    +status: LockStatus
+    +expiresAt: Instant
+    +idempotencyKey: String
+  }
 
   class "RouteDB" as ROUTEDB
 }
@@ -247,7 +261,7 @@ Floor "1" o-- "1..18" Seat : "seats per floor ≤ 18"
 ' =============================
 '          MS-BOOKING
 ' =============================
-package "ms-booking\n(Booking, Ticket, Payment, Invoice, Pricing)" as MS_BOOK {
+package "ms-booking\n(Booking, Ticket, Payment, Invoice, Pricing + Snapshots)" as MS_BOOK {
 
   class Ticket extends BaseEntity {
     +ticketCode: String
@@ -283,8 +297,32 @@ package "ms-booking\n(Booking, Ticket, Payment, Invoice, Pricing)" as MS_BOOK {
     +gatewayNote: String
   }
 
-  class PricingService
+  ' ---- Snapshots để cố định giá & khuyến mãi theo thời điểm ----
+  class PricingSnapshot extends BaseEntity {
+    +baseFare: Money
+    +vehicleFactor: double
+    +floorFactor: double
+    +seatFactor: double
+    +finalPrice: Money
+  }
 
+  class PromotionSnapshot extends BaseEntity {
+    +promoCode: String
+    +policyType: String
+    +percent: Integer
+    +maxOff: Money
+    +appliedAmount: Money
+  }
+
+  ' ---- Lưu webhook thanh toán (idempotency) ----
+  class PaymentWebhookLog extends BaseEntity {
+    +provider: String
+    +payloadHash: String
+    +receivedAt: Instant
+    +processingStatus: String
+  }
+
+  class PricingService
   class PaymentService
   class SearchService
 
@@ -298,6 +336,9 @@ Ticket "1" -- "1" Trip : "of trip"
 Ticket "1" -- "1" Route : "of route"
 Booking "1" o-- "0..1" Invoice : "issues"
 Booking "1" o-- "0..1" PaymentTransaction : "payment"
+Booking "1" o-- "1..*" PricingSnapshot : "pricing at booking time"
+Booking "1" o-- "0..*" PromotionSnapshot : "applied promos"
+PaymentTransaction "1" o-- "0..*" PaymentWebhookLog : "webhooks"
 
 ' Pricing dependency (reads vehicle & seat data from ms-route)
 PricingService ..> Trip : "reads baseFare"
@@ -343,9 +384,9 @@ package "ms-promotion\n(Promotions & Conditions)" as MS_PROMO {
   }
 
   class ConditionByLocation extends PromoCondition {
-    +provinces: List[UUID]
-    +districts: List[UUID]
-    +wards: List[UUID]
+    +provinces: List<UUID>
+    +districts: List<UUID>
+    +wards: List<UUID>
   }
 
   class "PromotionDB" as PROMODB
@@ -367,14 +408,19 @@ GATEWAY --> MS_PROMO : "/promotions/*"
 ' One central Redis (shared)
 MS_USER ..>  REDIS : "cache ns: user:*"
 MS_ROUTE ..> REDIS : "cache ns: route:*, seat:*"
-MS_BOOK  ..> REDIS : "cache ns: booking:*"
+MS_BOOK  ..> REDIS : "cache ns: booking:*, lock:*"
 MS_PROMO ..> REDIS : "cache ns: promo:*"
+
+' SeatLock dùng Redis lock + DB unique
+MS_BOOK ..> MS_ROUTE : "reserve/release via SeatLock"
+MS_ROUTE ..> KAFKA : "publish SeatsReserved/SeatsReleased"
+MS_BOOK  ..> KAFKA : "consume seat events"
 
 ' Single Kafka (shared broker)
 MS_BOOK  ..> KAFKA : "produce BookingCreated / PaymentSucceeded / TicketIssued"
-MS_ROUTE ..  KAFKA : "consume SeatsReserve / SeatsRelease"
-MS_PROMO ..  KAFKA : "consume PromoUpdated"
-MS_USER  ..  KAFKA : "consume UserUpdated"
+MS_ROUTE ..> KAFKA : "consume SeatsReserve / SeatsRelease"
+MS_PROMO ..> KAFKA : "consume PromoUpdated"
+MS_USER  ..> KAFKA : "consume UserUpdated"
 
 ' DB-per-service
 MS_USER ..>  USERDB  : "owns DB"
@@ -400,6 +446,24 @@ price = Trip.baseFare
       * Floor.priceFactorFloor
       * Seat.priceFactor
 Then apply promotions (ms-promotion).
+Persist into PricingSnapshot to avoid drift.
+end note
+
+note bottom of MS_ROUTE
+SeatLock rules:
+- Unique (tripId, seatNo) when status in {HELD, COMMITTED}
+- TTL via expiresAt; background job to release EXPIRED
+- Idempotency by idempotencyKey
+end note
+
+note bottom of MS_BOOK
+Saga & Outbox:
+- Use Outbox in each service; publish after DB commit
+- BookingCreated -> ReserveSeats (ms-route)
+- SeatsReserved -> proceed payment
+- PaymentSucceeded -> ConfirmBooking + TicketIssued
+- PaymentFailed/Timeout -> ReleaseSeats
+- Webhooks are idempotent via PaymentWebhookLog.payloadHash
 end note
 
 note bottom of BaseEntity
@@ -408,6 +472,7 @@ Soft delete for all entities:
 - deletedAt
 - deletedBy
 Default queries filter isDeleted = false.
+Consider adding optimistic locking (version).
 end note
 
 @enduml

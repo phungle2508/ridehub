@@ -81,10 +81,14 @@ public class CacheConfiguration {
             createCache(cm, com.ridehub.booking.domain.Booking.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.Booking.class.getName() + ".tickets", jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.Booking.class.getName() + ".appliedPromos", jcacheConfiguration);
+            createCache(cm, com.ridehub.booking.domain.Booking.class.getName() + ".pricingSnapshots", jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.Ticket.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.Invoice.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.PaymentTransaction.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.booking.domain.PaymentTransaction.class.getName() + ".webhooks", jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.AppliedPromotion.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.booking.domain.PricingSnapshot.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.booking.domain.PaymentWebhookLog.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250921164255"
+    "changelogDate": "20250922114018"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -9,7 +9,8 @@
   "fields": [
     {
       "fieldName": "tripCode",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique"]
     },
     {
       "fieldName": "departureTime",

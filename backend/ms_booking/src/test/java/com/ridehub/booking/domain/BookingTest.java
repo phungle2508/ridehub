@@ -4,6 +4,7 @@ import static com.ridehub.booking.domain.AppliedPromotionTestSamples.*;
 import static com.ridehub.booking.domain.BookingTestSamples.*;
 import static com.ridehub.booking.domain.InvoiceTestSamples.*;
 import static com.ridehub.booking.domain.PaymentTransactionTestSamples.*;
+import static com.ridehub.booking.domain.PricingSnapshotTestSamples.*;
 import static com.ridehub.booking.domain.TicketTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -94,5 +95,27 @@ class BookingTest {
         booking.setAppliedPromos(new HashSet<>());
         assertThat(booking.getAppliedPromos()).doesNotContain(appliedPromotionBack);
         assertThat(appliedPromotionBack.getBooking()).isNull();
+    }
+
+    @Test
+    void pricingSnapshotsTest() {
+        Booking booking = getBookingRandomSampleGenerator();
+        PricingSnapshot pricingSnapshotBack = getPricingSnapshotRandomSampleGenerator();
+
+        booking.addPricingSnapshots(pricingSnapshotBack);
+        assertThat(booking.getPricingSnapshots()).containsOnly(pricingSnapshotBack);
+        assertThat(pricingSnapshotBack.getBooking()).isEqualTo(booking);
+
+        booking.removePricingSnapshots(pricingSnapshotBack);
+        assertThat(booking.getPricingSnapshots()).doesNotContain(pricingSnapshotBack);
+        assertThat(pricingSnapshotBack.getBooking()).isNull();
+
+        booking.pricingSnapshots(new HashSet<>(Set.of(pricingSnapshotBack)));
+        assertThat(booking.getPricingSnapshots()).containsOnly(pricingSnapshotBack);
+        assertThat(pricingSnapshotBack.getBooking()).isEqualTo(booking);
+
+        booking.setPricingSnapshots(new HashSet<>());
+        assertThat(booking.getPricingSnapshots()).doesNotContain(pricingSnapshotBack);
+        assertThat(pricingSnapshotBack.getBooking()).isNull();
     }
 }

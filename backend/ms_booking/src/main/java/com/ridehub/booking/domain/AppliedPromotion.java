@@ -36,6 +36,15 @@ public class AppliedPromotion implements Serializable {
     @Column(name = "promotion_code")
     private String promotionCode;
 
+    @Column(name = "policy_type")
+    private String policyType;
+
+    @Column(name = "percent")
+    private Integer percent;
+
+    @Column(name = "max_off", precision = 21, scale = 2)
+    private BigDecimal maxOff;
+
     @NotNull
     @Column(name = "discount_amount", precision = 21, scale = 2, nullable = false)
     private BigDecimal discountAmount;
@@ -63,7 +72,7 @@ public class AppliedPromotion implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos", "pricingSnapshots" }, allowSetters = true)
     private Booking booking;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
@@ -105,6 +114,45 @@ public class AppliedPromotion implements Serializable {
 
     public void setPromotionCode(String promotionCode) {
         this.promotionCode = promotionCode;
+    }
+
+    public String getPolicyType() {
+        return this.policyType;
+    }
+
+    public AppliedPromotion policyType(String policyType) {
+        this.setPolicyType(policyType);
+        return this;
+    }
+
+    public void setPolicyType(String policyType) {
+        this.policyType = policyType;
+    }
+
+    public Integer getPercent() {
+        return this.percent;
+    }
+
+    public AppliedPromotion percent(Integer percent) {
+        this.setPercent(percent);
+        return this;
+    }
+
+    public void setPercent(Integer percent) {
+        this.percent = percent;
+    }
+
+    public BigDecimal getMaxOff() {
+        return this.maxOff;
+    }
+
+    public AppliedPromotion maxOff(BigDecimal maxOff) {
+        this.setMaxOff(maxOff);
+        return this;
+    }
+
+    public void setMaxOff(BigDecimal maxOff) {
+        this.maxOff = maxOff;
     }
 
     public BigDecimal getDiscountAmount() {
@@ -237,6 +285,9 @@ public class AppliedPromotion implements Serializable {
             "id=" + getId() +
             ", promotionId='" + getPromotionId() + "'" +
             ", promotionCode='" + getPromotionCode() + "'" +
+            ", policyType='" + getPolicyType() + "'" +
+            ", percent=" + getPercent() +
+            ", maxOff=" + getMaxOff() +
             ", discountAmount=" + getDiscountAmount() +
             ", appliedAt='" + getAppliedAt() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
