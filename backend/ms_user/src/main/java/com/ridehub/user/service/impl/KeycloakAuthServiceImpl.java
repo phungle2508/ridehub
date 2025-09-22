@@ -43,8 +43,8 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     public KeycloakAuthServiceImpl(
             ObjectMapper objectMapper,
             AppUserService appUserService,
-            @Value("${spring.security.oauth2.client.provider.oidc.client-id}") String keycloakClientId,
-            @Value("${spring.security.oauth2.client.provider.oidc.client-secret}") String keycloakClientSecret,
+            @Value("${spring.security.oauth2.client.registration.oidc.client-id}") String keycloakClientId,
+            @Value("${spring.security.oauth2.client.registration.oidc.client-secret}") String keycloakClientSecret,
             @Value("${app.keycloak.base-url:https://keycloak.appf4s.io.vn}") String keycloakBaseUrl) {
         this.objectMapper = objectMapper;
         this.appUserService = appUserService;
