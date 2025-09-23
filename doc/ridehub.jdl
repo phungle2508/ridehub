@@ -289,8 +289,8 @@ entity Floor {
 
 entity Seat {
   seatNo String required
-  row Integer
-  col Integer
+  rowNo Integer
+  colNo Integer
   priceFactor BigDecimal
   createdAt Instant required
   updatedAt Instant
@@ -360,11 +360,9 @@ entity Attendant {
   deletedBy UUID
 }
 
-relationship OneToOne {
-  Trip{driver}    to Driver{trip required}
-}
-relationship OneToOne {
-  Trip{attendant} to Attendant{trip}
+relationship ManyToOne {
+  Trip{driver required}    to Driver,
+  Trip{attendant}          to Attendant
 }
 
 entity SeatLock {

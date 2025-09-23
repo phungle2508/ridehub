@@ -213,8 +213,8 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLoc
 
   class Seat extends BaseEntity {
     +seatNo: String
-    +row: int
-    +col: int
+    +rowNo: int
+    +colNo: int
     +priceFactor: double
     +type: SeatType
   }
@@ -288,7 +288,7 @@ Station "1" -- "0..*" Route : "origin"
 Station "1" -- "0..*" Route : "destination"
 Route "1" o-- "0..*" Trip : "schedules"
 Trip "1" o-- "1..*" TripSeat : "seat snapshot"
-Trip "1" -- "1" Driver : "main driver"
+Trip "1" -- "0..1" Driver : "main driver"
 Trip "0..1" -- "0..1" Attendant : "attendant"
 Vehicle "1" o-- "1" SeatMap : "uses"
 SeatMap "1" o-- "1..2" Floor : "contains"
