@@ -6,9 +6,9 @@ enum PaymentMethod { VNPAY, MOMO, ZALOPAY, CREDIT_CARD, BANK_TRANSFER }
 enum PaymentStatus { INITIATED, PROCESSING, SUCCESS, FAILED, REFUNDED }
 enum StaffStatus { ACTIVE, INACTIVE }
 enum Gender { MALE, FEMALE, OTHER }
-enum VehicleType { STANDARD_BUS, LIMOUSINE }
+enum VehicleType { STANDARD_BUS_VIP, STANDARD_BUS_NORMAL, LIMOUSINE }
 enum LockStatus { HELD, EXPIRED, COMMITTED } // NEW
-
+enum SeatType { SLEEPER, NORMAL }
 // ======================================================
 // Applications
 // ======================================================
@@ -39,7 +39,7 @@ application {
     serverPort 8081
     enableSwaggerCodegen true
   }
-  entities AppUser, Profile
+  entities AppUser, Profile, FileUser
 }
 
 application {
@@ -58,7 +58,7 @@ application {
     serverPort 8082
     enableSwaggerCodegen true
   }
-  entities Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant, SeatLock
+  entities Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant, SeatLock, FileRoute
 }
 
 application {
@@ -76,7 +76,7 @@ application {
     serverPort 8083
     enableSwaggerCodegen true
   }
-  entities Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion, PricingSnapshot, PaymentWebhookLog
+  entities Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion, PricingSnapshot, PaymentWebhookLog, FileBooking
 }
 
 application {
@@ -94,7 +94,7 @@ application {
     serverPort 8084
     enableSwaggerCodegen true
   }
-  entities Promotion, BuyNGetMFree, PercentOffTotal, ConditionByRoute, ConditionByDate, ConditionByLocation, ConditionRouteItem, ConditionDateItem, ConditionLocationItem
+  entities Promotion, BuyNGetMFree, PercentOffTotal, ConditionByRoute, ConditionByDate, ConditionByLocation, ConditionRouteItem, ConditionDateItem, ConditionLocationItem, FilePromotion
 }
 
 // ======================================================
@@ -134,6 +134,24 @@ entity Profile {
 relationship OneToOne {
   AppUser{profile} to Profile{user required}
 }
+
+// ---- File storage (ms_user)
+entity FileUser {
+  bucket String required
+  objectKey String required
+  contentType String
+  size Long
+  createdAt Instant required
+  updatedAt Instant
+  isDeleted Boolean
+  deletedAt Instant
+  deletedBy UUID
+}
+
+relationship OneToOne {
+  Profile{avatar} to FileUser{profile}
+}
+
 
 // =============================
 // ms_route
@@ -232,14 +250,19 @@ relationship ManyToOne {
   Route{destination required} to Station
 }
 
-entity SeatMap {
-  name String required
+entity Seat {
+  seatNo String required
+  row Integer
+  col Integer
+  type SeatType required
+  typeFactor BigDecimal
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
   deletedAt Instant
   deletedBy UUID
 }
+
 
 entity Vehicle {
   type VehicleType required
@@ -295,7 +318,6 @@ entity Trip {
 entity TripSeat {
   seatNo String required
   floorNo Integer required
-  // booked Boolean <-- bỏ cờ này
   priceFactor BigDecimal
   createdAt Instant required
   updatedAt Instant
@@ -363,6 +385,26 @@ entity SeatLock {
   deletedBy UUID
 }
 
+// ---- File storage (ms_route)
+entity FileRoute {
+  bucket String required
+  objectKey String required
+  contentType String
+  size Long
+  createdAt Instant required
+  updatedAt Instant
+  isDeleted Boolean
+  deletedAt Instant
+  deletedBy UUID
+}
+
+relationship OneToOne {
+  Station{stationImg} to FileRoute{station}
+  Vehicle{vehicleImg} to FileRoute{vehicle}
+  SeatMap{seatMapImg} to FileRoute{seatMap}
+}
+
+
 // =============================
 // ms_booking
 // =============================
@@ -388,7 +430,7 @@ entity Booking {
   status BookingStatus required
   quantity Integer
   totalAmount BigDecimal required
-  bookedAt Instant required              // <-- đổi createdTime thành bookedAt
+  bookedAt Instant required
   customerId UUID required
   createdAt Instant required
   updatedAt Instant
@@ -464,9 +506,27 @@ entity PaymentWebhookLog {
   deletedBy UUID
 }
 
+// ---- File storage (ms_booking)
+entity FileBooking {
+  bucket String required
+  objectKey String required
+  contentType String
+  size Long
+  createdAt Instant required
+  updatedAt Instant
+  isDeleted Boolean
+  deletedAt Instant
+  deletedBy UUID
+}
+
+relationship OneToOne {
+  Ticket{qrCodeImg} to FileBooking{ticket}
+}
+
+
 relationship OneToMany {
   Booking{tickets}           to Ticket{booking required},
-  Booking{appliedPromos}     to AppliedPromotion{booking required},
+  Booking{appliedPromos}     to AppliedPromotion{booking required}
   Booking{pricingSnapshots}  to PricingSnapshot{booking required},
   PaymentTransaction{webhooks} to PaymentWebhookLog{paymentTransaction required}
 }
@@ -563,6 +623,24 @@ entity ConditionLocationItem {
   deletedBy UUID
 }
 
+
+// ---- File storage (ms_promotion)
+entity FilePromotion {
+  bucket String required
+  objectKey String required
+  contentType String
+  size Long
+  createdAt Instant required
+  updatedAt Instant
+  isDeleted Boolean
+  deletedAt Instant
+  deletedBy UUID
+}
+
+relationship OneToOne {
+  Promotion{bannerImg} to FilePromotion{promotion}
+}
+
 relationship OneToMany {
   Promotion{buyNGetM}      to BuyNGetMFree{promotion required},
   Promotion{percentOff}    to PercentOffTotal{promotion required},
@@ -578,10 +656,10 @@ relationship OneToMany {
 // ======================================================
 // Microservice mappings
 // ======================================================
-microservice AppUser, Profile with ms_user
-microservice Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant, SeatLock with ms_route
-microservice Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion, PricingSnapshot, PaymentWebhookLog with ms_booking
-microservice Promotion, BuyNGetMFree, PercentOffTotal, ConditionByRoute, ConditionByDate, ConditionByLocation, ConditionRouteItem, ConditionDateItem, ConditionLocationItem with ms_promotion
+microservice AppUser, Profile, FileUser with ms_user
+microservice Province, District, Ward, Address, Station, Route, Vehicle, SeatMap, Floor, Seat, Trip, TripSeat, Staff, Driver, Attendant, SeatLock, FileRoute with ms_route
+microservice Booking, Ticket, Invoice, PaymentTransaction, AppliedPromotion, PricingSnapshot, PaymentWebhookLog, FileBooking with ms_booking
+microservice Promotion, BuyNGetMFree, PercentOffTotal, ConditionByRoute, ConditionByDate, ConditionByLocation, ConditionRouteItem, ConditionDateItem, ConditionLocationItem, FilePromotion with ms_promotion
 
 // ======================================================
 // Global options

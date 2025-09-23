@@ -14,7 +14,18 @@ requirement
 
 Xe  
     xe thuong 
+        + xe vip 
+        + xe thuong 
+
     limosine 
+        
+loai ghe nam
+
+
+
+
+
+
     chair map with floor (1 floor have 18 chairs max 2 floor)
 User
     khuyen mai
@@ -72,7 +83,7 @@ thoi gian : 5 tuan
 tuan 1 (t4) : 
     login
     admin: 
-        tram api tram(1,2,3,4)
+        tram 
         tuyen xe
         ve 
         map

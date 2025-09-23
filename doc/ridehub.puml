@@ -15,6 +15,10 @@ enum Role {
   CUSTOMER
 }
 
+enum SeatType {
+  SLEEPER
+  NORMAL
+}
 enum BookingStatus {
   DRAFT
   AWAITING_PAYMENT
@@ -52,10 +56,10 @@ enum Gender {
 }
 
 enum VehicleType {
-  STANDARD_BUS
+  STANDARD_BUS_VIP
+  STANDARD_BUS_NORMAL
   LIMOUSINE
 }
-
 enum LockStatus {
   HELD
   EXPIRED
@@ -69,6 +73,7 @@ class "API Gateway" as GATEWAY
 class "Keycloak"   as KEYCLOAK
 class "Kafka"      as KAFKA
 class "Redis"      as REDIS
+class "MinIO"      as MINIO
 
 ' =============================
 '        BASE ENTITY
@@ -112,6 +117,20 @@ package "ms-user\n(Identity & Auth)" as MS_USER {
   class AuthService
 
   class "UserDB" as USERDB
+  ' ---- File storage metadata (replicated per service) ----
+  class File extends BaseEntity {
+    +bucket: String
+    +objectKey: String
+    +contentType: String
+    +size: long
+  }
+
+  ' Image association
+  Profile "1" o-- "0..1" File : "avatar"
+
+  ' Storage link
+  File ..> MINIO : "stored in"
+
 }
 
 User "1" o-- "1" Profile : "owns"
@@ -179,8 +198,8 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLoc
     +brand: String
     +description: String
   }
-
-  class StandardBus extends Vehicle
+  class VipBus extends Vehicle
+  class NormalBus extends Vehicle
   class Limousine   extends Vehicle
 
   class SeatMap extends BaseEntity {
@@ -197,6 +216,7 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLoc
     +row: int
     +col: int
     +priceFactor: double
+    +type: SeatType
   }
 
   class Trip extends BaseEntity {
@@ -237,6 +257,22 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLoc
   }
 
   class "RouteDB" as ROUTEDB
+  ' ---- File storage metadata (replicated per service) ----
+  class File extends BaseEntity {
+    +bucket: String
+    +objectKey: String
+    +contentType: String
+    +size: long
+  }
+
+  ' Image associations
+  Station "1" o-- "0..1" File : "stationImg"
+  Vehicle "1" o-- "0..1" File : "vehicleImg"
+  SeatMap "1" o-- "0..1" File : "seatMapImg"
+
+  ' Storage link
+  File ..> MINIO : "stored in"
+
 }
 
 ' Address relations (inside ms-route)
@@ -327,6 +363,20 @@ package "ms-booking\n(Booking, Ticket, Payment, Invoice, Pricing + Snapshots)" a
   class SearchService
 
   class "BookingDB" as BOOKDB
+  ' ---- File storage metadata (replicated per service) ----
+  class File extends BaseEntity {
+    +bucket: String
+    +objectKey: String
+    +contentType: String
+    +size: long
+  }
+
+  ' Image association
+  Ticket "1" o-- "0..1" File : "qrCodeImg"
+
+  ' Storage link
+  File ..> MINIO : "stored in"
+
 }
 
 Customer "1" -- "0..*" Booking : "creates"
@@ -390,6 +440,20 @@ package "ms-promotion\n(Promotions & Conditions)" as MS_PROMO {
   }
 
   class "PromotionDB" as PROMODB
+  ' ---- File storage metadata (replicated per service) ----
+  class File extends BaseEntity {
+    +bucket: String
+    +objectKey: String
+    +contentType: String
+    +size: long
+  }
+
+  ' Image association
+  Promotion "1" o-- "0..1" File : "bannerImg"
+
+  ' Storage link
+  File ..> MINIO : "stored in"
+
 }
 
 Promotion "1" o-- "1..*" DiscountPolicy : "includes"
@@ -440,39 +504,41 @@ class Money {
 '            NOTES
 ' =============================
 note bottom of PricingService
-Ticket price formula (example):
-price = Trip.baseFare
-      * Vehicle.typeFactor
-      * Floor.priceFactorFloor
-      * Seat.priceFactor
-Then apply promotions (ms-promotion).
-Persist into PricingSnapshot to avoid drift.
+  Ticket price formula (example):
+
+  price = Trip.baseFare
+  * Vehicle.typeFactor      ' Limo, VipBus, NormalBus
+  * Floor.priceFactorFloor  ' upper/lower floors
+  * Seat.priceFactor        ' position factor
+  * Seat.typeFactor         ' Sleeper vs Normal
+  Then apply promotions (ms-promotion).
+  Persist into PricingSnapshot to avoid drift.
 end note
 
 note bottom of MS_ROUTE
-SeatLock rules:
-- Unique (tripId, seatNo) when status in {HELD, COMMITTED}
-- TTL via expiresAt; background job to release EXPIRED
-- Idempotency by idempotencyKey
+  SeatLock rules:
+  - Unique (tripId, seatNo) when status in {HELD, COMMITTED}
+  - TTL via expiresAt; background job to release EXPIRED
+  - Idempotency by idempotencyKey
 end note
 
 note bottom of MS_BOOK
-Saga & Outbox:
-- Use Outbox in each service; publish after DB commit
-- BookingCreated -> ReserveSeats (ms-route)
-- SeatsReserved -> proceed payment
-- PaymentSucceeded -> ConfirmBooking + TicketIssued
-- PaymentFailed/Timeout -> ReleaseSeats
-- Webhooks are idempotent via PaymentWebhookLog.payloadHash
+  Saga & Outbox:
+  - Use Outbox in each service; publish after DB commit
+  - BookingCreated -> ReserveSeats (ms-route)
+  - SeatsReserved -> proceed payment
+  - PaymentSucceeded -> ConfirmBooking + TicketIssued
+  - PaymentFailed/Timeout -> ReleaseSeats
+  - Webhooks are idempotent via PaymentWebhookLog.payloadHash
 end note
 
 note bottom of BaseEntity
-Soft delete for all entities:
-- isDeleted
-- deletedAt
-- deletedBy
-Default queries filter isDeleted = false.
-Consider adding optimistic locking (version).
+  Soft delete for all entities:
+  - isDeleted
+  - deletedAt
+  - deletedBy
+  Default queries filter isDeleted = false.
+  Consider adding optimistic locking (version).
 end note
 
 @enduml
