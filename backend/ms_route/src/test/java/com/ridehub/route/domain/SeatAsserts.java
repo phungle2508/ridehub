@@ -49,8 +49,8 @@ public class SeatAsserts {
         assertThat(actual)
             .as("Verify Seat relevant properties")
             .satisfies(a -> assertThat(a.getSeatNo()).as("check seatNo").isEqualTo(expected.getSeatNo()))
-            .satisfies(a -> assertThat(a.getRow()).as("check row").isEqualTo(expected.getRow()))
-            .satisfies(a -> assertThat(a.getCol()).as("check col").isEqualTo(expected.getCol()))
+            .satisfies(a -> assertThat(a.getRowNo()).as("check rowNo").isEqualTo(expected.getRowNo()))
+            .satisfies(a -> assertThat(a.getColNo()).as("check colNo").isEqualTo(expected.getColNo()))
             .satisfies(a ->
                 assertThat(a.getPriceFactor())
                     .as("check priceFactor")

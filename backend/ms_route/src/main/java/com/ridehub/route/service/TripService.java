@@ -1,7 +1,10 @@
 package com.ridehub.route.service;
 
+import com.ridehub.route.service.dto.RouteListDTO;
 import com.ridehub.route.service.dto.TripDTO;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ridehub.route.domain.Trip}.
@@ -45,4 +48,13 @@ public interface TripService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Get all route list information combining trip, route, driver, and vehicle
+     * data.
+     *
+     * @param pageable the pagination information.
+     * @return the list of route information.
+     */
+    Page<RouteListDTO> getRouteList(Pageable pageable);
 }

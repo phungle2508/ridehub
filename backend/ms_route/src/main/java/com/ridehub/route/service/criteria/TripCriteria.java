@@ -42,11 +42,11 @@ public class TripCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter routeId;
+
     private LongFilter driverId;
 
     private LongFilter attendantId;
-
-    private LongFilter routeId;
 
     private Boolean distinct;
 
@@ -63,9 +63,9 @@ public class TripCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.routeId = other.optionalRouteId().map(LongFilter::copy).orElse(null);
         this.driverId = other.optionalDriverId().map(LongFilter::copy).orElse(null);
         this.attendantId = other.optionalAttendantId().map(LongFilter::copy).orElse(null);
-        this.routeId = other.optionalRouteId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -264,6 +264,25 @@ public class TripCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getRouteId() {
+        return routeId;
+    }
+
+    public Optional<LongFilter> optionalRouteId() {
+        return Optional.ofNullable(routeId);
+    }
+
+    public LongFilter routeId() {
+        if (routeId == null) {
+            setRouteId(new LongFilter());
+        }
+        return routeId;
+    }
+
+    public void setRouteId(LongFilter routeId) {
+        this.routeId = routeId;
+    }
+
     public LongFilter getDriverId() {
         return driverId;
     }
@@ -300,25 +319,6 @@ public class TripCriteria implements Serializable, Criteria {
 
     public void setAttendantId(LongFilter attendantId) {
         this.attendantId = attendantId;
-    }
-
-    public LongFilter getRouteId() {
-        return routeId;
-    }
-
-    public Optional<LongFilter> optionalRouteId() {
-        return Optional.ofNullable(routeId);
-    }
-
-    public LongFilter routeId() {
-        if (routeId == null) {
-            setRouteId(new LongFilter());
-        }
-        return routeId;
-    }
-
-    public void setRouteId(LongFilter routeId) {
-        this.routeId = routeId;
     }
 
     public Boolean getDistinct() {
@@ -360,9 +360,9 @@ public class TripCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(routeId, that.routeId) &&
             Objects.equals(driverId, that.driverId) &&
             Objects.equals(attendantId, that.attendantId) &&
-            Objects.equals(routeId, that.routeId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -380,9 +380,9 @@ public class TripCriteria implements Serializable, Criteria {
             isDeleted,
             deletedAt,
             deletedBy,
+            routeId,
             driverId,
             attendantId,
-            routeId,
             distinct
         );
     }
@@ -401,9 +401,9 @@ public class TripCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalRouteId().map(f -> "routeId=" + f + ", ").orElse("") +
             optionalDriverId().map(f -> "driverId=" + f + ", ").orElse("") +
             optionalAttendantId().map(f -> "attendantId=" + f + ", ").orElse("") +
-            optionalRouteId().map(f -> "routeId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

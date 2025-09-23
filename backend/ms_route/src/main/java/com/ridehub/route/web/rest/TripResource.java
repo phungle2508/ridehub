@@ -4,6 +4,7 @@ import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.TripQueryService;
 import com.ridehub.route.service.TripService;
 import com.ridehub.route.service.criteria.TripCriteria;
+import com.ridehub.route.service.dto.RouteListDTO;
 import com.ridehub.route.service.dto.TripDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -56,7 +57,9 @@ public class TripResource {
      * {@code POST  /trips} : Create a new trip.
      *
      * @param tripDTO the tripDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new tripDTO, or with status {@code 400 (Bad Request)} if the trip has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
+     *         body the new tripDTO, or with status {@code 400 (Bad Request)} if the
+     *         trip has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -67,25 +70,27 @@ public class TripResource {
         }
         tripDTO = tripService.save(tripDTO);
         return ResponseEntity.created(new URI("/api/trips/" + tripDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, tripDTO.getId().toString()))
-            .body(tripDTO);
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        tripDTO.getId().toString()))
+                .body(tripDTO);
     }
 
     /**
      * {@code PUT  /trips/:id} : Updates an existing trip.
      *
-     * @param id the id of the tripDTO to save.
+     * @param id      the id of the tripDTO to save.
      * @param tripDTO the tripDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated tripDTO,
-     * or with status {@code 400 (Bad Request)} if the tripDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the tripDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated tripDTO,
+     *         or with status {@code 400 (Bad Request)} if the tripDTO is not valid,
+     *         or with status {@code 500 (Internal Server Error)} if the tripDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
     public ResponseEntity<TripDTO> updateTrip(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody TripDTO tripDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody TripDTO tripDTO) throws URISyntaxException {
         LOG.debug("REST request to update Trip : {}, {}", id, tripDTO);
         if (tripDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -100,26 +105,29 @@ public class TripResource {
 
         tripDTO = tripService.update(tripDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, tripDTO.getId().toString()))
-            .body(tripDTO);
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        tripDTO.getId().toString()))
+                .body(tripDTO);
     }
 
     /**
-     * {@code PATCH  /trips/:id} : Partial updates given fields of an existing trip, field will ignore if it is null
+     * {@code PATCH  /trips/:id} : Partial updates given fields of an existing trip,
+     * field will ignore if it is null
      *
-     * @param id the id of the tripDTO to save.
+     * @param id      the id of the tripDTO to save.
      * @param tripDTO the tripDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated tripDTO,
-     * or with status {@code 400 (Bad Request)} if the tripDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the tripDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the tripDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated tripDTO,
+     *         or with status {@code 400 (Bad Request)} if the tripDTO is not valid,
+     *         or with status {@code 404 (Not Found)} if the tripDTO is not found,
+     *         or with status {@code 500 (Internal Server Error)} if the tripDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<TripDTO> partialUpdateTrip(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody TripDTO tripDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody TripDTO tripDTO) throws URISyntaxException {
         LOG.debug("REST request to partial update Trip partially : {}, {}", id, tripDTO);
         if (tripDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -135,9 +143,8 @@ public class TripResource {
         Optional<TripDTO> result = tripService.partialUpdate(tripDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, tripDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, tripDTO.getId().toString()));
     }
 
     /**
@@ -145,17 +152,18 @@ public class TripResource {
      *
      * @param pageable the pagination information.
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of trips in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of trips in body.
      */
     @GetMapping("")
     public ResponseEntity<List<TripDTO>> getAllTrips(
-        TripCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
+            TripCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get Trips by criteria: {}", criteria);
 
         Page<TripDTO> page = tripQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -163,7 +171,8 @@ public class TripResource {
      * {@code GET  /trips/count} : count all the trips.
      *
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
+     *         in body.
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countTrips(TripCriteria criteria) {
@@ -175,7 +184,8 @@ public class TripResource {
      * {@code GET  /trips/:id} : get the "id" trip.
      *
      * @param id the id of the tripDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the tripDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the tripDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<TripDTO> getTrip(@PathVariable("id") Long id) {
@@ -195,7 +205,25 @@ public class TripResource {
         LOG.debug("REST request to delete Trip : {}", id);
         tripService.delete(id);
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
+    }
+
+    /**
+     * {@code GET  /trips/route-list} : get all route list information.
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of route information in body.
+     */
+    @GetMapping("/route-list")
+    public ResponseEntity<List<RouteListDTO>> getRouteList(
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        LOG.debug("REST request to get route list with pagination: {}", pageable);
+
+        Page<RouteListDTO> page = tripService.getRouteList(pageable);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

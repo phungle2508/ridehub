@@ -123,6 +123,16 @@ class TripResourceIT {
             route = TestUtil.findAll(em, Route.class).get(0);
         }
         trip.setRoute(route);
+        // Add required entity
+        Driver driver;
+        if (TestUtil.findAll(em, Driver.class).isEmpty()) {
+            driver = DriverResourceIT.createEntity();
+            em.persist(driver);
+            em.flush();
+        } else {
+            driver = TestUtil.findAll(em, Driver.class).get(0);
+        }
+        trip.setDriver(driver);
         return trip;
     }
 
@@ -153,6 +163,16 @@ class TripResourceIT {
             route = TestUtil.findAll(em, Route.class).get(0);
         }
         updatedTrip.setRoute(route);
+        // Add required entity
+        Driver driver;
+        if (TestUtil.findAll(em, Driver.class).isEmpty()) {
+            driver = DriverResourceIT.createUpdatedEntity();
+            em.persist(driver);
+            em.flush();
+        } else {
+            driver = TestUtil.findAll(em, Driver.class).get(0);
+        }
+        updatedTrip.setDriver(driver);
         return updatedTrip;
     }
 
@@ -695,11 +715,33 @@ class TripResourceIT {
 
     @Test
     @Transactional
+    void getAllTripsByRouteIsEqualToSomething() throws Exception {
+        Route route;
+        if (TestUtil.findAll(em, Route.class).isEmpty()) {
+            tripRepository.saveAndFlush(trip);
+            route = RouteResourceIT.createEntity(em);
+        } else {
+            route = TestUtil.findAll(em, Route.class).get(0);
+        }
+        em.persist(route);
+        em.flush();
+        trip.setRoute(route);
+        tripRepository.saveAndFlush(trip);
+        Long routeId = route.getId();
+        // Get all the tripList where route equals to routeId
+        defaultTripShouldBeFound("routeId.equals=" + routeId);
+
+        // Get all the tripList where route equals to (routeId + 1)
+        defaultTripShouldNotBeFound("routeId.equals=" + (routeId + 1));
+    }
+
+    @Test
+    @Transactional
     void getAllTripsByDriverIsEqualToSomething() throws Exception {
         Driver driver;
         if (TestUtil.findAll(em, Driver.class).isEmpty()) {
             tripRepository.saveAndFlush(trip);
-            driver = DriverResourceIT.createEntity(em);
+            driver = DriverResourceIT.createEntity();
         } else {
             driver = TestUtil.findAll(em, Driver.class).get(0);
         }
@@ -735,28 +777,6 @@ class TripResourceIT {
 
         // Get all the tripList where attendant equals to (attendantId + 1)
         defaultTripShouldNotBeFound("attendantId.equals=" + (attendantId + 1));
-    }
-
-    @Test
-    @Transactional
-    void getAllTripsByRouteIsEqualToSomething() throws Exception {
-        Route route;
-        if (TestUtil.findAll(em, Route.class).isEmpty()) {
-            tripRepository.saveAndFlush(trip);
-            route = RouteResourceIT.createEntity(em);
-        } else {
-            route = TestUtil.findAll(em, Route.class).get(0);
-        }
-        em.persist(route);
-        em.flush();
-        trip.setRoute(route);
-        tripRepository.saveAndFlush(trip);
-        Long routeId = route.getId();
-        // Get all the tripList where route equals to routeId
-        defaultTripShouldBeFound("routeId.equals=" + routeId);
-
-        // Get all the tripList where route equals to (routeId + 1)
-        defaultTripShouldNotBeFound("routeId.equals=" + (routeId + 1));
     }
 
     private void defaultTripFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

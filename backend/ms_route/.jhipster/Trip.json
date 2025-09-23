@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923121328"
+    "changelogDate": "20250923133131"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -55,25 +55,24 @@
   "pagination": "infinite-scroll",
   "relationships": [
     {
-      "otherEntityName": "driver",
-      "otherEntityRelationshipName": "trip",
-      "relationshipName": "driver",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-one"
-    },
-    {
-      "otherEntityName": "attendant",
-      "otherEntityRelationshipName": "trip",
-      "relationshipName": "attendant",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-one"
-    },
-    {
       "otherEntityName": "route",
       "relationshipName": "route",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityName": "driver",
+      "relationshipName": "driver",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityName": "attendant",
+      "relationshipName": "attendant",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
     }
   ],
   "searchEngine": "no",

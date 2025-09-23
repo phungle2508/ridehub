@@ -18,9 +18,9 @@ public class SeatDTO implements Serializable {
     @NotNull
     private String seatNo;
 
-    private Integer row;
+    private Integer rowNo;
 
-    private Integer col;
+    private Integer colNo;
 
     private BigDecimal priceFactor;
 
@@ -54,20 +54,20 @@ public class SeatDTO implements Serializable {
         this.seatNo = seatNo;
     }
 
-    public Integer getRow() {
-        return row;
+    public Integer getRowNo() {
+        return rowNo;
     }
 
-    public void setRow(Integer row) {
-        this.row = row;
+    public void setRowNo(Integer rowNo) {
+        this.rowNo = rowNo;
     }
 
-    public Integer getCol() {
-        return col;
+    public Integer getColNo() {
+        return colNo;
     }
 
-    public void setCol(Integer col) {
-        this.col = col;
+    public void setColNo(Integer colNo) {
+        this.colNo = colNo;
     }
 
     public BigDecimal getPriceFactor() {
@@ -153,8 +153,8 @@ public class SeatDTO implements Serializable {
         return "SeatDTO{" +
             "id=" + getId() +
             ", seatNo='" + getSeatNo() + "'" +
-            ", row=" + getRow() +
-            ", col=" + getCol() +
+            ", rowNo=" + getRowNo() +
+            ", colNo=" + getColNo() +
             ", priceFactor=" + getPriceFactor() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

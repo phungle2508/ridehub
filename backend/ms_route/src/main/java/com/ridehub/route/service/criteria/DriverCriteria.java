@@ -38,8 +38,6 @@ public class DriverCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
-    private LongFilter tripId;
-
     private Boolean distinct;
 
     public DriverCriteria() {}
@@ -53,7 +51,6 @@ public class DriverCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
-        this.tripId = other.optionalTripId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -214,25 +211,6 @@ public class DriverCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
-    public LongFilter getTripId() {
-        return tripId;
-    }
-
-    public Optional<LongFilter> optionalTripId() {
-        return Optional.ofNullable(tripId);
-    }
-
-    public LongFilter tripId() {
-        if (tripId == null) {
-            setTripId(new LongFilter());
-        }
-        return tripId;
-    }
-
-    public void setTripId(LongFilter tripId) {
-        this.tripId = tripId;
-    }
-
     public Boolean getDistinct() {
         return distinct;
     }
@@ -270,14 +248,13 @@ public class DriverCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
-            Objects.equals(tripId, that.tripId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, licenseClass, yearsExperience, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, tripId, distinct);
+        return Objects.hash(id, licenseClass, yearsExperience, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, distinct);
     }
 
     // prettier-ignore
@@ -292,7 +269,6 @@ public class DriverCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
-            optionalTripId().map(f -> "tripId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

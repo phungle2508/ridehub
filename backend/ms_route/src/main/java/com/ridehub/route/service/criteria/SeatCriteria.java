@@ -26,9 +26,9 @@ public class SeatCriteria implements Serializable, Criteria {
 
     private StringFilter seatNo;
 
-    private IntegerFilter row;
+    private IntegerFilter rowNo;
 
-    private IntegerFilter col;
+    private IntegerFilter colNo;
 
     private BigDecimalFilter priceFactor;
 
@@ -51,8 +51,8 @@ public class SeatCriteria implements Serializable, Criteria {
     public SeatCriteria(SeatCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.seatNo = other.optionalSeatNo().map(StringFilter::copy).orElse(null);
-        this.row = other.optionalRow().map(IntegerFilter::copy).orElse(null);
-        this.col = other.optionalCol().map(IntegerFilter::copy).orElse(null);
+        this.rowNo = other.optionalRowNo().map(IntegerFilter::copy).orElse(null);
+        this.colNo = other.optionalColNo().map(IntegerFilter::copy).orElse(null);
         this.priceFactor = other.optionalPriceFactor().map(BigDecimalFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
@@ -106,42 +106,42 @@ public class SeatCriteria implements Serializable, Criteria {
         this.seatNo = seatNo;
     }
 
-    public IntegerFilter getRow() {
-        return row;
+    public IntegerFilter getRowNo() {
+        return rowNo;
     }
 
-    public Optional<IntegerFilter> optionalRow() {
-        return Optional.ofNullable(row);
+    public Optional<IntegerFilter> optionalRowNo() {
+        return Optional.ofNullable(rowNo);
     }
 
-    public IntegerFilter row() {
-        if (row == null) {
-            setRow(new IntegerFilter());
+    public IntegerFilter rowNo() {
+        if (rowNo == null) {
+            setRowNo(new IntegerFilter());
         }
-        return row;
+        return rowNo;
     }
 
-    public void setRow(IntegerFilter row) {
-        this.row = row;
+    public void setRowNo(IntegerFilter rowNo) {
+        this.rowNo = rowNo;
     }
 
-    public IntegerFilter getCol() {
-        return col;
+    public IntegerFilter getColNo() {
+        return colNo;
     }
 
-    public Optional<IntegerFilter> optionalCol() {
-        return Optional.ofNullable(col);
+    public Optional<IntegerFilter> optionalColNo() {
+        return Optional.ofNullable(colNo);
     }
 
-    public IntegerFilter col() {
-        if (col == null) {
-            setCol(new IntegerFilter());
+    public IntegerFilter colNo() {
+        if (colNo == null) {
+            setColNo(new IntegerFilter());
         }
-        return col;
+        return colNo;
     }
 
-    public void setCol(IntegerFilter col) {
-        this.col = col;
+    public void setColNo(IntegerFilter colNo) {
+        this.colNo = colNo;
     }
 
     public BigDecimalFilter getPriceFactor() {
@@ -308,8 +308,8 @@ public class SeatCriteria implements Serializable, Criteria {
         return (
             Objects.equals(id, that.id) &&
             Objects.equals(seatNo, that.seatNo) &&
-            Objects.equals(row, that.row) &&
-            Objects.equals(col, that.col) &&
+            Objects.equals(rowNo, that.rowNo) &&
+            Objects.equals(colNo, that.colNo) &&
             Objects.equals(priceFactor, that.priceFactor) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
@@ -323,7 +323,20 @@ public class SeatCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, seatNo, row, col, priceFactor, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, floorId, distinct);
+        return Objects.hash(
+            id,
+            seatNo,
+            rowNo,
+            colNo,
+            priceFactor,
+            createdAt,
+            updatedAt,
+            isDeleted,
+            deletedAt,
+            deletedBy,
+            floorId,
+            distinct
+        );
     }
 
     // prettier-ignore
@@ -332,8 +345,8 @@ public class SeatCriteria implements Serializable, Criteria {
         return "SeatCriteria{" +
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalSeatNo().map(f -> "seatNo=" + f + ", ").orElse("") +
-            optionalRow().map(f -> "row=" + f + ", ").orElse("") +
-            optionalCol().map(f -> "col=" + f + ", ").orElse("") +
+            optionalRowNo().map(f -> "rowNo=" + f + ", ").orElse("") +
+            optionalColNo().map(f -> "colNo=" + f + ", ").orElse("") +
             optionalPriceFactor().map(f -> "priceFactor=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +

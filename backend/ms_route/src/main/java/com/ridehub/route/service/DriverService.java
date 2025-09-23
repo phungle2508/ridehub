@@ -1,7 +1,6 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.DriverDTO;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,13 +30,6 @@ public interface DriverService {
      * @return the persisted entity.
      */
     Optional<DriverDTO> partialUpdate(DriverDTO driverDTO);
-
-    /**
-     * Get all the DriverDTO where Trip is {@code null}.
-     *
-     * @return the {@link List} of entities.
-     */
-    List<DriverDTO> findAllWhereTripIsNull();
 
     /**
      * Get the "id" driver.

@@ -91,8 +91,8 @@ class DriverResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Driver createEntity(EntityManager em) {
-        Driver driver = new Driver()
+    public static Driver createEntity() {
+        return new Driver()
             .licenseClass(DEFAULT_LICENSE_CLASS)
             .yearsExperience(DEFAULT_YEARS_EXPERIENCE)
             .createdAt(DEFAULT_CREATED_AT)
@@ -100,7 +100,6 @@ class DriverResourceIT {
             .isDeleted(DEFAULT_IS_DELETED)
             .deletedAt(DEFAULT_DELETED_AT)
             .deletedBy(DEFAULT_DELETED_BY);
-        return driver;
     }
 
     /**
@@ -109,8 +108,8 @@ class DriverResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Driver createUpdatedEntity(EntityManager em) {
-        Driver updatedDriver = new Driver()
+    public static Driver createUpdatedEntity() {
+        return new Driver()
             .licenseClass(UPDATED_LICENSE_CLASS)
             .yearsExperience(UPDATED_YEARS_EXPERIENCE)
             .createdAt(UPDATED_CREATED_AT)
@@ -118,12 +117,11 @@ class DriverResourceIT {
             .isDeleted(UPDATED_IS_DELETED)
             .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
-        return updatedDriver;
     }
 
     @BeforeEach
     void initTest() {
-        driver = createEntity(em);
+        driver = createEntity();
     }
 
     @AfterEach

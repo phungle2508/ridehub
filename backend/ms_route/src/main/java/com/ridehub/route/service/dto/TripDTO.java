@@ -38,12 +38,13 @@ public class TripDTO implements Serializable {
 
     private UUID deletedBy;
 
+    @NotNull
+    private RouteDTO route;
+
+    @NotNull
     private DriverDTO driver;
 
     private AttendantDTO attendant;
-
-    @NotNull
-    private RouteDTO route;
 
     public Long getId() {
         return id;
@@ -125,6 +126,14 @@ public class TripDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public RouteDTO getRoute() {
+        return route;
+    }
+
+    public void setRoute(RouteDTO route) {
+        this.route = route;
+    }
+
     public DriverDTO getDriver() {
         return driver;
     }
@@ -139,14 +148,6 @@ public class TripDTO implements Serializable {
 
     public void setAttendant(AttendantDTO attendant) {
         this.attendant = attendant;
-    }
-
-    public RouteDTO getRoute() {
-        return route;
-    }
-
-    public void setRoute(RouteDTO route) {
-        this.route = route;
     }
 
     @Override
@@ -184,9 +185,9 @@ public class TripDTO implements Serializable {
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
+            ", route=" + getRoute() +
             ", driver=" + getDriver() +
             ", attendant=" + getAttendant() +
-            ", route=" + getRoute() +
             "}";
     }
 }

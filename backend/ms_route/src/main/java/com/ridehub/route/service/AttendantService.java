@@ -1,7 +1,6 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.AttendantDTO;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,13 +30,6 @@ public interface AttendantService {
      * @return the persisted entity.
      */
     Optional<AttendantDTO> partialUpdate(AttendantDTO attendantDTO);
-
-    /**
-     * Get all the AttendantDTO where Trip is {@code null}.
-     *
-     * @return the {@link List} of entities.
-     */
-    List<AttendantDTO> findAllWhereTripIsNull();
 
     /**
      * Get the "id" attendant.

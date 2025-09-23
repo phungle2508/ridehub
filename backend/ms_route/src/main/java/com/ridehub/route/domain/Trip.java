@@ -61,20 +61,17 @@ public class Trip implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @JsonIgnoreProperties(value = { "trip" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
-    private Driver driver;
-
-    @JsonIgnoreProperties(value = { "trip" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
-    private Attendant attendant;
-
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "origin", "destination" }, allowSetters = true)
     private Route route;
+
+    @ManyToOne(optional = false)
+    @NotNull
+    private Driver driver;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Attendant attendant;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -208,6 +205,19 @@ public class Trip implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public Route getRoute() {
+        return this.route;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
+    public Trip route(Route route) {
+        this.setRoute(route);
+        return this;
+    }
+
     public Driver getDriver() {
         return this.driver;
     }
@@ -231,19 +241,6 @@ public class Trip implements Serializable {
 
     public Trip attendant(Attendant attendant) {
         this.setAttendant(attendant);
-        return this;
-    }
-
-    public Route getRoute() {
-        return this.route;
-    }
-
-    public void setRoute(Route route) {
-        this.route = route;
-    }
-
-    public Trip route(Route route) {
-        this.setRoute(route);
         return this;
     }
 

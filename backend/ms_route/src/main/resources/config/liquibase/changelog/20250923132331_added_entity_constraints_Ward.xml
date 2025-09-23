@@ -6,15 +6,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
     <!--
-        Added the constraints for entity Address.
+        Added the constraints for entity Ward.
     -->
-    <changeSet id="20250923120628-2" author="jhipster">
+    <changeSet id="20250923132331-2" author="jhipster">
 
-        <addForeignKeyConstraint baseColumnNames="ward_id"
-                                 baseTableName="address"
-                                 constraintName="fk_address__ward_id"
+        <addForeignKeyConstraint baseColumnNames="district_id"
+                                 baseTableName="ward"
+                                 constraintName="fk_ward__district_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="ward"
+                                 referencedTableName="district"
                                  />
     </changeSet>
 </databaseChangeLog>

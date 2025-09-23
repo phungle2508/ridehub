@@ -1,6 +1,5 @@
 package com.ridehub.route.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -49,10 +48,6 @@ public class Driver implements Serializable {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
-
-    @JsonIgnoreProperties(value = { "driver", "attendant", "route" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "driver")
-    private Trip trip;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -158,25 +153,6 @@ public class Driver implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
-    }
-
-    public Trip getTrip() {
-        return this.trip;
-    }
-
-    public void setTrip(Trip trip) {
-        if (this.trip != null) {
-            this.trip.setDriver(null);
-        }
-        if (trip != null) {
-            trip.setDriver(this);
-        }
-        this.trip = trip;
-    }
-
-    public Driver trip(Trip trip) {
-        this.setTrip(trip);
-        return this;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

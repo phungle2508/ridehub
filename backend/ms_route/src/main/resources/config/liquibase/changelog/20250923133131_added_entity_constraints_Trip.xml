@@ -8,7 +8,14 @@
     <!--
         Added the constraints for entity Trip.
     -->
-    <changeSet id="20250923121328-2" author="jhipster">
+    <changeSet id="20250923133131-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="route_id"
+                                 baseTableName="trip"
+                                 constraintName="fk_trip__route_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="route"
+                                 />
 
         <addForeignKeyConstraint baseColumnNames="driver_id"
                                  baseTableName="trip"
@@ -22,13 +29,6 @@
                                  constraintName="fk_trip__attendant_id"
                                  referencedColumnNames="id"
                                  referencedTableName="attendant"
-                                 />
-
-        <addForeignKeyConstraint baseColumnNames="route_id"
-                                 baseTableName="trip"
-                                 constraintName="fk_trip__route_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="route"
                                  />
     </changeSet>
 </databaseChangeLog>

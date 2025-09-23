@@ -26,6 +26,18 @@ class TripTest {
     }
 
     @Test
+    void routeTest() {
+        Trip trip = getTripRandomSampleGenerator();
+        Route routeBack = getRouteRandomSampleGenerator();
+
+        trip.setRoute(routeBack);
+        assertThat(trip.getRoute()).isEqualTo(routeBack);
+
+        trip.route(null);
+        assertThat(trip.getRoute()).isNull();
+    }
+
+    @Test
     void driverTest() {
         Trip trip = getTripRandomSampleGenerator();
         Driver driverBack = getDriverRandomSampleGenerator();
@@ -47,17 +59,5 @@ class TripTest {
 
         trip.attendant(null);
         assertThat(trip.getAttendant()).isNull();
-    }
-
-    @Test
-    void routeTest() {
-        Trip trip = getTripRandomSampleGenerator();
-        Route routeBack = getRouteRandomSampleGenerator();
-
-        trip.setRoute(routeBack);
-        assertThat(trip.getRoute()).isEqualTo(routeBack);
-
-        trip.route(null);
-        assertThat(trip.getRoute()).isNull();
     }
 }

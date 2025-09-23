@@ -15,10 +15,15 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface TripMapper extends EntityMapper<TripDTO, Trip> {
+    @Mapping(target = "route", source = "route", qualifiedByName = "routeId")
     @Mapping(target = "driver", source = "driver", qualifiedByName = "driverId")
     @Mapping(target = "attendant", source = "attendant", qualifiedByName = "attendantId")
-    @Mapping(target = "route", source = "route", qualifiedByName = "routeId")
     TripDTO toDto(Trip s);
+
+    @Named("routeId")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    RouteDTO toDtoRouteId(Route route);
 
     @Named("driverId")
     @BeanMapping(ignoreByDefault = true)
@@ -29,9 +34,4 @@ public interface TripMapper extends EntityMapper<TripDTO, Trip> {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     AttendantDTO toDtoAttendantId(Attendant attendant);
-
-    @Named("routeId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    RouteDTO toDtoRouteId(Route route);
 }

@@ -77,8 +77,8 @@ class SeatCriteriaTest {
     private static void setAllFilters(SeatCriteria seatCriteria) {
         seatCriteria.id();
         seatCriteria.seatNo();
-        seatCriteria.row();
-        seatCriteria.col();
+        seatCriteria.rowNo();
+        seatCriteria.colNo();
         seatCriteria.priceFactor();
         seatCriteria.createdAt();
         seatCriteria.updatedAt();
@@ -94,8 +94,8 @@ class SeatCriteriaTest {
             criteria ->
                 condition.apply(criteria.getId()) &&
                 condition.apply(criteria.getSeatNo()) &&
-                condition.apply(criteria.getRow()) &&
-                condition.apply(criteria.getCol()) &&
+                condition.apply(criteria.getRowNo()) &&
+                condition.apply(criteria.getColNo()) &&
                 condition.apply(criteria.getPriceFactor()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
@@ -113,8 +113,8 @@ class SeatCriteriaTest {
             criteria ->
                 condition.apply(criteria.getId(), copy.getId()) &&
                 condition.apply(criteria.getSeatNo(), copy.getSeatNo()) &&
-                condition.apply(criteria.getRow(), copy.getRow()) &&
-                condition.apply(criteria.getCol(), copy.getCol()) &&
+                condition.apply(criteria.getRowNo(), copy.getRowNo()) &&
+                condition.apply(criteria.getColNo(), copy.getColNo()) &&
                 condition.apply(criteria.getPriceFactor(), copy.getPriceFactor()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&

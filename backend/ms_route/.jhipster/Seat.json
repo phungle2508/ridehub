@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923121228"
+    "changelogDate": "20250923133031"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -13,11 +13,11 @@
       "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "row",
+      "fieldName": "rowNo",
       "fieldType": "Integer"
     },
     {
-      "fieldName": "col",
+      "fieldName": "colNo",
       "fieldType": "Integer"
     },
     {

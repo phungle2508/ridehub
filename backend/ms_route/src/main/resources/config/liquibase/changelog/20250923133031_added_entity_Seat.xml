@@ -9,7 +9,7 @@
     <!--
         Added the entity Seat.
     -->
-    <changeSet id="20250923121228-1" author="jhipster">
+    <changeSet id="20250923133031-1" author="jhipster">
         <createTable tableName="seat">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
@@ -17,10 +17,10 @@
             <column name="seat_no" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="row" type="integer">
+            <column name="row_no" type="integer">
                 <constraints nullable="true" />
             </column>
-            <column name="col" type="integer">
+            <column name="col_no" type="integer">
                 <constraints nullable="true" />
             </column>
             <column name="price_factor" type="decimal(21,2)">
@@ -61,7 +61,7 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250923121228-1-data" author="jhipster" context="faker">
+    <changeSet id="20250923133031-1-data" author="jhipster" context="faker">
         <loadData
                   file="config/liquibase/fake-data/seat.csv"
                   separator=";"
@@ -69,8 +69,8 @@
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
             <column name="seat_no" type="string"/>
-            <column name="row" type="numeric"/>
-            <column name="col" type="numeric"/>
+            <column name="row_no" type="numeric"/>
+            <column name="col_no" type="numeric"/>
             <column name="price_factor" type="numeric"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>

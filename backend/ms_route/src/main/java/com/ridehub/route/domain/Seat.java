@@ -32,11 +32,11 @@ public class Seat implements Serializable {
     @Column(name = "seat_no", nullable = false)
     private String seatNo;
 
-    @Column(name = "row")
-    private Integer row;
+    @Column(name = "row_no")
+    private Integer rowNo;
 
-    @Column(name = "col")
-    private Integer col;
+    @Column(name = "col_no")
+    private Integer colNo;
 
     @Column(name = "price_factor", precision = 21, scale = 2)
     private BigDecimal priceFactor;
@@ -91,30 +91,30 @@ public class Seat implements Serializable {
         this.seatNo = seatNo;
     }
 
-    public Integer getRow() {
-        return this.row;
+    public Integer getRowNo() {
+        return this.rowNo;
     }
 
-    public Seat row(Integer row) {
-        this.setRow(row);
+    public Seat rowNo(Integer rowNo) {
+        this.setRowNo(rowNo);
         return this;
     }
 
-    public void setRow(Integer row) {
-        this.row = row;
+    public void setRowNo(Integer rowNo) {
+        this.rowNo = rowNo;
     }
 
-    public Integer getCol() {
-        return this.col;
+    public Integer getColNo() {
+        return this.colNo;
     }
 
-    public Seat col(Integer col) {
-        this.setCol(col);
+    public Seat colNo(Integer colNo) {
+        this.setColNo(colNo);
         return this;
     }
 
-    public void setCol(Integer col) {
-        this.col = col;
+    public void setColNo(Integer colNo) {
+        this.colNo = colNo;
     }
 
     public BigDecimal getPriceFactor() {
@@ -233,8 +233,8 @@ public class Seat implements Serializable {
         return "Seat{" +
             "id=" + getId() +
             ", seatNo='" + getSeatNo() + "'" +
-            ", row=" + getRow() +
-            ", col=" + getCol() +
+            ", rowNo=" + getRowNo() +
+            ", colNo=" + getColNo() +
             ", priceFactor=" + getPriceFactor() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

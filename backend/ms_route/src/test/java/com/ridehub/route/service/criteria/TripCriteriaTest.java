@@ -85,9 +85,9 @@ class TripCriteriaTest {
         tripCriteria.isDeleted();
         tripCriteria.deletedAt();
         tripCriteria.deletedBy();
+        tripCriteria.routeId();
         tripCriteria.driverId();
         tripCriteria.attendantId();
-        tripCriteria.routeId();
         tripCriteria.distinct();
     }
 
@@ -104,9 +104,9 @@ class TripCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getRouteId()) &&
                 condition.apply(criteria.getDriverId()) &&
                 condition.apply(criteria.getAttendantId()) &&
-                condition.apply(criteria.getRouteId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -125,9 +125,9 @@ class TripCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getRouteId(), copy.getRouteId()) &&
                 condition.apply(criteria.getDriverId(), copy.getDriverId()) &&
                 condition.apply(criteria.getAttendantId(), copy.getAttendantId()) &&
-                condition.apply(criteria.getRouteId(), copy.getRouteId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

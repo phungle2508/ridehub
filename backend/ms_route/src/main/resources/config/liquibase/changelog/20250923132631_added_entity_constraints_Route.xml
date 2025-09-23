@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity Route.
     -->
-    <changeSet id="20250923120828-2" author="jhipster">
+    <changeSet id="20250923132631-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="origin_id"
                                  baseTableName="route"

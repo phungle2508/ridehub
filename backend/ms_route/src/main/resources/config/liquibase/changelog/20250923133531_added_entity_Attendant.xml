@@ -7,18 +7,12 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity Driver.
+        Added the entity Attendant.
     -->
-    <changeSet id="20250923121628-1" author="jhipster">
-        <createTable tableName="driver">
+    <changeSet id="20250923133531-1" author="jhipster">
+        <createTable tableName="attendant">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="license_class" type="varchar(255)">
-                <constraints nullable="true" />
-            </column>
-            <column name="years_experience" type="integer">
-                <constraints nullable="true" />
             </column>
             <column name="created_at" type="${datetimeType}">
                 <constraints nullable="false" />
@@ -37,9 +31,9 @@
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="driver" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="driver" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="driver" columnName="deleted_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="attendant" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="attendant" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="attendant" columnName="deleted_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -52,15 +46,13 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250923121628-1-data" author="jhipster" context="faker">
+    <changeSet id="20250923133531-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/driver.csv"
+                  file="config/liquibase/fake-data/attendant.csv"
                   separator=";"
-                  tableName="driver"
+                  tableName="attendant"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="license_class" type="string"/>
-            <column name="years_experience" type="numeric"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
             <column name="is_deleted" type="boolean"/>

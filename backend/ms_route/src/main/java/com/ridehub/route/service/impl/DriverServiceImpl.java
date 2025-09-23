@@ -5,11 +5,7 @@ import com.ridehub.route.repository.DriverRepository;
 import com.ridehub.route.service.DriverService;
 import com.ridehub.route.service.dto.DriverDTO;
 import com.ridehub.route.service.mapper.DriverMapper;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -62,19 +58,6 @@ public class DriverServiceImpl implements DriverService {
             })
             .map(driverRepository::save)
             .map(driverMapper::toDto);
-    }
-
-    /**
-     *  Get all the drivers where Trip is {@code null}.
-     *  @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<DriverDTO> findAllWhereTripIsNull() {
-        LOG.debug("Request to get all drivers where Trip is null");
-        return StreamSupport.stream(driverRepository.findAll().spliterator(), false)
-            .filter(driver -> driver.getTrip() == null)
-            .map(driverMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override

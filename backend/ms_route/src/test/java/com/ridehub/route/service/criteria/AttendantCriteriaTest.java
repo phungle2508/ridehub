@@ -81,7 +81,6 @@ class AttendantCriteriaTest {
         attendantCriteria.isDeleted();
         attendantCriteria.deletedAt();
         attendantCriteria.deletedBy();
-        attendantCriteria.tripId();
         attendantCriteria.distinct();
     }
 
@@ -94,7 +93,6 @@ class AttendantCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
-                condition.apply(criteria.getTripId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -109,7 +107,6 @@ class AttendantCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
-                condition.apply(criteria.getTripId(), copy.getTripId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

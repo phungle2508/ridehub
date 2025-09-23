@@ -1,7 +1,6 @@
 package com.ridehub.route.domain;
 
 import static com.ridehub.route.domain.AttendantTestSamples.*;
-import static com.ridehub.route.domain.TripTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.route.web.rest.TestUtil;
@@ -21,19 +20,5 @@ class AttendantTest {
 
         attendant2 = getAttendantSample2();
         assertThat(attendant1).isNotEqualTo(attendant2);
-    }
-
-    @Test
-    void tripTest() {
-        Attendant attendant = getAttendantRandomSampleGenerator();
-        Trip tripBack = getTripRandomSampleGenerator();
-
-        attendant.setTrip(tripBack);
-        assertThat(attendant.getTrip()).isEqualTo(tripBack);
-        assertThat(tripBack.getAttendant()).isEqualTo(attendant);
-
-        attendant.trip(null);
-        assertThat(attendant.getTrip()).isNull();
-        assertThat(tripBack.getAttendant()).isNull();
     }
 }
