@@ -46,6 +46,8 @@ public class PromotionCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter bannerImgId;
+
     private LongFilter buyNGetMId;
 
     private LongFilter percentOffId;
@@ -73,6 +75,7 @@ public class PromotionCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.bannerImgId = other.optionalBannerImgId().map(LongFilter::copy).orElse(null);
         this.buyNGetMId = other.optionalBuyNGetMId().map(LongFilter::copy).orElse(null);
         this.percentOffId = other.optionalPercentOffId().map(LongFilter::copy).orElse(null);
         this.conditionsRId = other.optionalConditionsRId().map(LongFilter::copy).orElse(null);
@@ -314,6 +317,25 @@ public class PromotionCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getBannerImgId() {
+        return bannerImgId;
+    }
+
+    public Optional<LongFilter> optionalBannerImgId() {
+        return Optional.ofNullable(bannerImgId);
+    }
+
+    public LongFilter bannerImgId() {
+        if (bannerImgId == null) {
+            setBannerImgId(new LongFilter());
+        }
+        return bannerImgId;
+    }
+
+    public void setBannerImgId(LongFilter bannerImgId) {
+        this.bannerImgId = bannerImgId;
+    }
+
     public LongFilter getBuyNGetMId() {
         return buyNGetMId;
     }
@@ -450,6 +472,7 @@ public class PromotionCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(bannerImgId, that.bannerImgId) &&
             Objects.equals(buyNGetMId, that.buyNGetMId) &&
             Objects.equals(percentOffId, that.percentOffId) &&
             Objects.equals(conditionsRId, that.conditionsRId) &&
@@ -474,6 +497,7 @@ public class PromotionCriteria implements Serializable, Criteria {
             isDeleted,
             deletedAt,
             deletedBy,
+            bannerImgId,
             buyNGetMId,
             percentOffId,
             conditionsRId,
@@ -499,6 +523,7 @@ public class PromotionCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalBannerImgId().map(f -> "bannerImgId=" + f + ", ").orElse("") +
             optionalBuyNGetMId().map(f -> "buyNGetMId=" + f + ", ").orElse("") +
             optionalPercentOffId().map(f -> "percentOffId=" + f + ", ").orElse("") +
             optionalConditionsRId().map(f -> "conditionsRId=" + f + ", ").orElse("") +

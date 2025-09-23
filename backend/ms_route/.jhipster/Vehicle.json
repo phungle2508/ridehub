@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250922113618"
+    "changelogDate": "20250923120928"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -11,7 +11,7 @@
       "fieldName": "type",
       "fieldType": "VehicleType",
       "fieldValidateRules": ["required"],
-      "fieldValues": "STANDARD_BUS,LIMOUSINE"
+      "fieldValues": "STANDARD_BUS_VIP,STANDARD_BUS_NORMAL,LIMOUSINE"
     },
     {
       "fieldName": "typeFactor",
@@ -64,6 +64,13 @@
       "relationshipSide": "left",
       "relationshipType": "one-to-one",
       "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityName": "fileRoute",
+      "otherEntityRelationshipName": "vehicle",
+      "relationshipName": "vehicleImg",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
     }
   ],
   "searchEngine": "no",

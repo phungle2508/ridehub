@@ -52,6 +52,11 @@ public class Profile implements Serializable {
     private UUID deletedBy;
 
     @JsonIgnoreProperties(value = { "profile" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(unique = true)
+    private FileUser avatar;
+
+    @JsonIgnoreProperties(value = { "profile" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "profile")
     private AppUser user;
 
@@ -159,6 +164,19 @@ public class Profile implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public FileUser getAvatar() {
+        return this.avatar;
+    }
+
+    public void setAvatar(FileUser fileUser) {
+        this.avatar = fileUser;
+    }
+
+    public Profile avatar(FileUser fileUser) {
+        this.setAvatar(fileUser);
+        return this;
     }
 
     public AppUser getUser() {

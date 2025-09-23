@@ -83,6 +83,7 @@ class ProfileCriteriaTest {
         profileCriteria.isDeleted();
         profileCriteria.deletedAt();
         profileCriteria.deletedBy();
+        profileCriteria.avatarId();
         profileCriteria.userId();
         profileCriteria.distinct();
     }
@@ -98,6 +99,7 @@ class ProfileCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getAvatarId()) &&
                 condition.apply(criteria.getUserId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -115,6 +117,7 @@ class ProfileCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getAvatarId(), copy.getAvatarId()) &&
                 condition.apply(criteria.getUserId(), copy.getUserId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

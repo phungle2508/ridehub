@@ -1,8 +1,10 @@
 package com.ridehub.route.service.mapper;
 
 import com.ridehub.route.domain.Address;
+import com.ridehub.route.domain.FileRoute;
 import com.ridehub.route.domain.Station;
 import com.ridehub.route.service.dto.AddressDTO;
+import com.ridehub.route.service.dto.FileRouteDTO;
 import com.ridehub.route.service.dto.StationDTO;
 import org.mapstruct.*;
 
@@ -12,10 +14,16 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface StationMapper extends EntityMapper<StationDTO, Station> {
     @Mapping(target = "address", source = "address", qualifiedByName = "addressId")
+    @Mapping(target = "stationImg", source = "stationImg", qualifiedByName = "fileRouteId")
     StationDTO toDto(Station s);
 
     @Named("addressId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     AddressDTO toDtoAddressId(Address address);
+
+    @Named("fileRouteId")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    FileRouteDTO toDtoFileRouteId(FileRoute fileRoute);
 }

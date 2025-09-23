@@ -70,6 +70,11 @@ public class Station implements Serializable {
     @JoinColumn(unique = true)
     private Address address;
 
+    @JsonIgnoreProperties(value = { "station", "vehicle", "seatMap" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(unique = true)
+    private FileRoute stationImg;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -212,6 +217,19 @@ public class Station implements Serializable {
 
     public Station address(Address address) {
         this.setAddress(address);
+        return this;
+    }
+
+    public FileRoute getStationImg() {
+        return this.stationImg;
+    }
+
+    public void setStationImg(FileRoute fileRoute) {
+        this.stationImg = fileRoute;
+    }
+
+    public Station stationImg(FileRoute fileRoute) {
+        this.setStationImg(fileRoute);
         return this;
     }
 

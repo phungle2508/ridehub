@@ -55,7 +55,7 @@ public class Address implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @JsonIgnoreProperties(value = { "address" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "address", "stationImg" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "address")
     private Station station;
 

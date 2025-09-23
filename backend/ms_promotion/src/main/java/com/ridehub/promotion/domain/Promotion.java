@@ -66,6 +66,11 @@ public class Promotion implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
+    @JsonIgnoreProperties(value = { "promotion" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(unique = true)
+    private FilePromotion bannerImg;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "promotion")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "promotion" }, allowSetters = true)
@@ -247,6 +252,19 @@ public class Promotion implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public FilePromotion getBannerImg() {
+        return this.bannerImg;
+    }
+
+    public void setBannerImg(FilePromotion filePromotion) {
+        this.bannerImg = filePromotion;
+    }
+
+    public Promotion bannerImg(FilePromotion filePromotion) {
+        this.setBannerImg(filePromotion);
+        return this;
     }
 
     public Set<BuyNGetMFree> getBuyNGetMS() {

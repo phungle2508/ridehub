@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.promotion.IntegrationTest;
+import com.ridehub.promotion.domain.FilePromotion;
 import com.ridehub.promotion.domain.Promotion;
 import com.ridehub.promotion.repository.PromotionRepository;
 import com.ridehub.promotion.service.dto.PromotionDTO;
@@ -843,6 +844,28 @@ class PromotionResourceIT {
 
         // Get all the promotionList where deletedBy is not null
         defaultPromotionFiltering("deletedBy.specified=true", "deletedBy.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllPromotionsByBannerImgIsEqualToSomething() throws Exception {
+        FilePromotion bannerImg;
+        if (TestUtil.findAll(em, FilePromotion.class).isEmpty()) {
+            promotionRepository.saveAndFlush(promotion);
+            bannerImg = FilePromotionResourceIT.createEntity();
+        } else {
+            bannerImg = TestUtil.findAll(em, FilePromotion.class).get(0);
+        }
+        em.persist(bannerImg);
+        em.flush();
+        promotion.setBannerImg(bannerImg);
+        promotionRepository.saveAndFlush(promotion);
+        Long bannerImgId = bannerImg.getId();
+        // Get all the promotionList where bannerImg equals to bannerImgId
+        defaultPromotionShouldBeFound("bannerImgId.equals=" + bannerImgId);
+
+        // Get all the promotionList where bannerImg equals to (bannerImgId + 1)
+        defaultPromotionShouldNotBeFound("bannerImgId.equals=" + (bannerImgId + 1));
     }
 
     private void defaultPromotionFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

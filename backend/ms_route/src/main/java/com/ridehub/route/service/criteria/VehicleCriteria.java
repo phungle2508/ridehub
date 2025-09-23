@@ -64,6 +64,8 @@ public class VehicleCriteria implements Serializable, Criteria {
 
     private LongFilter seatMapId;
 
+    private LongFilter vehicleImgId;
+
     private Boolean distinct;
 
     public VehicleCriteria() {}
@@ -81,6 +83,7 @@ public class VehicleCriteria implements Serializable, Criteria {
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
         this.seatMapId = other.optionalSeatMapId().map(LongFilter::copy).orElse(null);
+        this.vehicleImgId = other.optionalVehicleImgId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -317,6 +320,25 @@ public class VehicleCriteria implements Serializable, Criteria {
         this.seatMapId = seatMapId;
     }
 
+    public LongFilter getVehicleImgId() {
+        return vehicleImgId;
+    }
+
+    public Optional<LongFilter> optionalVehicleImgId() {
+        return Optional.ofNullable(vehicleImgId);
+    }
+
+    public LongFilter vehicleImgId() {
+        if (vehicleImgId == null) {
+            setVehicleImgId(new LongFilter());
+        }
+        return vehicleImgId;
+    }
+
+    public void setVehicleImgId(LongFilter vehicleImgId) {
+        this.vehicleImgId = vehicleImgId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -358,6 +380,7 @@ public class VehicleCriteria implements Serializable, Criteria {
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
             Objects.equals(seatMapId, that.seatMapId) &&
+            Objects.equals(vehicleImgId, that.vehicleImgId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -377,6 +400,7 @@ public class VehicleCriteria implements Serializable, Criteria {
             deletedAt,
             deletedBy,
             seatMapId,
+            vehicleImgId,
             distinct
         );
     }
@@ -397,6 +421,7 @@ public class VehicleCriteria implements Serializable, Criteria {
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
             optionalSeatMapId().map(f -> "seatMapId=" + f + ", ").orElse("") +
+            optionalVehicleImgId().map(f -> "vehicleImgId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

@@ -49,6 +49,8 @@ public class TicketDTO implements Serializable {
 
     private UUID deletedBy;
 
+    private FileBookingDTO qrCodeImg;
+
     @NotNull
     private BookingDTO booking;
 
@@ -172,6 +174,14 @@ public class TicketDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public FileBookingDTO getQrCodeImg() {
+        return qrCodeImg;
+    }
+
+    public void setQrCodeImg(FileBookingDTO qrCodeImg) {
+        this.qrCodeImg = qrCodeImg;
+    }
+
     public BookingDTO getBooking() {
         return booking;
     }
@@ -220,6 +230,7 @@ public class TicketDTO implements Serializable {
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
+            ", qrCodeImg=" + getQrCodeImg() +
             ", booking=" + getBooking() +
             "}";
     }

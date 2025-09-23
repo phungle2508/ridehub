@@ -52,6 +52,8 @@ public class TicketCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter qrCodeImgId;
+
     private LongFilter bookingId;
 
     private Boolean distinct;
@@ -74,6 +76,7 @@ public class TicketCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.qrCodeImgId = other.optionalQrCodeImgId().map(LongFilter::copy).orElse(null);
         this.bookingId = other.optionalBookingId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -368,6 +371,25 @@ public class TicketCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getQrCodeImgId() {
+        return qrCodeImgId;
+    }
+
+    public Optional<LongFilter> optionalQrCodeImgId() {
+        return Optional.ofNullable(qrCodeImgId);
+    }
+
+    public LongFilter qrCodeImgId() {
+        if (qrCodeImgId == null) {
+            setQrCodeImgId(new LongFilter());
+        }
+        return qrCodeImgId;
+    }
+
+    public void setQrCodeImgId(LongFilter qrCodeImgId) {
+        this.qrCodeImgId = qrCodeImgId;
+    }
+
     public LongFilter getBookingId() {
         return bookingId;
     }
@@ -431,6 +453,7 @@ public class TicketCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(qrCodeImgId, that.qrCodeImgId) &&
             Objects.equals(bookingId, that.bookingId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -454,6 +477,7 @@ public class TicketCriteria implements Serializable, Criteria {
             isDeleted,
             deletedAt,
             deletedBy,
+            qrCodeImgId,
             bookingId,
             distinct
         );
@@ -478,6 +502,7 @@ public class TicketCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalQrCodeImgId().map(f -> "qrCodeImgId=" + f + ", ").orElse("") +
             optionalBookingId().map(f -> "bookingId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

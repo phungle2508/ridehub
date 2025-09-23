@@ -79,6 +79,7 @@ public class ProfileQueryService extends QueryService<Profile> {
                 buildSpecification(criteria.getIsDeleted(), Profile_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Profile_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), Profile_.deletedBy),
+                buildSpecification(criteria.getAvatarId(), root -> root.join(Profile_.avatar, JoinType.LEFT).get(FileUser_.id)),
                 buildSpecification(criteria.getUserId(), root -> root.join(Profile_.user, JoinType.LEFT).get(AppUser_.id))
             );
         }

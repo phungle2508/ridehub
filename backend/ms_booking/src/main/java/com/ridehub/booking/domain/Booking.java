@@ -85,7 +85,7 @@ public class Booking implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "booking")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "booking" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "qrCodeImg", "booking" }, allowSetters = true)
     private Set<Ticket> tickets = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "booking")

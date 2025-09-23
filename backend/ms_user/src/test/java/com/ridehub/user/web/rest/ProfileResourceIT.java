@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.user.IntegrationTest;
+import com.ridehub.user.domain.FileUser;
 import com.ridehub.user.domain.Profile;
 import com.ridehub.user.repository.ProfileRepository;
 import com.ridehub.user.service.dto.ProfileDTO;
@@ -522,6 +523,28 @@ class ProfileResourceIT {
 
         // Get all the profileList where deletedBy is not null
         defaultProfileFiltering("deletedBy.specified=true", "deletedBy.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllProfilesByAvatarIsEqualToSomething() throws Exception {
+        FileUser avatar;
+        if (TestUtil.findAll(em, FileUser.class).isEmpty()) {
+            profileRepository.saveAndFlush(profile);
+            avatar = FileUserResourceIT.createEntity();
+        } else {
+            avatar = TestUtil.findAll(em, FileUser.class).get(0);
+        }
+        em.persist(avatar);
+        em.flush();
+        profile.setAvatar(avatar);
+        profileRepository.saveAndFlush(profile);
+        Long avatarId = avatar.getId();
+        // Get all the profileList where avatar equals to avatarId
+        defaultProfileShouldBeFound("avatarId.equals=" + avatarId);
+
+        // Get all the profileList where avatar equals to (avatarId + 1)
+        defaultProfileShouldNotBeFound("avatarId.equals=" + (avatarId + 1));
     }
 
     private void defaultProfileFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

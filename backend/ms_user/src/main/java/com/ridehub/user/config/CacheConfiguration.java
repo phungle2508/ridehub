@@ -80,6 +80,7 @@ public class CacheConfiguration {
         return cm -> {
             createCache(cm, com.ridehub.user.domain.AppUser.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.user.domain.Profile.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.user.domain.FileUser.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }

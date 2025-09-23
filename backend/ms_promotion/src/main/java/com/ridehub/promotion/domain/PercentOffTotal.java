@@ -54,7 +54,10 @@ public class PercentOffTotal implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" }, allowSetters = true)
+    @JsonIgnoreProperties(
+        value = { "bannerImg", "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" },
+        allowSetters = true
+    )
     private Promotion promotion;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

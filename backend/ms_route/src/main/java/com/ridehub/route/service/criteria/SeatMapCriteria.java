@@ -36,6 +36,8 @@ public class SeatMapCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter seatMapImgId;
+
     private LongFilter vehicleId;
 
     private Boolean distinct;
@@ -50,6 +52,7 @@ public class SeatMapCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.seatMapImgId = other.optionalSeatMapImgId().map(LongFilter::copy).orElse(null);
         this.vehicleId = other.optionalVehicleId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -192,6 +195,25 @@ public class SeatMapCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getSeatMapImgId() {
+        return seatMapImgId;
+    }
+
+    public Optional<LongFilter> optionalSeatMapImgId() {
+        return Optional.ofNullable(seatMapImgId);
+    }
+
+    public LongFilter seatMapImgId() {
+        if (seatMapImgId == null) {
+            setSeatMapImgId(new LongFilter());
+        }
+        return seatMapImgId;
+    }
+
+    public void setSeatMapImgId(LongFilter seatMapImgId) {
+        this.seatMapImgId = seatMapImgId;
+    }
+
     public LongFilter getVehicleId() {
         return vehicleId;
     }
@@ -247,6 +269,7 @@ public class SeatMapCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(seatMapImgId, that.seatMapImgId) &&
             Objects.equals(vehicleId, that.vehicleId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -254,7 +277,7 @@ public class SeatMapCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, vehicleId, distinct);
+        return Objects.hash(id, name, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, seatMapImgId, vehicleId, distinct);
     }
 
     // prettier-ignore
@@ -268,6 +291,7 @@ public class SeatMapCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalSeatMapImgId().map(f -> "seatMapImgId=" + f + ", ").orElse("") +
             optionalVehicleId().map(f -> "vehicleId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

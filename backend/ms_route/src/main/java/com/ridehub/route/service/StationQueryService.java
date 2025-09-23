@@ -91,7 +91,8 @@ public class StationQueryService extends QueryService<Station> {
                 buildSpecification(criteria.getIsDeleted(), Station_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Station_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), Station_.deletedBy),
-                buildSpecification(criteria.getAddressId(), root -> root.join(Station_.address, JoinType.LEFT).get(Address_.id))
+                buildSpecification(criteria.getAddressId(), root -> root.join(Station_.address, JoinType.LEFT).get(Address_.id)),
+                buildSpecification(criteria.getStationImgId(), root -> root.join(Station_.stationImg, JoinType.LEFT).get(FileRoute_.id))
             );
         }
         return specification;

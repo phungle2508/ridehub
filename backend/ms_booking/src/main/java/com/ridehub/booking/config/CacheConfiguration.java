@@ -89,6 +89,7 @@ public class CacheConfiguration {
             createCache(cm, com.ridehub.booking.domain.AppliedPromotion.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.PricingSnapshot.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.booking.domain.PaymentWebhookLog.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.booking.domain.FileBooking.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }

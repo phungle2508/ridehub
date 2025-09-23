@@ -4,6 +4,7 @@ import static com.ridehub.promotion.domain.BuyNGetMFreeTestSamples.*;
 import static com.ridehub.promotion.domain.ConditionByDateTestSamples.*;
 import static com.ridehub.promotion.domain.ConditionByLocationTestSamples.*;
 import static com.ridehub.promotion.domain.ConditionByRouteTestSamples.*;
+import static com.ridehub.promotion.domain.FilePromotionTestSamples.*;
 import static com.ridehub.promotion.domain.PercentOffTotalTestSamples.*;
 import static com.ridehub.promotion.domain.PromotionTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +28,18 @@ class PromotionTest {
 
         promotion2 = getPromotionSample2();
         assertThat(promotion1).isNotEqualTo(promotion2);
+    }
+
+    @Test
+    void bannerImgTest() {
+        Promotion promotion = getPromotionRandomSampleGenerator();
+        FilePromotion filePromotionBack = getFilePromotionRandomSampleGenerator();
+
+        promotion.setBannerImg(filePromotionBack);
+        assertThat(promotion.getBannerImg()).isEqualTo(filePromotionBack);
+
+        promotion.bannerImg(null);
+        assertThat(promotion.getBannerImg()).isNull();
     }
 
     @Test

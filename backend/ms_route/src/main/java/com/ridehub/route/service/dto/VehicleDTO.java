@@ -42,6 +42,8 @@ public class VehicleDTO implements Serializable {
     @NotNull
     private SeatMapDTO seatMap;
 
+    private FileRouteDTO vehicleImg;
+
     public Long getId() {
         return id;
     }
@@ -138,6 +140,14 @@ public class VehicleDTO implements Serializable {
         this.seatMap = seatMap;
     }
 
+    public FileRouteDTO getVehicleImg() {
+        return vehicleImg;
+    }
+
+    public void setVehicleImg(FileRouteDTO vehicleImg) {
+        this.vehicleImg = vehicleImg;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -175,6 +185,7 @@ public class VehicleDTO implements Serializable {
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
             ", seatMap=" + getSeatMap() +
+            ", vehicleImg=" + getVehicleImg() +
             "}";
     }
 }

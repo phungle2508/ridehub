@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250922113118"
+    "changelogDate": "20250923120428"
   },
   "applications": ["ms_user"],
   "clientRootFolder": "ms_user",
@@ -41,6 +41,13 @@
   "microserviceName": "ms_user",
   "name": "Profile",
   "relationships": [
+    {
+      "otherEntityName": "fileUser",
+      "otherEntityRelationshipName": "profile",
+      "relationshipName": "avatar",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
     {
       "otherEntityName": "appUser",
       "otherEntityRelationshipName": "profile",

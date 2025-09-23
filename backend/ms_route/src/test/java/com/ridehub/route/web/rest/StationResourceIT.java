@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.route.IntegrationTest;
 import com.ridehub.route.domain.Address;
+import com.ridehub.route.domain.FileRoute;
 import com.ridehub.route.domain.Station;
 import com.ridehub.route.repository.StationRepository;
 import com.ridehub.route.repository.search.StationSearchRepository;
@@ -703,6 +704,28 @@ class StationResourceIT {
 
         // Get all the stationList where address equals to (addressId + 1)
         defaultStationShouldNotBeFound("addressId.equals=" + (addressId + 1));
+    }
+
+    @Test
+    @Transactional
+    void getAllStationsByStationImgIsEqualToSomething() throws Exception {
+        FileRoute stationImg;
+        if (TestUtil.findAll(em, FileRoute.class).isEmpty()) {
+            stationRepository.saveAndFlush(station);
+            stationImg = FileRouteResourceIT.createEntity();
+        } else {
+            stationImg = TestUtil.findAll(em, FileRoute.class).get(0);
+        }
+        em.persist(stationImg);
+        em.flush();
+        station.setStationImg(stationImg);
+        stationRepository.saveAndFlush(station);
+        Long stationImgId = stationImg.getId();
+        // Get all the stationList where stationImg equals to stationImgId
+        defaultStationShouldBeFound("stationImgId.equals=" + stationImgId);
+
+        // Get all the stationList where stationImg equals to (stationImgId + 1)
+        defaultStationShouldNotBeFound("stationImgId.equals=" + (stationImgId + 1));
     }
 
     private void defaultStationFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

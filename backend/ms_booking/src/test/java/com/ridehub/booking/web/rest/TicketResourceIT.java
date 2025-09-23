@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.booking.IntegrationTest;
 import com.ridehub.booking.domain.Booking;
+import com.ridehub.booking.domain.FileBooking;
 import com.ridehub.booking.domain.Ticket;
 import com.ridehub.booking.repository.TicketRepository;
 import com.ridehub.booking.service.dto.TicketDTO;
@@ -908,6 +909,28 @@ class TicketResourceIT {
 
         // Get all the ticketList where deletedBy is not null
         defaultTicketFiltering("deletedBy.specified=true", "deletedBy.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByQrCodeImgIsEqualToSomething() throws Exception {
+        FileBooking qrCodeImg;
+        if (TestUtil.findAll(em, FileBooking.class).isEmpty()) {
+            ticketRepository.saveAndFlush(ticket);
+            qrCodeImg = FileBookingResourceIT.createEntity();
+        } else {
+            qrCodeImg = TestUtil.findAll(em, FileBooking.class).get(0);
+        }
+        em.persist(qrCodeImg);
+        em.flush();
+        ticket.setQrCodeImg(qrCodeImg);
+        ticketRepository.saveAndFlush(ticket);
+        Long qrCodeImgId = qrCodeImg.getId();
+        // Get all the ticketList where qrCodeImg equals to qrCodeImgId
+        defaultTicketShouldBeFound("qrCodeImgId.equals=" + qrCodeImgId);
+
+        // Get all the ticketList where qrCodeImg equals to (qrCodeImgId + 1)
+        defaultTicketShouldNotBeFound("qrCodeImgId.equals=" + (qrCodeImgId + 1));
     }
 
     @Test

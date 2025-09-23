@@ -28,6 +28,8 @@ public class SeatMapDTO implements Serializable {
 
     private UUID deletedBy;
 
+    private FileRouteDTO seatMapImg;
+
     public Long getId() {
         return id;
     }
@@ -84,6 +86,14 @@ public class SeatMapDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public FileRouteDTO getSeatMapImg() {
+        return seatMapImg;
+    }
+
+    public void setSeatMapImg(FileRouteDTO seatMapImg) {
+        this.seatMapImg = seatMapImg;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -116,6 +126,7 @@ public class SeatMapDTO implements Serializable {
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
+            ", seatMapImg=" + getSeatMapImg() +
             "}";
     }
 }

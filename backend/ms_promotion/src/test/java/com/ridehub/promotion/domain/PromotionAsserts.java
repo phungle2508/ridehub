@@ -67,6 +67,8 @@ public class PromotionAsserts {
      * @param actual the actual entity
      */
     public static void assertPromotionUpdatableRelationshipsEquals(Promotion expected, Promotion actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify Promotion relationships")
+            .satisfies(a -> assertThat(a.getBannerImg()).as("check bannerImg").isEqualTo(expected.getBannerImg()));
     }
 }

@@ -67,6 +67,7 @@ public class StationAsserts {
     public static void assertStationUpdatableRelationshipsEquals(Station expected, Station actual) {
         assertThat(actual)
             .as("Verify Station relationships")
-            .satisfies(a -> assertThat(a.getAddress()).as("check address").isEqualTo(expected.getAddress()));
+            .satisfies(a -> assertThat(a.getAddress()).as("check address").isEqualTo(expected.getAddress()))
+            .satisfies(a -> assertThat(a.getStationImg()).as("check stationImg").isEqualTo(expected.getStationImg()));
     }
 }

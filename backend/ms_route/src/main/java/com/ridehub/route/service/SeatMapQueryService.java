@@ -78,6 +78,7 @@ public class SeatMapQueryService extends QueryService<SeatMap> {
                 buildSpecification(criteria.getIsDeleted(), SeatMap_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), SeatMap_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), SeatMap_.deletedBy),
+                buildSpecification(criteria.getSeatMapImgId(), root -> root.join(SeatMap_.seatMapImg, JoinType.LEFT).get(FileRoute_.id)),
                 buildSpecification(criteria.getVehicleId(), root -> root.join(SeatMap_.vehicle, JoinType.LEFT).get(Vehicle_.id))
             );
         }

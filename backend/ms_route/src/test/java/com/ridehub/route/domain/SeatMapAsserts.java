@@ -62,6 +62,8 @@ public class SeatMapAsserts {
      * @param actual the actual entity
      */
     public static void assertSeatMapUpdatableRelationshipsEquals(SeatMap expected, SeatMap actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify SeatMap relationships")
+            .satisfies(a -> assertThat(a.getSeatMapImg()).as("check seatMapImg").isEqualTo(expected.getSeatMapImg()));
     }
 }

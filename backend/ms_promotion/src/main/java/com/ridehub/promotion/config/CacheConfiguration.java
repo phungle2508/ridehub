@@ -95,6 +95,7 @@ public class CacheConfiguration {
             createCache(cm, com.ridehub.promotion.domain.ConditionRouteItem.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.ConditionDateItem.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.ConditionLocationItem.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.FilePromotion.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }

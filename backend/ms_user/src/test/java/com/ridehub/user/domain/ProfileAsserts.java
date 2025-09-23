@@ -63,6 +63,8 @@ public class ProfileAsserts {
      * @param actual the actual entity
      */
     public static void assertProfileUpdatableRelationshipsEquals(Profile expected, Profile actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify Profile relationships")
+            .satisfies(a -> assertThat(a.getAvatar()).as("check avatar").isEqualTo(expected.getAvatar()));
     }
 }

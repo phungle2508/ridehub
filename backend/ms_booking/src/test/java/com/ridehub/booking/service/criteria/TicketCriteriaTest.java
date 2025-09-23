@@ -90,6 +90,7 @@ class TicketCriteriaTest {
         ticketCriteria.isDeleted();
         ticketCriteria.deletedAt();
         ticketCriteria.deletedBy();
+        ticketCriteria.qrCodeImgId();
         ticketCriteria.bookingId();
         ticketCriteria.distinct();
     }
@@ -112,6 +113,7 @@ class TicketCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getQrCodeImgId()) &&
                 condition.apply(criteria.getBookingId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -136,6 +138,7 @@ class TicketCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getQrCodeImgId(), copy.getQrCodeImgId()) &&
                 condition.apply(criteria.getBookingId(), copy.getBookingId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

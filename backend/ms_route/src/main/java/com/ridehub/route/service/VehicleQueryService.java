@@ -84,7 +84,8 @@ public class VehicleQueryService extends QueryService<Vehicle> {
                 buildSpecification(criteria.getIsDeleted(), Vehicle_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Vehicle_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), Vehicle_.deletedBy),
-                buildSpecification(criteria.getSeatMapId(), root -> root.join(Vehicle_.seatMap, JoinType.LEFT).get(SeatMap_.id))
+                buildSpecification(criteria.getSeatMapId(), root -> root.join(Vehicle_.seatMap, JoinType.LEFT).get(SeatMap_.id)),
+                buildSpecification(criteria.getVehicleImgId(), root -> root.join(Vehicle_.vehicleImg, JoinType.LEFT).get(FileRoute_.id))
             );
         }
         return specification;

@@ -87,6 +87,7 @@ class VehicleCriteriaTest {
         vehicleCriteria.deletedAt();
         vehicleCriteria.deletedBy();
         vehicleCriteria.seatMapId();
+        vehicleCriteria.vehicleImgId();
         vehicleCriteria.distinct();
     }
 
@@ -105,6 +106,7 @@ class VehicleCriteriaTest {
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
                 condition.apply(criteria.getSeatMapId()) &&
+                condition.apply(criteria.getVehicleImgId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -125,6 +127,7 @@ class VehicleCriteriaTest {
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
                 condition.apply(criteria.getSeatMapId(), copy.getSeatMapId()) &&
+                condition.apply(criteria.getVehicleImgId(), copy.getVehicleImgId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

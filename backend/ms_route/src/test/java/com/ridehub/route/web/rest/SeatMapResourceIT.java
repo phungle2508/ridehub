@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.route.IntegrationTest;
+import com.ridehub.route.domain.FileRoute;
 import com.ridehub.route.domain.SeatMap;
 import com.ridehub.route.repository.SeatMapRepository;
 import com.ridehub.route.service.dto.SeatMapDTO;
@@ -457,6 +458,28 @@ class SeatMapResourceIT {
 
         // Get all the seatMapList where deletedBy is not null
         defaultSeatMapFiltering("deletedBy.specified=true", "deletedBy.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatMapsBySeatMapImgIsEqualToSomething() throws Exception {
+        FileRoute seatMapImg;
+        if (TestUtil.findAll(em, FileRoute.class).isEmpty()) {
+            seatMapRepository.saveAndFlush(seatMap);
+            seatMapImg = FileRouteResourceIT.createEntity();
+        } else {
+            seatMapImg = TestUtil.findAll(em, FileRoute.class).get(0);
+        }
+        em.persist(seatMapImg);
+        em.flush();
+        seatMap.setSeatMapImg(seatMapImg);
+        seatMapRepository.saveAndFlush(seatMap);
+        Long seatMapImgId = seatMapImg.getId();
+        // Get all the seatMapList where seatMapImg equals to seatMapImgId
+        defaultSeatMapShouldBeFound("seatMapImgId.equals=" + seatMapImgId);
+
+        // Get all the seatMapList where seatMapImg equals to (seatMapImgId + 1)
+        defaultSeatMapShouldNotBeFound("seatMapImgId.equals=" + (seatMapImgId + 1));
     }
 
     private void defaultSeatMapFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

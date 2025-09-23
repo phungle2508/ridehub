@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250922113118"
+    "changelogDate": "20250923120428"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -74,6 +74,13 @@
   "microserviceName": "ms_booking",
   "name": "Ticket",
   "relationships": [
+    {
+      "otherEntityName": "fileBooking",
+      "otherEntityRelationshipName": "ticket",
+      "relationshipName": "qrCodeImg",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
     {
       "otherEntityName": "booking",
       "otherEntityRelationshipName": "tickets",

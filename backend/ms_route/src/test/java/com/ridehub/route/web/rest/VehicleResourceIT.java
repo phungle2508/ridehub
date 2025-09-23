@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.route.IntegrationTest;
+import com.ridehub.route.domain.FileRoute;
 import com.ridehub.route.domain.SeatMap;
 import com.ridehub.route.domain.Vehicle;
 import com.ridehub.route.domain.enumeration.VehicleType;
@@ -42,8 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class VehicleResourceIT {
 
-    private static final VehicleType DEFAULT_TYPE = VehicleType.STANDARD_BUS;
-    private static final VehicleType UPDATED_TYPE = VehicleType.LIMOUSINE;
+    private static final VehicleType DEFAULT_TYPE = VehicleType.STANDARD_BUS_VIP;
+    private static final VehicleType UPDATED_TYPE = VehicleType.STANDARD_BUS_NORMAL;
 
     private static final BigDecimal DEFAULT_TYPE_FACTOR = new BigDecimal(1);
     private static final BigDecimal UPDATED_TYPE_FACTOR = new BigDecimal(2);
@@ -752,6 +753,28 @@ class VehicleResourceIT {
 
         // Get all the vehicleList where seatMap equals to (seatMapId + 1)
         defaultVehicleShouldNotBeFound("seatMapId.equals=" + (seatMapId + 1));
+    }
+
+    @Test
+    @Transactional
+    void getAllVehiclesByVehicleImgIsEqualToSomething() throws Exception {
+        FileRoute vehicleImg;
+        if (TestUtil.findAll(em, FileRoute.class).isEmpty()) {
+            vehicleRepository.saveAndFlush(vehicle);
+            vehicleImg = FileRouteResourceIT.createEntity();
+        } else {
+            vehicleImg = TestUtil.findAll(em, FileRoute.class).get(0);
+        }
+        em.persist(vehicleImg);
+        em.flush();
+        vehicle.setVehicleImg(vehicleImg);
+        vehicleRepository.saveAndFlush(vehicle);
+        Long vehicleImgId = vehicleImg.getId();
+        // Get all the vehicleList where vehicleImg equals to vehicleImgId
+        defaultVehicleShouldBeFound("vehicleImgId.equals=" + vehicleImgId);
+
+        // Get all the vehicleList where vehicleImg equals to (vehicleImgId + 1)
+        defaultVehicleShouldNotBeFound("vehicleImgId.equals=" + (vehicleImgId + 1));
     }
 
     private void defaultVehicleFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

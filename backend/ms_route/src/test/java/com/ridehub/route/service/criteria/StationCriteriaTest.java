@@ -86,6 +86,7 @@ class StationCriteriaTest {
         stationCriteria.deletedAt();
         stationCriteria.deletedBy();
         stationCriteria.addressId();
+        stationCriteria.stationImgId();
         stationCriteria.distinct();
     }
 
@@ -103,6 +104,7 @@ class StationCriteriaTest {
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
                 condition.apply(criteria.getAddressId()) &&
+                condition.apply(criteria.getStationImgId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -122,6 +124,7 @@ class StationCriteriaTest {
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
                 condition.apply(criteria.getAddressId(), copy.getAddressId()) &&
+                condition.apply(criteria.getStationImgId(), copy.getStationImgId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

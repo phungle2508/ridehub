@@ -38,6 +38,8 @@ public class StationDTO implements Serializable {
     @NotNull
     private AddressDTO address;
 
+    private FileRouteDTO stationImg;
+
     public Long getId() {
         return id;
     }
@@ -126,6 +128,14 @@ public class StationDTO implements Serializable {
         this.address = address;
     }
 
+    public FileRouteDTO getStationImg() {
+        return stationImg;
+    }
+
+    public void setStationImg(FileRouteDTO stationImg) {
+        this.stationImg = stationImg;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -162,6 +172,7 @@ public class StationDTO implements Serializable {
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
             ", address=" + getAddress() +
+            ", stationImg=" + getStationImg() +
             "}";
     }
 }

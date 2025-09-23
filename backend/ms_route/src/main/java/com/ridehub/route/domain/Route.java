@@ -57,12 +57,12 @@ public class Route implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "address" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "address", "stationImg" }, allowSetters = true)
     private Station origin;
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "address" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "address", "stationImg" }, allowSetters = true)
     private Station destination;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

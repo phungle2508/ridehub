@@ -73,6 +73,7 @@ public class TicketAsserts {
     public static void assertTicketUpdatableRelationshipsEquals(Ticket expected, Ticket actual) {
         assertThat(actual)
             .as("Verify Ticket relationships")
+            .satisfies(a -> assertThat(a.getQrCodeImg()).as("check qrCodeImg").isEqualTo(expected.getQrCodeImg()))
             .satisfies(a -> assertThat(a.getBooking()).as("check booking").isEqualTo(expected.getBooking()));
     }
 }

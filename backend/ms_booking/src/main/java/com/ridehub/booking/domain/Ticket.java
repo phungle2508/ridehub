@@ -80,6 +80,11 @@ public class Ticket implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
+    @JsonIgnoreProperties(value = { "ticket" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(unique = true)
+    private FileBooking qrCodeImg;
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "invoice", "paymentTransaction", "tickets", "appliedPromos", "pricingSnapshots" }, allowSetters = true)
@@ -280,6 +285,19 @@ public class Ticket implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public FileBooking getQrCodeImg() {
+        return this.qrCodeImg;
+    }
+
+    public void setQrCodeImg(FileBooking fileBooking) {
+        this.qrCodeImg = fileBooking;
+    }
+
+    public Ticket qrCodeImg(FileBooking fileBooking) {
+        this.setQrCodeImg(fileBooking);
+        return this;
     }
 
     public Booking getBooking() {

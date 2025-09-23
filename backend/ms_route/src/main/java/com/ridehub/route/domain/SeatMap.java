@@ -48,7 +48,12 @@ public class SeatMap implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @JsonIgnoreProperties(value = { "seatMap" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "station", "vehicle", "seatMap" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(unique = true)
+    private FileRoute seatMapImg;
+
+    @JsonIgnoreProperties(value = { "seatMap", "vehicleImg" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "seatMap")
     private Vehicle vehicle;
 
@@ -143,6 +148,19 @@ public class SeatMap implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public FileRoute getSeatMapImg() {
+        return this.seatMapImg;
+    }
+
+    public void setSeatMapImg(FileRoute fileRoute) {
+        this.seatMapImg = fileRoute;
+    }
+
+    public SeatMap seatMapImg(FileRoute fileRoute) {
+        this.setSeatMapImg(fileRoute);
+        return this;
     }
 
     public Vehicle getVehicle() {

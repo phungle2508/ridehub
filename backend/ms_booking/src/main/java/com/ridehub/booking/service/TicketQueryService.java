@@ -86,6 +86,7 @@ public class TicketQueryService extends QueryService<Ticket> {
                 buildSpecification(criteria.getIsDeleted(), Ticket_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Ticket_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), Ticket_.deletedBy),
+                buildSpecification(criteria.getQrCodeImgId(), root -> root.join(Ticket_.qrCodeImg, JoinType.LEFT).get(FileBooking_.id)),
                 buildSpecification(criteria.getBookingId(), root -> root.join(Ticket_.booking, JoinType.LEFT).get(Booking_.id))
             );
         }

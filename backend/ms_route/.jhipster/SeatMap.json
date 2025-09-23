@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250922113718"
+    "changelogDate": "20250923121028"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -38,6 +38,13 @@
   "microserviceName": "ms_route",
   "name": "SeatMap",
   "relationships": [
+    {
+      "otherEntityName": "fileRoute",
+      "otherEntityRelationshipName": "seatMap",
+      "relationshipName": "seatMapImg",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
     {
       "otherEntityName": "vehicle",
       "otherEntityRelationshipName": "seatMap",

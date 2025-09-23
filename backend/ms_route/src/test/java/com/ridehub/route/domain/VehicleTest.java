@@ -1,5 +1,6 @@
 package com.ridehub.route.domain;
 
+import static com.ridehub.route.domain.FileRouteTestSamples.*;
 import static com.ridehub.route.domain.SeatMapTestSamples.*;
 import static com.ridehub.route.domain.VehicleTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,5 +34,17 @@ class VehicleTest {
 
         vehicle.seatMap(null);
         assertThat(vehicle.getSeatMap()).isNull();
+    }
+
+    @Test
+    void vehicleImgTest() {
+        Vehicle vehicle = getVehicleRandomSampleGenerator();
+        FileRoute fileRouteBack = getFileRouteRandomSampleGenerator();
+
+        vehicle.setVehicleImg(fileRouteBack);
+        assertThat(vehicle.getVehicleImg()).isEqualTo(fileRouteBack);
+
+        vehicle.vehicleImg(null);
+        assertThat(vehicle.getVehicleImg()).isNull();
     }
 }

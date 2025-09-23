@@ -1,6 +1,7 @@
 package com.ridehub.user.domain;
 
 import static com.ridehub.user.domain.AppUserTestSamples.*;
+import static com.ridehub.user.domain.FileUserTestSamples.*;
 import static com.ridehub.user.domain.ProfileTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,6 +22,18 @@ class ProfileTest {
 
         profile2 = getProfileSample2();
         assertThat(profile1).isNotEqualTo(profile2);
+    }
+
+    @Test
+    void avatarTest() {
+        Profile profile = getProfileRandomSampleGenerator();
+        FileUser fileUserBack = getFileUserRandomSampleGenerator();
+
+        profile.setAvatar(fileUserBack);
+        assertThat(profile.getAvatar()).isEqualTo(fileUserBack);
+
+        profile.avatar(null);
+        assertThat(profile.getAvatar()).isNull();
     }
 
     @Test

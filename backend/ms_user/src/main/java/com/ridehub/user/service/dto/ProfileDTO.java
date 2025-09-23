@@ -30,6 +30,8 @@ public class ProfileDTO implements Serializable {
 
     private UUID deletedBy;
 
+    private FileUserDTO avatar;
+
     public Long getId() {
         return id;
     }
@@ -94,6 +96,14 @@ public class ProfileDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public FileUserDTO getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(FileUserDTO avatar) {
+        this.avatar = avatar;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -127,6 +137,7 @@ public class ProfileDTO implements Serializable {
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
+            ", avatar=" + getAvatar() +
             "}";
     }
 }

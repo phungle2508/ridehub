@@ -85,6 +85,8 @@ public class PromotionQueryService extends QueryService<Promotion> {
                 buildSpecification(criteria.getIsDeleted(), Promotion_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Promotion_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), Promotion_.deletedBy),
+                buildSpecification(criteria.getBannerImgId(), root -> root.join(Promotion_.bannerImg, JoinType.LEFT).get(FilePromotion_.id)
+                ),
                 buildSpecification(criteria.getBuyNGetMId(), root -> root.join(Promotion_.buyNGetMS, JoinType.LEFT).get(BuyNGetMFree_.id)),
                 buildSpecification(criteria.getPercentOffId(), root ->
                     root.join(Promotion_.percentOffs, JoinType.LEFT).get(PercentOffTotal_.id)

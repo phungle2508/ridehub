@@ -38,6 +38,8 @@ public class ProfileCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter avatarId;
+
     private LongFilter userId;
 
     private Boolean distinct;
@@ -53,6 +55,7 @@ public class ProfileCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.avatarId = other.optionalAvatarId().map(LongFilter::copy).orElse(null);
         this.userId = other.optionalUserId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -214,6 +217,25 @@ public class ProfileCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getAvatarId() {
+        return avatarId;
+    }
+
+    public Optional<LongFilter> optionalAvatarId() {
+        return Optional.ofNullable(avatarId);
+    }
+
+    public LongFilter avatarId() {
+        if (avatarId == null) {
+            setAvatarId(new LongFilter());
+        }
+        return avatarId;
+    }
+
+    public void setAvatarId(LongFilter avatarId) {
+        this.avatarId = avatarId;
+    }
+
     public LongFilter getUserId() {
         return userId;
     }
@@ -270,6 +292,7 @@ public class ProfileCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(avatarId, that.avatarId) &&
             Objects.equals(userId, that.userId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -277,7 +300,7 @@ public class ProfileCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, birthDate, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, userId, distinct);
+        return Objects.hash(id, fullName, birthDate, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, avatarId, userId, distinct);
     }
 
     // prettier-ignore
@@ -292,6 +315,7 @@ public class ProfileCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalAvatarId().map(f -> "avatarId=" + f + ", ").orElse("") +
             optionalUserId().map(f -> "userId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

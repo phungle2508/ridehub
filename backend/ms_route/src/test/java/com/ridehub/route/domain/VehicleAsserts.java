@@ -74,6 +74,7 @@ public class VehicleAsserts {
     public static void assertVehicleUpdatableRelationshipsEquals(Vehicle expected, Vehicle actual) {
         assertThat(actual)
             .as("Verify Vehicle relationships")
-            .satisfies(a -> assertThat(a.getSeatMap()).as("check seatMap").isEqualTo(expected.getSeatMap()));
+            .satisfies(a -> assertThat(a.getSeatMap()).as("check seatMap").isEqualTo(expected.getSeatMap()))
+            .satisfies(a -> assertThat(a.getVehicleImg()).as("check vehicleImg").isEqualTo(expected.getVehicleImg()));
     }
 }

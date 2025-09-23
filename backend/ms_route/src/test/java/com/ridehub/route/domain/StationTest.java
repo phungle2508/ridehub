@@ -1,6 +1,7 @@
 package com.ridehub.route.domain;
 
 import static com.ridehub.route.domain.AddressTestSamples.*;
+import static com.ridehub.route.domain.FileRouteTestSamples.*;
 import static com.ridehub.route.domain.StationTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,5 +34,17 @@ class StationTest {
 
         station.address(null);
         assertThat(station.getAddress()).isNull();
+    }
+
+    @Test
+    void stationImgTest() {
+        Station station = getStationRandomSampleGenerator();
+        FileRoute fileRouteBack = getFileRouteRandomSampleGenerator();
+
+        station.setStationImg(fileRouteBack);
+        assertThat(station.getStationImg()).isEqualTo(fileRouteBack);
+
+        station.stationImg(null);
+        assertThat(station.getStationImg()).isNull();
     }
 }

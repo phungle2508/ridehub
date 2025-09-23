@@ -44,6 +44,8 @@ public class StationCriteria implements Serializable, Criteria {
 
     private LongFilter addressId;
 
+    private LongFilter stationImgId;
+
     private Boolean distinct;
 
     public StationCriteria() {}
@@ -60,6 +62,7 @@ public class StationCriteria implements Serializable, Criteria {
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
         this.addressId = other.optionalAddressId().map(LongFilter::copy).orElse(null);
+        this.stationImgId = other.optionalStationImgId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -277,6 +280,25 @@ public class StationCriteria implements Serializable, Criteria {
         this.addressId = addressId;
     }
 
+    public LongFilter getStationImgId() {
+        return stationImgId;
+    }
+
+    public Optional<LongFilter> optionalStationImgId() {
+        return Optional.ofNullable(stationImgId);
+    }
+
+    public LongFilter stationImgId() {
+        if (stationImgId == null) {
+            setStationImgId(new LongFilter());
+        }
+        return stationImgId;
+    }
+
+    public void setStationImgId(LongFilter stationImgId) {
+        this.stationImgId = stationImgId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -317,6 +339,7 @@ public class StationCriteria implements Serializable, Criteria {
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
             Objects.equals(addressId, that.addressId) &&
+            Objects.equals(stationImgId, that.stationImgId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -335,6 +358,7 @@ public class StationCriteria implements Serializable, Criteria {
             deletedAt,
             deletedBy,
             addressId,
+            stationImgId,
             distinct
         );
     }
@@ -354,6 +378,7 @@ public class StationCriteria implements Serializable, Criteria {
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
             optionalAddressId().map(f -> "addressId=" + f + ", ").orElse("") +
+            optionalStationImgId().map(f -> "stationImgId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }
