@@ -202,7 +202,7 @@ public class ExternalServiceIntegrationImpl implements ExternalServiceIntegratio
             // TODO: Implement actual API call to msbooking service
             Optional<BookingDTO> booking = getBookingById(bookingId);
             if (booking.isPresent()) {
-                booking.get().setStatus(newStatus);
+                booking.orElseThrow().setStatus(newStatus);
                 return booking;
             }
             return Optional.empty();

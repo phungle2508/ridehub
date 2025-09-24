@@ -206,7 +206,7 @@ public class VehicleResource {
         try {
             Optional<VehicleDTO> vehicle = vehicleService.findOne(id);
             if (vehicle.isPresent()) {
-                debug.append("Vehicle found: ").append(vehicle.get().getPlateNumber()).append("\n");
+                debug.append("Vehicle found: ").append(vehicle.orElseThrow().getPlateNumber()).append("\n");
                 // Add more debug info here if needed
             } else {
                 debug.append("Vehicle not found\n");
