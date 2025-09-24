@@ -71,6 +71,7 @@ public class TripAsserts {
         assertThat(actual)
             .as("Verify Trip relationships")
             .satisfies(a -> assertThat(a.getRoute()).as("check route").isEqualTo(expected.getRoute()))
+            .satisfies(a -> assertThat(a.getVehicle()).as("check vehicle").isEqualTo(expected.getVehicle()))
             .satisfies(a -> assertThat(a.getDriver()).as("check driver").isEqualTo(expected.getDriver()))
             .satisfies(a -> assertThat(a.getAttendant()).as("check attendant").isEqualTo(expected.getAttendant()));
     }

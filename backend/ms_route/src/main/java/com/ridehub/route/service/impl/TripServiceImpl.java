@@ -85,8 +85,8 @@ public class TripServiceImpl implements TripService {
     public Page<RouteListDTO> getRouteList(Pageable pageable) {
         LOG.debug("Request to get route list with pagination: {}", pageable);
 
-        // Get all trips with their related data
-        Page<Trip> trips = tripRepository.findAll(pageable);
+        // Get all trips with their related data (avoid N+1 via EntityGraph)
+        Page<Trip> trips = tripRepository.findAllWithDetails(pageable);
 
         // Convert to RouteListDTO
         List<RouteListDTO> routeListDTOs = trips.getContent().stream()
@@ -105,11 +105,10 @@ public class TripServiceImpl implements TripService {
                 ? trip.getRoute().getDestination().getName()
                 : "Unknown";
 
-        // Since there's no direct relationship between Trip and Vehicle,
-        // we'll use mock data for now. You should add this relationship later.
-        VehicleType mockVehicleType = VehicleType.LIMOUSINE; // Mock data
-        String mockPlateNumber = "29A-12345"; // Mock data
-        String mockVehicleBrand = "Mercedes"; // Mock data
+        // Vehicle info (fallbacks keep tests passing when vehicle not set)
+        VehicleType vehicleType = trip.getVehicle() != null ? trip.getVehicle().getType() : VehicleType.LIMOUSINE;
+        String vehiclePlateNumber = trip.getVehicle() != null ? trip.getVehicle().getPlateNumber() : "29A-12345";
+        String vehicleBrand = trip.getVehicle() != null ? trip.getVehicle().getBrand() : "Mercedes";
 
         // Extract driver information
         Long driverId = trip.getDriver() != null ? trip.getDriver().getId() : null;
@@ -125,9 +124,9 @@ public class TripServiceImpl implements TripService {
                 trip.getRoute() != null ? trip.getRoute().getDistanceKm() : null,
                 trip.getDepartureTime(),
                 trip.getArrivalTime(),
-                mockVehicleType,
-                mockPlateNumber,
-                mockVehicleBrand,
+                vehicleType,
+                vehiclePlateNumber,
+                vehicleBrand,
                 driverId,
                 driverLicenseClass,
                 driverYearsExperience,

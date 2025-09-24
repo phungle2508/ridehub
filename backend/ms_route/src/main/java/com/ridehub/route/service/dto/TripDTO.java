@@ -42,6 +42,9 @@ public class TripDTO implements Serializable {
     private RouteDTO route;
 
     @NotNull
+    private VehicleDTO vehicle;
+
+    @NotNull
     private DriverDTO driver;
 
     private AttendantDTO attendant;
@@ -134,6 +137,14 @@ public class TripDTO implements Serializable {
         this.route = route;
     }
 
+    public VehicleDTO getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(VehicleDTO vehicle) {
+        this.vehicle = vehicle;
+    }
+
     public DriverDTO getDriver() {
         return driver;
     }
@@ -186,6 +197,7 @@ public class TripDTO implements Serializable {
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
             ", route=" + getRoute() +
+            ", vehicle=" + getVehicle() +
             ", driver=" + getDriver() +
             ", attendant=" + getAttendant() +
             "}";

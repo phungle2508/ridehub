@@ -1094,6 +1094,39 @@ class VehicleResourceIT {
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
     }
 
+    @Test
+    @Transactional
+    void getVehicleList() throws Exception {
+        // Initialize the database
+        vehicleRepository.saveAndFlush(vehicle);
+
+        // Get the vehicle list
+        restVehicleMockMvc
+            .perform(get("/api/vehicles/list"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].vehicleId").value(hasItem(vehicle.getId().intValue())))
+            .andExpect(jsonPath("$.[*].plateNumber").value(hasItem(DEFAULT_PLATE_NUMBER)))
+            .andExpect(jsonPath("$.[*].vehicleType").value(hasItem(DEFAULT_TYPE.toString())))
+            .andExpect(jsonPath("$.[*].brand").value(hasItem(DEFAULT_BRAND)))
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].status").exists());
+    }
+
+    @Test
+    @Transactional
+    void getVehicleListWithPagination() throws Exception {
+        // Initialize the database
+        vehicleRepository.saveAndFlush(vehicle);
+
+        // Get the vehicle list with pagination
+        restVehicleMockMvc
+            .perform(get("/api/vehicles/list?page=0&size=20"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(header().exists("X-Total-Count"));
+    }
+
     protected long getRepositoryCount() {
         return vehicleRepository.count();
     }

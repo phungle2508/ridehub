@@ -15,6 +15,7 @@ import com.ridehub.route.domain.Attendant;
 import com.ridehub.route.domain.Driver;
 import com.ridehub.route.domain.Route;
 import com.ridehub.route.domain.Trip;
+import com.ridehub.route.domain.Vehicle;
 import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.dto.TripDTO;
 import com.ridehub.route.service.mapper.TripMapper;
@@ -124,6 +125,16 @@ class TripResourceIT {
         }
         trip.setRoute(route);
         // Add required entity
+        Vehicle vehicle;
+        if (TestUtil.findAll(em, Vehicle.class).isEmpty()) {
+            vehicle = VehicleResourceIT.createEntity(em);
+            em.persist(vehicle);
+            em.flush();
+        } else {
+            vehicle = TestUtil.findAll(em, Vehicle.class).get(0);
+        }
+        trip.setVehicle(vehicle);
+        // Add required entity
         Driver driver;
         if (TestUtil.findAll(em, Driver.class).isEmpty()) {
             driver = DriverResourceIT.createEntity();
@@ -163,6 +174,16 @@ class TripResourceIT {
             route = TestUtil.findAll(em, Route.class).get(0);
         }
         updatedTrip.setRoute(route);
+        // Add required entity
+        Vehicle vehicle;
+        if (TestUtil.findAll(em, Vehicle.class).isEmpty()) {
+            vehicle = VehicleResourceIT.createUpdatedEntity(em);
+            em.persist(vehicle);
+            em.flush();
+        } else {
+            vehicle = TestUtil.findAll(em, Vehicle.class).get(0);
+        }
+        updatedTrip.setVehicle(vehicle);
         // Add required entity
         Driver driver;
         if (TestUtil.findAll(em, Driver.class).isEmpty()) {
@@ -733,6 +754,28 @@ class TripResourceIT {
 
         // Get all the tripList where route equals to (routeId + 1)
         defaultTripShouldNotBeFound("routeId.equals=" + (routeId + 1));
+    }
+
+    @Test
+    @Transactional
+    void getAllTripsByVehicleIsEqualToSomething() throws Exception {
+        Vehicle vehicle;
+        if (TestUtil.findAll(em, Vehicle.class).isEmpty()) {
+            tripRepository.saveAndFlush(trip);
+            vehicle = VehicleResourceIT.createEntity(em);
+        } else {
+            vehicle = TestUtil.findAll(em, Vehicle.class).get(0);
+        }
+        em.persist(vehicle);
+        em.flush();
+        trip.setVehicle(vehicle);
+        tripRepository.saveAndFlush(trip);
+        Long vehicleId = vehicle.getId();
+        // Get all the tripList where vehicle equals to vehicleId
+        defaultTripShouldBeFound("vehicleId.equals=" + vehicleId);
+
+        // Get all the tripList where vehicle equals to (vehicleId + 1)
+        defaultTripShouldNotBeFound("vehicleId.equals=" + (vehicleId + 1));
     }
 
     @Test

@@ -84,6 +84,7 @@ public class TripQueryService extends QueryService<Trip> {
                 buildRangeSpecification(criteria.getDeletedAt(), Trip_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), Trip_.deletedBy),
                 buildSpecification(criteria.getRouteId(), root -> root.join(Trip_.route, JoinType.LEFT).get(Route_.id)),
+                buildSpecification(criteria.getVehicleId(), root -> root.join(Trip_.vehicle, JoinType.LEFT).get(Vehicle_.id)),
                 buildSpecification(criteria.getDriverId(), root -> root.join(Trip_.driver, JoinType.LEFT).get(Driver_.id)),
                 buildSpecification(criteria.getAttendantId(), root -> root.join(Trip_.attendant, JoinType.LEFT).get(Attendant_.id))
             );

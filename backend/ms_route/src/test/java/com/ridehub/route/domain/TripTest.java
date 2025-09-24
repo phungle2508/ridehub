@@ -4,6 +4,7 @@ import static com.ridehub.route.domain.AttendantTestSamples.*;
 import static com.ridehub.route.domain.DriverTestSamples.*;
 import static com.ridehub.route.domain.RouteTestSamples.*;
 import static com.ridehub.route.domain.TripTestSamples.*;
+import static com.ridehub.route.domain.VehicleTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.route.web.rest.TestUtil;
@@ -35,6 +36,18 @@ class TripTest {
 
         trip.route(null);
         assertThat(trip.getRoute()).isNull();
+    }
+
+    @Test
+    void vehicleTest() {
+        Trip trip = getTripRandomSampleGenerator();
+        Vehicle vehicleBack = getVehicleRandomSampleGenerator();
+
+        trip.setVehicle(vehicleBack);
+        assertThat(trip.getVehicle()).isEqualTo(vehicleBack);
+
+        trip.vehicle(null);
+        assertThat(trip.getVehicle()).isNull();
     }
 
     @Test

@@ -68,6 +68,11 @@ public class Trip implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
+    @JsonIgnoreProperties(value = { "seatMap", "vehicleImg" }, allowSetters = true)
+    private Vehicle vehicle;
+
+    @ManyToOne(optional = false)
+    @NotNull
     private Driver driver;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -215,6 +220,19 @@ public class Trip implements Serializable {
 
     public Trip route(Route route) {
         this.setRoute(route);
+        return this;
+    }
+
+    public Vehicle getVehicle() {
+        return this.vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public Trip vehicle(Vehicle vehicle) {
+        this.setVehicle(vehicle);
         return this;
     }
 

@@ -287,6 +287,8 @@ Station "1" o-- "1" Address : "located at"
 Station "1" -- "0..*" Route : "origin"
 Station "1" -- "0..*" Route : "destination"
 Route "1" o-- "0..*" Trip : "schedules"
+Trip "0..*" -- "1" Vehicle : "vehicle"
+
 Trip "1" o-- "1..*" TripSeat : "seat snapshot"
 Trip "1" -- "0..1" Driver : "main driver"
 Trip "0..1" -- "0..1" Attendant : "attendant"

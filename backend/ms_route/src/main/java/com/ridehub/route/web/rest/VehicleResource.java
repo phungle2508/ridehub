@@ -5,6 +5,7 @@ import com.ridehub.route.service.VehicleQueryService;
 import com.ridehub.route.service.VehicleService;
 import com.ridehub.route.service.criteria.VehicleCriteria;
 import com.ridehub.route.service.dto.VehicleDTO;
+import com.ridehub.route.service.dto.VehicleListDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -169,6 +170,52 @@ public class VehicleResource {
     public ResponseEntity<Long> countVehicles(VehicleCriteria criteria) {
         LOG.debug("REST request to count Vehicles by criteria: {}", criteria);
         return ResponseEntity.ok().body(vehicleQueryService.countByCriteria(criteria));
+    }
+
+    /**
+     * {@code GET  /vehicles/list} : get all vehicles with their current route assignments and driver information.
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of vehicles with route and driver details in body.
+     */
+    @GetMapping("/list")
+    public ResponseEntity<List<VehicleListDTO>> getVehicleList(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get vehicle list with pagination: {}", pageable);
+
+        Page<VehicleListDTO> page = vehicleService.getVehicleList(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /vehicles/debug/{id}} : debug vehicle trip information.
+     *
+     * @param id the vehicle id to debug.
+     * @return debug information about the vehicle's trips.
+     */
+    @GetMapping("/debug/{id}")
+    public ResponseEntity<String> debugVehicleTrips(@PathVariable("id") Long id) {
+        LOG.debug("REST request to debug vehicle trips for vehicle: {}", id);
+
+        // This is a simple debug endpoint - you can enhance it as needed
+        StringBuilder debug = new StringBuilder();
+        debug.append("Vehicle ID: ").append(id).append("\n");
+
+        try {
+            Optional<VehicleDTO> vehicle = vehicleService.findOne(id);
+            if (vehicle.isPresent()) {
+                debug.append("Vehicle found: ").append(vehicle.get().getPlateNumber()).append("\n");
+                // Add more debug info here if needed
+            } else {
+                debug.append("Vehicle not found\n");
+            }
+        } catch (Exception e) {
+            debug.append("Error: ").append(e.getMessage()).append("\n");
+        }
+
+        return ResponseEntity.ok(debug.toString());
     }
 
     /**

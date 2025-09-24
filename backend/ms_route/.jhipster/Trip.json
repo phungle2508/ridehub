@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923133131"
+    "changelogDate": "20250923140059"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -57,6 +57,13 @@
     {
       "otherEntityName": "route",
       "relationshipName": "route",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityName": "vehicle",
+      "relationshipName": "vehicle",
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": "required"

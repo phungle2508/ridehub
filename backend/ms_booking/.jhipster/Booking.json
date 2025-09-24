@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923120328"
+    "changelogDate": "20250923135059"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",

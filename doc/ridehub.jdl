@@ -326,7 +326,8 @@ relationship ManyToOne {
   Floor{seatMap required}   to SeatMap,
   Seat{floor required}      to Floor,
   Trip{route required}      to Route,
-  TripSeat{trip required}   to Trip
+  TripSeat{trip required}   to Trip,
+  Trip{vehicle required}    to Vehicle
 }
 
 entity Staff {

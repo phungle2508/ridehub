@@ -44,6 +44,8 @@ public class TripCriteria implements Serializable, Criteria {
 
     private LongFilter routeId;
 
+    private LongFilter vehicleId;
+
     private LongFilter driverId;
 
     private LongFilter attendantId;
@@ -64,6 +66,7 @@ public class TripCriteria implements Serializable, Criteria {
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
         this.routeId = other.optionalRouteId().map(LongFilter::copy).orElse(null);
+        this.vehicleId = other.optionalVehicleId().map(LongFilter::copy).orElse(null);
         this.driverId = other.optionalDriverId().map(LongFilter::copy).orElse(null);
         this.attendantId = other.optionalAttendantId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
@@ -283,6 +286,25 @@ public class TripCriteria implements Serializable, Criteria {
         this.routeId = routeId;
     }
 
+    public LongFilter getVehicleId() {
+        return vehicleId;
+    }
+
+    public Optional<LongFilter> optionalVehicleId() {
+        return Optional.ofNullable(vehicleId);
+    }
+
+    public LongFilter vehicleId() {
+        if (vehicleId == null) {
+            setVehicleId(new LongFilter());
+        }
+        return vehicleId;
+    }
+
+    public void setVehicleId(LongFilter vehicleId) {
+        this.vehicleId = vehicleId;
+    }
+
     public LongFilter getDriverId() {
         return driverId;
     }
@@ -361,6 +383,7 @@ public class TripCriteria implements Serializable, Criteria {
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
             Objects.equals(routeId, that.routeId) &&
+            Objects.equals(vehicleId, that.vehicleId) &&
             Objects.equals(driverId, that.driverId) &&
             Objects.equals(attendantId, that.attendantId) &&
             Objects.equals(distinct, that.distinct)
@@ -381,6 +404,7 @@ public class TripCriteria implements Serializable, Criteria {
             deletedAt,
             deletedBy,
             routeId,
+            vehicleId,
             driverId,
             attendantId,
             distinct
@@ -402,6 +426,7 @@ public class TripCriteria implements Serializable, Criteria {
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
             optionalRouteId().map(f -> "routeId=" + f + ", ").orElse("") +
+            optionalVehicleId().map(f -> "vehicleId=" + f + ", ").orElse("") +
             optionalDriverId().map(f -> "driverId=" + f + ", ").orElse("") +
             optionalAttendantId().map(f -> "attendantId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +

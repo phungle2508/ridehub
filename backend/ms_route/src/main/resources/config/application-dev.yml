@@ -21,6 +21,9 @@ server:
   sql-name: ${SQL_NAME:route}
   dev-config-folder: /home/phungvip/Desktop/work-space/ridehub/backend/ridehub-central-config
 spring:
+  jpa:
+    properties:
+      hibernate.jdbc.time_zone: UTC
   config:
     # Import shared config first
     import: optional:file:${server.dev-config-folder}/application-dev.yml

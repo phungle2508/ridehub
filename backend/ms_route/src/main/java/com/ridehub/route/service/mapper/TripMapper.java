@@ -4,10 +4,12 @@ import com.ridehub.route.domain.Attendant;
 import com.ridehub.route.domain.Driver;
 import com.ridehub.route.domain.Route;
 import com.ridehub.route.domain.Trip;
+import com.ridehub.route.domain.Vehicle;
 import com.ridehub.route.service.dto.AttendantDTO;
 import com.ridehub.route.service.dto.DriverDTO;
 import com.ridehub.route.service.dto.RouteDTO;
 import com.ridehub.route.service.dto.TripDTO;
+import com.ridehub.route.service.dto.VehicleDTO;
 import org.mapstruct.*;
 
 /**
@@ -16,6 +18,7 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface TripMapper extends EntityMapper<TripDTO, Trip> {
     @Mapping(target = "route", source = "route", qualifiedByName = "routeId")
+    @Mapping(target = "vehicle", source = "vehicle", qualifiedByName = "vehicleId")
     @Mapping(target = "driver", source = "driver", qualifiedByName = "driverId")
     @Mapping(target = "attendant", source = "attendant", qualifiedByName = "attendantId")
     TripDTO toDto(Trip s);
@@ -24,6 +27,11 @@ public interface TripMapper extends EntityMapper<TripDTO, Trip> {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     RouteDTO toDtoRouteId(Route route);
+
+    @Named("vehicleId")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    VehicleDTO toDtoVehicleId(Vehicle vehicle);
 
     @Named("driverId")
     @BeanMapping(ignoreByDefault = true)
