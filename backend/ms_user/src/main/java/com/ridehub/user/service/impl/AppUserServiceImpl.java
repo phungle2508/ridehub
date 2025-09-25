@@ -52,14 +52,14 @@ public class AppUserServiceImpl implements AppUserService {
         LOG.debug("Request to partially update AppUser : {}", appUserDTO);
 
         return appUserRepository
-            .findById(appUserDTO.getId())
-            .map(existingAppUser -> {
-                appUserMapper.partialUpdate(existingAppUser, appUserDTO);
+                .findById(appUserDTO.getId())
+                .map(existingAppUser -> {
+                    appUserMapper.partialUpdate(existingAppUser, appUserDTO);
 
-                return existingAppUser;
-            })
-            .map(appUserRepository::save)
-            .map(appUserMapper::toDto);
+                    return existingAppUser;
+                })
+                .map(appUserRepository::save)
+                .map(appUserMapper::toDto);
     }
 
     @Override
@@ -84,8 +84,8 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     public AppUserDTO syncUserAfterRegistration(UUID keycloakId, String email, String phoneNumber,
-                                              String firstName, String lastName, Boolean isVerified,
-                                              Boolean isActive, String username) {
+            String firstName, String lastName, Boolean isVerified,
+            Boolean isActive, String username) {
         LOG.debug("Request to sync user after registration for keycloakId: {}", keycloakId);
 
         // Check if user already exists
@@ -125,11 +125,50 @@ public class AppUserServiceImpl implements AppUserService {
         LOG.debug("Request to update last login for keycloakId: {}", keycloakId);
 
         return appUserRepository.findByKeycloakId(keycloakId)
-            .map(appUser -> {
-                appUser.setLastLoginAt(Instant.now());
-                appUser.setUpdatedAt(Instant.now());
-                return appUserRepository.save(appUser);
-            })
-            .map(appUserMapper::toDto);
+                .map(appUser -> {
+                    appUser.setLastLoginAt(Instant.now());
+                    appUser.setUpdatedAt(Instant.now());
+                    return appUserRepository.save(appUser);
+                })
+                .map(appUserMapper::toDto);
     }
+
+    /**
+     * Admin-initiated profile update used by Keycloak admin flows.
+     * Applies only non-null fields; does nothing if the user is not found.
+     */
+    @Override
+    public Optional<AppUserDTO> updateProfileFromAdmin(
+            UUID keycloakId,
+            String email,
+            String phoneNumber,
+            String firstName,
+            String lastName,
+            Boolean enabled) {
+        LOG.debug("Admin update profile for keycloakId: {}", keycloakId);
+
+        return appUserRepository.findByKeycloakId(keycloakId)
+                .map(appUser -> {
+                    if (email != null) {
+                        appUser.setEmail(email);
+                    }
+                    if (phoneNumber != null) {
+                        appUser.setPhoneNumber(phoneNumber);
+                    }
+                    if (firstName != null) {
+                        appUser.setFirstName(firstName);
+                    }
+                    if (lastName != null) {
+                        appUser.setLastName(lastName);
+                    }
+                    if (enabled != null) {
+                        // Map Keycloak "enabled" to our "isActive"
+                        appUser.setIsActive(enabled);
+                    }
+                    appUser.setUpdatedAt(Instant.now());
+                    return appUserRepository.save(appUser);
+                })
+                .map(appUserMapper::toDto);
+    }
+
 }

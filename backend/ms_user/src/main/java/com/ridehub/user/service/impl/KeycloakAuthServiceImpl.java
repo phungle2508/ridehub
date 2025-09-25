@@ -13,7 +13,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,68 +33,70 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakAuthServiceImpl.class);
 
+    // --- HTTP/Serialization ---
+    private static final String HDR_JSON = "application/json";
+    private static final String HDR_FORM = "application/x-www-form-urlencoded";
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration REQ_TIMEOUT = Duration.ofSeconds(30);
+    private static final int LOG_BODY_TRUNCATE = 600;
+
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private final String keycloakBaseUrl;
-    private final AppUserService appUserService;
-    private final String keycloakClientId;
-    private final String keycloakClientSecret;
 
-    private static String enc(String v) {
-        return URLEncoder.encode(v, StandardCharsets.UTF_8);
-    }
+    // --- Configs ---
+    private final String keycloakBaseUrl; // e.g., https://keycloak.example.com
+    private final String realm; // e.g., jhipster
+    private final String userClientId; // your public OIDC client for password grant
+    private final String userClientSecret;
+
+    private final String adminClientId; // dedicated service client for admin operations
+    private final String adminClientSecret;
+
+    private final AppUserService appUserService;
 
     public KeycloakAuthServiceImpl(
             ObjectMapper objectMapper,
             AppUserService appUserService,
-            @Value("${spring.security.oauth2.client.registration.oidc.client-id}") String keycloakClientId,
-            @Value("${spring.security.oauth2.client.registration.oidc.client-secret}") String keycloakClientSecret,
-            @Value("${app.keycloak.base-url:https://keycloak.appf4s.io.vn}") String keycloakBaseUrl) {
+            @Value("${spring.security.oauth2.client.registration.oidc.client-id}") String userClientId,
+            @Value("${spring.security.oauth2.client.registration.oidc.client-secret:}") String userClientSecret,
+            @Value("${app.keycloak.base-url:https://keycloak.appf4s.io.vn}") String keycloakBaseUrl,
+            @Value("${app.keycloak.realm:jhipster}") String realm,
+            @Value("${app.keycloak.admin.client-id:svc-admin-bootstrap}") String adminClientId,
+            @Value("${app.keycloak.admin.client-secret:YSEwCJGZfrxUnq1Vvkx0y23u1mLR5hAE}") String adminClientSecret) {
         this.objectMapper = objectMapper;
         this.appUserService = appUserService;
-        this.keycloakBaseUrl = keycloakBaseUrl;
-        this.keycloakClientId = keycloakClientId;
-        this.keycloakClientSecret = keycloakClientSecret;
+        this.userClientId = userClientId;
+        this.userClientSecret = Optional.ofNullable(userClientSecret).orElse("");
+        this.keycloakBaseUrl = stripTrailingSlash(keycloakBaseUrl);
+        this.realm = realm;
+        this.adminClientId = adminClientId;
+        this.adminClientSecret = adminClientSecret;
+
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(CONNECT_TIMEOUT)
                 .build();
     }
+
+    // ============================
+    // Public API
+    // ============================
 
     @Override
     public SendOtpResponseDTO sendRegistrationOtp(String phone) {
         log.debug("Sending registration OTP to phone: {}", phone);
-
         try {
-            Map<String, String> requestBody = Map.of("phone", phone);
-            String jsonBody = objectMapper.writeValueAsString(requestBody);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(keycloakBaseUrl + "/realms/jhipster/customreg/send-otp"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                Map<String, Object> responseMap = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-                String txnId = (String) responseMap.get("txnId");
-                Number expiresIn = (Number) responseMap.get("expiresIn");
-
-                return SendOtpResponseDTO.success(txnId, expiresIn.longValue());
-            } else {
-                Map<String, Object> errorMap = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-                String error = (String) errorMap.get("error");
-                return SendOtpResponseDTO.error(getErrorMessage(error));
-            }
-
+            Map<String, Object> res = postJson(
+                    realmPath("/customreg/send-otp"),
+                    Map.of("phone", phone),
+                    200);
+            String txnId = (String) res.get("txnId");
+            Number expiresIn = asNumber(res.get("expiresIn"), 0);
+            return SendOtpResponseDTO.success(txnId, expiresIn.longValue());
+        } catch (HttpProblem hp) {
+            String msg = extractKeycloakError(hp.body());
+            return SendOtpResponseDTO.error(getErrorMessage(msg));
         } catch (Exception e) {
-            log.error("Error sending registration OTP: {}", e.getMessage(), e);
+            log.error("Error sending registration OTP", e);
             return SendOtpResponseDTO.error("Failed to send OTP: " + e.getMessage());
         }
     }
@@ -98,91 +104,58 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     @Override
     public VerifyOtpResponseDTO verifyRegistrationOtp(String txnId, String code) {
         log.debug("Verifying registration OTP for txnId: {}", txnId);
-
         try {
-            Map<String, String> requestBody = Map.of("txnId", txnId, "code", code);
-            String jsonBody = objectMapper.writeValueAsString(requestBody);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(keycloakBaseUrl + "/realms/jhipster/customreg/verify-otp"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                Map<String, Object> responseMap = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-                String regToken = (String) responseMap.get("regToken");
-                Number expiresIn = (Number) responseMap.get("expiresIn");
-
-                return VerifyOtpResponseDTO.registrationToken(regToken, expiresIn.longValue());
-            } else {
-                Map<String, Object> errorMap = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-                String error = (String) errorMap.get("error");
-                return VerifyOtpResponseDTO.error(getErrorMessage(error));
-            }
-
+            Map<String, Object> res = postJson(
+                    realmPath("/customreg/verify-otp"),
+                    Map.of("txnId", txnId, "code", code),
+                    200);
+            String regToken = (String) res.get("regToken");
+            Number expiresIn = asNumber(res.get("expiresIn"), 0);
+            return VerifyOtpResponseDTO.registrationToken(regToken, expiresIn.longValue());
+        } catch (HttpProblem hp) {
+            String msg = extractKeycloakError(hp.body());
+            return VerifyOtpResponseDTO.error(getErrorMessage(msg));
         } catch (Exception e) {
-            log.error("Error verifying registration OTP: {}", e.getMessage(), e);
+            log.error("Error verifying registration OTP", e);
             return VerifyOtpResponseDTO.error("Failed to verify OTP: " + e.getMessage());
         }
     }
 
     @Override
-    public RegistrationCompleteResponseDTO completeRegistration(String regToken, String email, String firstName,
-            String lastName, String password) {
+    public RegistrationCompleteResponseDTO completeRegistration(
+            String regToken, String email, String firstName, String lastName, String password) {
         log.debug("Completing registration for user: {} {}", firstName, lastName);
-
         try {
-            Map<String, String> requestBody = Map.of(
-                    "regToken", regToken,
-                    "email", email != null ? email : "",
-                    "firstName", firstName,
-                    "lastName", lastName,
-                    "password", password);
-            String jsonBody = objectMapper.writeValueAsString(requestBody);
+            Map<String, Object> body = new HashMap<>();
+            body.put("regToken", regToken);
+            body.put("email", Optional.ofNullable(email).orElse(""));
+            body.put("firstName", firstName);
+            body.put("lastName", lastName);
+            body.put("password", password);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(keycloakBaseUrl + "/realms/jhipster/customreg/complete"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
+            Map<String, Object> res = postJson(
+                    realmPath("/customreg/complete"),
+                    body,
+                    201);
+            String keycloakUserId = (String) res.get("userId");
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 201) {
-                Map<String, Object> responseMap = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-                String keycloakUserId = (String) responseMap.get("userId");
-
-                // Automatically sync user data to ms_user database
-                try {
-                    syncUserDataAfterRegistration(keycloakUserId, email, firstName, lastName, regToken);
-                    log.info("Successfully synced user data after registration for Keycloak user: {}", keycloakUserId);
-                } catch (Exception e) {
-                    log.warn("Failed to sync user data after registration: {}", e.getMessage());
-                    // Don't fail the registration if sync fails
-                }
-
-                return RegistrationCompleteResponseDTO.success(keycloakUserId, keycloakUserId);
-            } else {
-                Map<String, Object> errorMap = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-                String error = (String) errorMap.get("error");
-                return RegistrationCompleteResponseDTO.error(getErrorMessage(error));
+            // best-effort sync
+            try {
+                syncUserDataAfterRegistration(keycloakUserId, email, firstName, lastName, regToken);
+                log.info("Synced user data after registration for Keycloak user: {}", keycloakUserId);
+            } catch (Exception se) {
+                log.warn("Sync after registration failed: {}", se.getMessage());
             }
 
+            // return both id and username as keycloakUserId, if you want to preserve
+            // original behavior
+            return RegistrationCompleteResponseDTO.success(keycloakUserId, keycloakUserId);
+
+        } catch (HttpProblem hp) {
+            String msg = extractKeycloakError(hp.body());
+            return RegistrationCompleteResponseDTO.error(getErrorMessage(msg));
         } catch (Exception e) {
-            log.error("Error completing registration: {}", e.getMessage(), e);
+            log.error("Error completing registration", e);
             return RegistrationCompleteResponseDTO.error("Failed to complete registration: " + e.getMessage());
         }
     }
@@ -190,34 +163,19 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     @Override
     public SendOtpResponseDTO requestPasswordReset(String phone) {
         log.debug("Requesting password reset OTP for phone: {}", phone);
-
         try {
-            Map<String, String> requestBody = Map.of("phone", phone);
-            String jsonBody = objectMapper.writeValueAsString(requestBody);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(keycloakBaseUrl + "/realms/jhipster/customreg/reset/request"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
-                String txnId = (String) responseMap.get("txnId");
-                Number expiresIn = (Number) responseMap.get("expiresIn");
-
-                return SendOtpResponseDTO.success(txnId, expiresIn.longValue());
-            } else {
-                Map<String, Object> errorMap = objectMapper.readValue(response.body(), Map.class);
-                String error = (String) errorMap.get("error");
-                return SendOtpResponseDTO.error(getErrorMessage(error));
-            }
-
+            Map<String, Object> res = postJson(
+                    realmPath("/customreg/reset/request"),
+                    Map.of("phone", phone),
+                    200);
+            String txnId = (String) res.get("txnId");
+            Number expiresIn = asNumber(res.get("expiresIn"), 0);
+            return SendOtpResponseDTO.success(txnId, expiresIn.longValue());
+        } catch (HttpProblem hp) {
+            String msg = extractKeycloakError(hp.body());
+            return SendOtpResponseDTO.error(getErrorMessage(msg));
         } catch (Exception e) {
-            log.error("Error requesting password reset: {}", e.getMessage(), e);
+            log.error("Error requesting password reset", e);
             return SendOtpResponseDTO.error("Failed to request password reset: " + e.getMessage());
         }
     }
@@ -225,34 +183,19 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     @Override
     public VerifyOtpResponseDTO verifyPasswordResetOtp(String txnId, String code) {
         log.debug("Verifying password reset OTP for txnId: {}", txnId);
-
         try {
-            Map<String, String> requestBody = Map.of("txnId", txnId, "code", code);
-            String jsonBody = objectMapper.writeValueAsString(requestBody);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(keycloakBaseUrl + "/realms/jhipster/customreg/reset/verify"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
-                String resetToken = (String) responseMap.get("resetToken");
-                Number expiresIn = (Number) responseMap.get("expiresIn");
-
-                return VerifyOtpResponseDTO.resetToken(resetToken, expiresIn.longValue());
-            } else {
-                Map<String, Object> errorMap = objectMapper.readValue(response.body(), Map.class);
-                String error = (String) errorMap.get("error");
-                return VerifyOtpResponseDTO.error(getErrorMessage(error));
-            }
-
+            Map<String, Object> res = postJson(
+                    realmPath("/customreg/reset/verify"),
+                    Map.of("txnId", txnId, "code", code),
+                    200);
+            String resetToken = (String) res.get("resetToken");
+            Number expiresIn = asNumber(res.get("expiresIn"), 0);
+            return VerifyOtpResponseDTO.resetToken(resetToken, expiresIn.longValue());
+        } catch (HttpProblem hp) {
+            String msg = extractKeycloakError(hp.body());
+            return VerifyOtpResponseDTO.error(getErrorMessage(msg));
         } catch (Exception e) {
-            log.error("Error verifying password reset OTP: {}", e.getMessage(), e);
+            log.error("Error verifying password reset OTP", e);
             return VerifyOtpResponseDTO.error("Failed to verify OTP: " + e.getMessage());
         }
     }
@@ -260,121 +203,306 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     @Override
     public Map<String, Object> completePasswordReset(String resetToken, String newPassword) {
         log.debug("Completing password reset");
-
         try {
-            Map<String, String> requestBody = Map.of(
-                    "resetToken", resetToken,
-                    "newPassword", newPassword);
-            String jsonBody = objectMapper.writeValueAsString(requestBody);
+            postJson(
+                    realmPath("/customreg/reset/complete"),
+                    Map.of("resetToken", resetToken, "newPassword", newPassword),
+                    200);
+            return Map.of("status", "success", "message", "Password reset successfully");
+        } catch (HttpProblem hp) {
+            String msg = getErrorMessage(extractKeycloakError(hp.body()));
+            return Map.of("status", "error", "message", msg);
+        } catch (Exception e) {
+            log.error("Error completing password reset", e);
+            return Map.of("status", "error", "message", "Failed to reset password: " + e.getMessage());
+        }
+    }
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(keycloakBaseUrl + "/realms/jhipster/customreg/reset/complete"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(Duration.ofSeconds(30))
+    @Override
+    public Map<String, Object> createAdminUser(CreateAdminRequest req) {
+        try {
+            String adminAccessToken = getAdminAccessToken();
+
+            // 1) Create user
+            String usersApi = adminPath("/users");
+            Map<String, Object> kcUser = new HashMap<>();
+            if (req.username() != null)
+                kcUser.put("username", req.username());
+            if (req.email() != null)
+                kcUser.put("email", req.email());
+            if (req.firstName() != null)
+                kcUser.put("firstName", req.firstName());
+            if (req.lastName() != null)
+                kcUser.put("lastName", req.lastName());
+            kcUser.put("enabled", Boolean.TRUE);
+            kcUser.put("emailVerified", Boolean.TRUE.equals(req.emailVerified()));
+
+            HttpRequest createReq = HttpRequest.newBuilder()
+                    .uri(uri(usersApi))
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .header("Content-Type", HDR_JSON)
+                    .timeout(REQ_TIMEOUT)
+                    .POST(HttpRequest.BodyPublishers.ofString(writeJson(kcUser)))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                return Map.of("status", "success", "message", "Password reset successfully");
-            } else {
-                Map<String, Object> errorMap = objectMapper.readValue(response.body(), Map.class);
-                String error = (String) errorMap.get("error");
-                return Map.of("status", "error", "message", getErrorMessage(error));
+            HttpResponse<Void> createRes = httpClient.send(createReq, HttpResponse.BodyHandlers.discarding());
+            if (createRes.statusCode() != 201) {
+                throw new IllegalStateException("Create user failed: HTTP " + createRes.statusCode());
             }
 
+            // 1.1) Find created user id
+            String searchApi = usersApi + "?username=" + enc(req.username()) + "&exact=true";
+            Map<String, Object> found = getJsonArrayFirst(searchApi, adminAccessToken);
+            String userId = (String) found.get("id");
+            if (userId == null)
+                throw new IllegalStateException("User not found after creation");
+
+            // 2) Set password
+            String pwdApi = adminPath("/users/" + userId + "/reset-password");
+            Map<String, Object> cred = Map.of("type", "password", "value", req.password(), "temporary", false);
+            putJson(pwdApi, cred, 204, adminAccessToken);
+
+            // 3) Assign ROLE_ADMIN
+            String role = "ROLE_ADMIN";
+            String roleApi = adminPath("/roles/" + role);
+            Map<String, Object> roleObj = getJson(roleApi, adminAccessToken, 200);
+            String mapApi = adminPath("/users/" + userId + "/role-mappings/realm");
+            postJson(mapApi, List.of(Map.of("id", roleObj.get("id"), "name", roleObj.get("name"))), 204,
+                    adminAccessToken);
+
+            // 4) Sync to ms_user DB (no regToken needed)
+            UUID kcUuid = UUID.fromString(userId);
+            appUserService.syncUserAfterRegistration(
+                    kcUuid,
+                    req.email(),
+                    req.phoneNumber(),
+                    req.firstName(),
+                    req.lastName(),
+                    true, // isVerified
+                    true, // isActive
+                    req.username());
+
+            return Map.of("status", "success", "keycloakUserId", userId);
         } catch (Exception e) {
-            log.error("Error completing password reset: {}", e.getMessage(), e);
-            return Map.of("status", "error", "message", "Failed to reset password: " + e.getMessage());
+            log.error("createAdminUser failed: {}", e.getMessage(), e);
+            return Map.of("status", "error", "message", e.getMessage());
         }
     }
 
     @Override
     public LoginResponseDTO login(String username, String password) {
         log.debug("Logging in user: {}", username);
-
         try {
-            // Normalize phone number if the username looks like a phone number
             String normalizedUsername = username;
             if (PhoneUtil.looksLikePhoneNumber(username)) {
-                String normalized = PhoneUtil.normalizePhone(username);
-                if (normalized != null) {
-                    normalizedUsername = normalized;
-                    log.debug("Normalized phone number from {} to {}", username, normalizedUsername);
+                String n = PhoneUtil.normalizePhone(username);
+                if (n != null) {
+                    log.debug("Normalized phone number from {} to {}", username, n);
+                    normalizedUsername = n;
                 }
             }
 
-            // Prepare OAuth2 token request
-            String tokenUrl = keycloakBaseUrl + "/realms/jhipster/protocol/openid-connect/token";
+            Map<String, String> form = new HashMap<>();
+            form.put("grant_type", "password");
+            form.put("client_id", userClientId);
+            if (!userClientSecret.isBlank())
+                form.put("client_secret", userClientSecret);
+            form.put("username", normalizedUsername);
+            form.put("password", password);
 
-            String formData = "grant_type=" + enc("password") +
-                    "&client_id=" + enc(keycloakClientId) +
-                    (keycloakClientSecret != null && !keycloakClientSecret.isBlank()
-                            ? "&client_secret=" + enc(keycloakClientSecret)
-                            : "")
-                    +
-                    "&username=" + enc(normalizedUsername) +
-                    "&password=" + enc(password);
+            Map<String, Object> tokenResponse = postForm(
+                    realmPath("/protocol/openid-connect/token"),
+                    form,
+                    200);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(tokenUrl))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(formData))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
+            String accessToken = (String) tokenResponse.get("access_token");
+            String refreshToken = (String) tokenResponse.get("refresh_token");
+            String tokenType = (String) tokenResponse.get("token_type");
+            Number expiresIn = asNumber(tokenResponse.get("expires_in"), 0);
+            String scope = (String) tokenResponse.get("scope");
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            LoginResponseDTO dto = LoginResponseDTO.success(accessToken, refreshToken, tokenType,
+                    expiresIn.longValue());
+            dto.setScope(scope);
 
-            if (response.statusCode() == 200) {
-                Map<String, Object> tokenResponse = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-
-                String accessToken = (String) tokenResponse.get("access_token");
-                String refreshToken = (String) tokenResponse.get("refresh_token");
-                String tokenType = (String) tokenResponse.get("token_type");
-                Number expiresIn = (Number) tokenResponse.get("expires_in");
-                String scope = (String) tokenResponse.get("scope");
-
-                LoginResponseDTO loginResponse = LoginResponseDTO.success(
-                        accessToken,
-                        refreshToken,
-                        tokenType,
-                        expiresIn.longValue());
-                loginResponse.setScope(scope);
-
-                // Get user info from token and sync with ms_user
-                try {
-                    LoginResponseDTO.UserInfoDTO userInfo = extractUserInfoFromToken(accessToken);
-                    loginResponse.setUserInfo(userInfo);
-
-                    // Sync user data and update last login
-                    syncUserDataAfterLogin(userInfo);
-
-                } catch (Exception e) {
-                    log.warn("Failed to extract user info or sync data: {}", e.getMessage());
-                }
-
-                return loginResponse;
-
-            } else {
-                Map<String, Object> errorResponse = objectMapper.readValue(response.body(),
-                        new TypeReference<Map<String, Object>>() {
-                        });
-                String error = (String) errorResponse.get("error");
-                String errorDescription = (String) errorResponse.get("error_description");
-
-                return LoginResponseDTO.error(getLoginErrorMessage(error, errorDescription));
+            try {
+                LoginResponseDTO.UserInfoDTO userInfo = extractUserInfoFromToken(accessToken);
+                dto.setUserInfo(userInfo);
+                syncUserDataAfterLogin(userInfo);
+            } catch (Exception ex) {
+                log.warn("Failed to extract user info or sync data: {}", ex.getMessage());
             }
 
+            return dto;
+
+        } catch (HttpProblem hp) {
+            Map<String, Object> errMap = safeParse(hp.body());
+            String error = (String) errMap.get("error");
+            String errorDescription = (String) errMap.get("error_description");
+            return LoginResponseDTO.error(getLoginErrorMessage(error, errorDescription));
         } catch (Exception e) {
-            log.error("Error during login: {}", e.getMessage(), e);
+            log.error("Error during login", e);
             return LoginResponseDTO.error("Login failed: " + e.getMessage());
         }
     }
 
+    @Override
+    public Map<String, Object> adminUpdateUserDetails(String userId, AdminUpdateUserRequest req) {
+        try {
+            String token = getAdminAccessToken();
+
+            // 1) Get current
+            String userApi = adminPath("/users/" + userId);
+            Map<String, Object> kcUser = getJson(userApi, token, 200);
+
+            // 2) Patch fields
+            if (req.email() != null)
+                kcUser.put("email", req.email());
+            if (req.firstName() != null)
+                kcUser.put("firstName", req.firstName());
+            if (req.lastName() != null)
+                kcUser.put("lastName", req.lastName());
+            if (req.enabled() != null)
+                kcUser.put("enabled", req.enabled());
+            if (req.emailVerified() != null)
+                kcUser.put("emailVerified", req.emailVerified());
+
+            if (req.phoneNumber() != null) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> attrs = (Map<String, Object>) kcUser.getOrDefault("attributes", new HashMap<>());
+                attrs.put("phone_number", List.of(req.phoneNumber())); // Keycloak requires List<String>
+                kcUser.put("attributes", attrs);
+            }
+
+            // 3) PUT update
+            putJson(userApi, kcUser, 204, token);
+
+            // 4) Sync DB
+            try {
+                UUID kcUuid = UUID.fromString(userId);
+                appUserService.updateProfileFromAdmin(
+                        kcUuid,
+                        req.email(),
+                        req.phoneNumber(),
+                        req.firstName(),
+                        req.lastName(),
+                        req.enabled());
+            } catch (Exception e) {
+                log.warn("Sync ms_user failed (update details): {}", e.getMessage());
+            }
+
+            return Map.of("status", "success");
+        } catch (Exception e) {
+            log.error("adminUpdateUserDetails failed", e);
+            return Map.of("status", "error", "message", e.getMessage());
+        }
+    }
+
+    @Override
+    public Map<String, Object> adminUpdateUserPassword(String userId, AdminUpdatePasswordRequest req) {
+        try {
+            String token = getAdminAccessToken();
+            String pwdApi = adminPath("/users/" + userId + "/reset-password");
+            Map<String, Object> cred = Map.of(
+                    "type", "password",
+                    "value", req.newPassword(),
+                    "temporary", req.temporary());
+            putJson(pwdApi, cred, 204, token);
+            return Map.of("status", "success");
+        } catch (Exception e) {
+            log.error("adminUpdateUserPassword failed", e);
+            return Map.of("status", "error", "message", e.getMessage());
+        }
+    }
+
+    // ============================
+    // Helpers
+    // ============================
+
+    private String getAdminAccessToken() throws Exception {
+        Map<String, String> form = new HashMap<>();
+        form.put("grant_type", "client_credentials");
+        form.put("client_id", adminClientId);
+        form.put("client_secret", adminClientSecret);
+
+        Map<String, Object> token = postForm(
+                realmPath("/protocol/openid-connect/token"),
+                form,
+                200);
+        String at = (String) token.get("access_token");
+        if (at == null || at.isBlank())
+            throw new IllegalStateException("No admin access_token returned");
+        return at;
+    }
+
+    private LoginResponseDTO.UserInfoDTO extractUserInfoFromToken(String accessToken) {
+        try {
+            Map<String, Object> claims = decodeJwtClaims(accessToken);
+            LoginResponseDTO.UserInfoDTO userInfo = new LoginResponseDTO.UserInfoDTO();
+            userInfo.setKeycloakId((String) claims.get("sub"));
+            userInfo.setUsername((String) claims.get("preferred_username"));
+            userInfo.setEmail((String) claims.get("email"));
+            userInfo.setFirstName((String) claims.get("given_name"));
+            userInfo.setLastName((String) claims.get("family_name"));
+            userInfo.setPhoneNumber((String) claims.get("phone_number"));
+            userInfo.setEmailVerified(Boolean.TRUE.equals(claims.get("email_verified")));
+            userInfo.setPhoneVerified(Boolean.TRUE.equals(claims.get("phone_number_verified")));
+            return userInfo;
+        } catch (Exception e) {
+            log.error("Error extracting user info from token", e);
+            throw new RuntimeException("Failed to extract user info from token", e);
+        }
+    }
+
+    private void syncUserDataAfterLogin(LoginResponseDTO.UserInfoDTO userInfo) {
+        try {
+            if (userInfo.getKeycloakId() != null) {
+                UUID keycloakUuid = UUID.fromString(userInfo.getKeycloakId());
+                appUserService.updateLastLogin(keycloakUuid)
+                        .ifPresentOrElse(
+                                u -> log.debug("Updated last login for {}", userInfo.getKeycloakId()),
+                                () -> log.warn("User not found for last login update: {}", userInfo.getKeycloakId()));
+            }
+        } catch (Exception e) {
+            log.warn("Error syncing user data after login: {}", e.getMessage());
+        }
+    }
+
+    private void syncUserDataAfterRegistration(
+            String keycloakUserId, String email, String firstName, String lastName, String regToken) {
+        try {
+            String phoneNumber = extractPhoneFromToken(regToken, "phone");
+            UUID keycloakUuid = UUID.fromString(keycloakUserId);
+            appUserService.syncUserAfterRegistration(
+                    keycloakUuid,
+                    email,
+                    phoneNumber,
+                    firstName,
+                    lastName,
+                    true, // isVerified
+                    true, // isActive
+                    phoneNumber // username
+            );
+            log.debug("Synced user data for Keycloak user: {}", keycloakUserId);
+        } catch (Exception e) {
+            log.error("Error syncing user data after registration", e);
+            throw new RuntimeException("Failed to sync user data", e);
+        }
+    }
+
+    private String extractPhoneFromToken(String jwt, String claimName) {
+        try {
+            Map<String, Object> claims = decodeJwtClaims(jwt);
+            return (String) claims.get(claimName);
+        } catch (Exception e) {
+            log.warn("Failed to extract {} from token: {}", claimName, e.getMessage());
+            return null;
+        }
+    }
+
     private String getErrorMessage(String errorCode) {
+        if (errorCode == null)
+            return "Unknown error";
         return switch (errorCode) {
             case "bad_phone" -> "Invalid phone number format";
             case "sms_failed" -> "Failed to send SMS";
@@ -386,113 +514,266 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
         };
     }
 
-    private String getLoginErrorMessage(String error, String errorDescription) {
-        return switch (error) {
+    private String getLoginErrorMessage(String error, String description) {
+        if (error == null && description != null)
+            return description;
+        return switch (String.valueOf(error)) {
             case "invalid_grant" -> "Invalid username or password";
             case "invalid_client" -> "Invalid client configuration";
             case "unauthorized_client" -> "Client not authorized";
             case "unsupported_grant_type" -> "Unsupported grant type";
             case "invalid_scope" -> "Invalid scope";
-            default -> errorDescription != null ? errorDescription : "Login failed: " + error;
+            default -> (description != null ? description : "Login failed: " + error);
         };
     }
 
-    private LoginResponseDTO.UserInfoDTO extractUserInfoFromToken(String accessToken) {
-        try {
-            // Decode JWT token to extract user information
-            // Note: This is a simplified version. In production, you should properly
-            // validate the JWT
-            String[] tokenParts = accessToken.split("\\.");
-            if (tokenParts.length != 3) {
-                throw new IllegalArgumentException("Invalid JWT token format");
-            }
+    // ============================
+    // HTTP Helpers (DRY)
+    // ============================
 
-            // Decode the payload (second part)
-            String payload = new String(java.util.Base64.getUrlDecoder().decode(tokenParts[1]));
-            Map<String, Object> claims = objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {
+    private Map<String, Object> getJson(String path, String bearer, int expected) throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(uri(path))
+                .header("Authorization", "Bearer " + bearer)
+                .timeout(REQ_TIMEOUT)
+                .GET()
+                .build();
+        HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+        return requireStatus(res, expected);
+    }
+
+    private Map<String, Object> getJsonArrayFirst(String path, String bearer) throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(uri(path))
+                .header("Authorization", "Bearer " + bearer)
+                .timeout(REQ_TIMEOUT)
+                .GET()
+                .build();
+        HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() != 200)
+            throw new HttpProblem(res.statusCode(), res.body());
+        List<Map<String, Object>> list = parse(res.body(), new TypeReference<List<Map<String, Object>>>() {
+        });
+        return list.isEmpty() ? Map.of() : list.get(0);
+    }
+
+    private Map<String, Object> postJson(String path, Object body, int expected) throws Exception {
+        return postJson(path, body, expected, null);
+    }
+
+    private Map<String, Object> postJson(String path, Object body, int expected, String bearer) throws Exception {
+        HttpRequest.Builder b = HttpRequest.newBuilder()
+                .uri(uri(path))
+                .header("Content-Type", HDR_JSON)
+                .timeout(REQ_TIMEOUT)
+                .POST(HttpRequest.BodyPublishers.ofString(writeJson(body)));
+        if (bearer != null)
+            b.header("Authorization", "Bearer " + bearer);
+        HttpResponse<String> res = httpClient.send(b.build(), HttpResponse.BodyHandlers.ofString());
+        return requireStatus(res, expected);
+    }
+
+    private void postJson(String path, Object body, int expected, String bearer, boolean discard) throws Exception {
+        HttpRequest.Builder b = HttpRequest.newBuilder()
+                .uri(uri(path))
+                .header("Content-Type", HDR_JSON)
+                .timeout(REQ_TIMEOUT)
+                .POST(HttpRequest.BodyPublishers.ofString(writeJson(body)));
+        if (bearer != null)
+            b.header("Authorization", "Bearer " + bearer);
+        HttpResponse<Void> res = httpClient.send(b.build(), HttpResponse.BodyHandlers.discarding());
+        if (res.statusCode() != expected)
+            throw new HttpProblem(res.statusCode(), "<no body>");
+    }
+
+    private void putJson(String path, Object body, int expected, String bearer) throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(uri(path))
+                .header("Authorization", "Bearer " + bearer)
+                .header("Content-Type", HDR_JSON)
+                .timeout(REQ_TIMEOUT)
+                .PUT(HttpRequest.BodyPublishers.ofString(writeJson(body)))
+                .build();
+        HttpResponse<Void> res = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
+        if (res.statusCode() != expected)
+            throw new HttpProblem(res.statusCode(), "<no body>");
+    }
+
+    private Map<String, Object> postForm(String path, Map<String, String> form, int expected) throws Exception {
+        String encoded = buildForm(form);
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(uri(path))
+                .header("Content-Type", HDR_FORM)
+                .timeout(REQ_TIMEOUT)
+                .POST(HttpRequest.BodyPublishers.ofString(encoded))
+                .build();
+        HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+        return requireStatus(res, expected);
+    }
+
+    private Map<String, Object> requireStatus(HttpResponse<String> res, int expected) {
+        int code = res.statusCode();
+        if (code == expected) {
+            return safeParse(res.body());
+        }
+        String body = res.body();
+        log.debug("HTTP {} != {}, body: {}", code, expected, truncate(body));
+        throw new HttpProblem(code, body);
+    }
+
+    // ============================
+    // JSON / JWT / Utils
+    // ============================
+
+    private <T> T parse(String json, TypeReference<T> type) {
+        try {
+            return objectMapper.readValue(json, type);
+        } catch (Exception e) {
+            throw new RuntimeException("JSON parse error: " + e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Object> safeParse(String json) {
+        try {
+            if (json == null || json.isBlank())
+                return Map.of();
+            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {
             });
-
-            LoginResponseDTO.UserInfoDTO userInfo = new LoginResponseDTO.UserInfoDTO();
-            userInfo.setKeycloakId((String) claims.get("sub"));
-            userInfo.setUsername((String) claims.get("preferred_username"));
-            userInfo.setEmail((String) claims.get("email"));
-            userInfo.setFirstName((String) claims.get("given_name"));
-            userInfo.setLastName((String) claims.get("family_name"));
-            userInfo.setPhoneNumber((String) claims.get("phone_number"));
-            userInfo.setEmailVerified(Boolean.TRUE.equals(claims.get("email_verified")));
-            userInfo.setPhoneVerified(Boolean.TRUE.equals(claims.get("phone_number_verified")));
-
-            return userInfo;
-
         } catch (Exception e) {
-            log.error("Error extracting user info from token: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to extract user info from token", e);
+            return Map.of("raw", json);
         }
     }
 
-    private void syncUserDataAfterLogin(LoginResponseDTO.UserInfoDTO userInfo) {
+    private String writeJson(Object obj) {
         try {
-            // Use local AppUserService to update last login
-            if (userInfo.getKeycloakId() != null) {
-                UUID keycloakUuid = UUID.fromString(userInfo.getKeycloakId());
-
-                appUserService.updateLastLogin(keycloakUuid)
-                        .ifPresentOrElse(
-                                updatedUser -> log.debug("Successfully updated last login for user: {}",
-                                        userInfo.getKeycloakId()),
-                                () -> log.warn("User not found for last login update: {}", userInfo.getKeycloakId()));
-            }
+            return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            log.warn("Error syncing user data after login: {}", e.getMessage());
-            // Don't throw exception here as login was successful
+            throw new RuntimeException("JSON write error: " + e.getMessage(), e);
         }
     }
 
-    private void syncUserDataAfterRegistration(String keycloakUserId, String email, String firstName, String lastName,
-            String regToken) {
-        try {
-            // Extract phone number from registration token
-            String phoneNumber = extractPhoneFromRegToken(regToken);
-
-            // Convert keycloakUserId string to UUID
-            UUID keycloakUuid = UUID.fromString(keycloakUserId);
-
-            // Use local AppUserService instead of HTTP call
-            appUserService.syncUserAfterRegistration(
-                    keycloakUuid,
-                    email,
-                    phoneNumber,
-                    firstName,
-                    lastName,
-                    true, // isVerified
-                    true, // isActive
-                    phoneNumber // username
-            );
-
-            log.debug("Successfully synced user data for Keycloak user: {}", keycloakUserId);
-
-        } catch (Exception e) {
-            log.error("Error syncing user data after registration: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to sync user data", e);
-        }
+    private Map<String, Object> decodeJwtClaims(String jwt) {
+        String[] parts = Optional.ofNullable(jwt).orElse("").split("\\.");
+        if (parts.length != 3)
+            throw new IllegalArgumentException("Invalid JWT token format");
+        String payload = new String(Base64.getUrlDecoder().decode(padBase64(parts[1])));
+        return parse(payload, new TypeReference<Map<String, Object>>() {
+        });
     }
 
-    private String extractPhoneFromRegToken(String regToken) {
-        try {
-            // Decode JWT token to extract phone number
-            String[] tokenParts = regToken.split("\\.");
-            if (tokenParts.length != 3) {
-                return null;
-            }
+    private static String padBase64(String s) {
+        int rem = s.length() % 4;
+        if (rem == 2)
+            return s + "==";
+        if (rem == 3)
+            return s + "=";
+        if (rem == 1)
+            throw new IllegalArgumentException("Bad base64url payload length");
+        return s;
+    }
 
-            String payload = new String(java.util.Base64.getUrlDecoder().decode(tokenParts[1]));
-            Map<String, Object> claims = objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {
-            });
+    private static Number asNumber(Object o, Number def) {
+        return (o instanceof Number n) ? n : def;
+    }
 
-            return (String) claims.get("phone");
-        } catch (Exception e) {
-            log.warn("Failed to extract phone from registration token: {}", e.getMessage());
+    private static String enc(String v) {
+        return URLEncoder.encode(v, StandardCharsets.UTF_8);
+    }
+
+    private static String buildForm(Map<String, String> kv) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<String, String> e : kv.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null)
+                continue;
+            if (!first)
+                sb.append('&');
+            first = false;
+            sb.append(enc(e.getKey())).append('=').append(enc(e.getValue()));
+        }
+        return sb.toString();
+    }
+
+    private String realmPath(String suffix) {
+        // normalized to "/realms/{realm}{suffix}"
+        if (!suffix.startsWith("/"))
+            suffix = "/" + suffix;
+        return "/realms/" + realm + suffix;
+    }
+
+    private String adminPath(String suffix) {
+        if (!suffix.startsWith("/"))
+            suffix = "/" + suffix;
+        return "/admin/realms/" + realm + suffix;
+    }
+
+    private URI uri(String path) {
+        if (!path.startsWith("/"))
+            path = "/" + path;
+        return URI.create(keycloakBaseUrl + path);
+    }
+
+    private static String stripTrailingSlash(String s) {
+        if (s == null)
             return null;
+        return s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
+    }
+
+    private static String truncate(String s) {
+        if (s == null)
+            return null;
+        if (s.length() <= LOG_BODY_TRUNCATE)
+            return s;
+        return s.substring(0, LOG_BODY_TRUNCATE) + "...(truncated)";
+    }
+
+    private static String extractKeycloakError(String body) {
+        try {
+            // Attempt to parse simple {"error":"..."} shapes
+            // (This method is static; we can't access objectMapper here easily, so keep it
+            // simple)
+            // Fallback to raw body if not JSON.
+            if (body == null)
+                return null;
+            String trimmed = body.trim();
+            if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+                int i = trimmed.indexOf("\"error\"");
+                if (i >= 0) {
+                    int colon = trimmed.indexOf(':', i);
+                    if (colon > 0) {
+                        String rest = trimmed.substring(colon + 1).trim();
+                        // very small best-effort
+                        if (rest.startsWith("\"")) {
+                            int end = rest.indexOf('"', 1);
+                            if (end > 1)
+                                return rest.substring(1, end);
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (Exception ignore) {
+            return null;
+        }
+    }
+
+    // Lightweight exception to carry HTTP detail
+    private static class HttpProblem extends RuntimeException {
+        private final int status;
+        private final String body;
+
+        HttpProblem(int status, String body) {
+            super("HTTP " + status);
+            this.status = status;
+            this.body = body;
+        }
+
+        int status() {
+            return status;
+        }
+
+        String body() {
+            return body;
         }
     }
 }

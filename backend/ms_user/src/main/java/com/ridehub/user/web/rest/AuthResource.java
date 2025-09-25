@@ -8,10 +8,15 @@ import com.ridehub.user.service.dto.auth.VerifyOtpResponseDTO;
 import com.ridehub.user.service.dto.auth.RegistrationCompleteRequestDTO;
 import com.ridehub.user.service.dto.auth.RegistrationCompleteResponseDTO;
 import com.ridehub.user.service.dto.auth.PasswordResetRequestDTO;
+import com.ridehub.user.service.dto.auth.AdminUpdatePasswordRequest;
+import com.ridehub.user.service.dto.auth.AdminUpdateUserRequest;
+import com.ridehub.user.service.dto.auth.CreateAdminRequest;
 import com.ridehub.user.service.dto.auth.LoginRequestDTO;
 import com.ridehub.user.service.dto.auth.LoginResponseDTO;
 import jakarta.validation.Valid;
 import java.util.Map;
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -39,14 +44,14 @@ public class AuthResource {
      *
      * @param request the phone number request
      * @return the ResponseEntity with status 200 (OK) and OTP send response,
-     * or with status 400 (Bad Request) if the phone number is invalid
+     *         or with status 400 (Bad Request) if the phone number is invalid
      */
     @PostMapping("/register/send-otp")
     public ResponseEntity<SendOtpResponseDTO> sendRegistrationOtp(@Valid @RequestBody SendOtpRequestDTO request) {
         log.debug("REST request to send registration OTP to phone: {}", request.getPhone());
 
         SendOtpResponseDTO response = keycloakAuthService.sendRegistrationOtp(request.getPhone());
-        
+
         if (response.getTxnId() != null) {
             return ResponseEntity.ok(response);
         } else {
@@ -59,14 +64,15 @@ public class AuthResource {
      *
      * @param request the OTP verification request
      * @return the ResponseEntity with status 200 (OK) and verification response,
-     * or with status 400 (Bad Request) if the OTP is invalid
+     *         or with status 400 (Bad Request) if the OTP is invalid
      */
     @PostMapping("/register/verify-otp")
     public ResponseEntity<VerifyOtpResponseDTO> verifyRegistrationOtp(@Valid @RequestBody VerifyOtpRequestDTO request) {
         log.debug("REST request to verify registration OTP for txnId: {}", request.getTxnId());
 
-        VerifyOtpResponseDTO response = keycloakAuthService.verifyRegistrationOtp(request.getTxnId(), request.getCode());
-        
+        VerifyOtpResponseDTO response = keycloakAuthService.verifyRegistrationOtp(request.getTxnId(),
+                request.getCode());
+
         if (response.getToken() != null) {
             return ResponseEntity.ok(response);
         } else {
@@ -78,26 +84,29 @@ public class AuthResource {
      * POST /api/auth/register/complete : Complete user registration
      *
      * @param request the registration completion request
-     * @return the ResponseEntity with status 201 (Created) and registration response,
-     * or with status 400 (Bad Request) if the registration data is invalid,
-     * or with status 409 (Conflict) if the user already exists
+     * @return the ResponseEntity with status 201 (Created) and registration
+     *         response,
+     *         or with status 400 (Bad Request) if the registration data is invalid,
+     *         or with status 409 (Conflict) if the user already exists
      */
     @PostMapping("/register/complete")
-    public ResponseEntity<RegistrationCompleteResponseDTO> completeRegistration(@Valid @RequestBody RegistrationCompleteRequestDTO request) {
-        log.debug("REST request to complete registration for user: {} {}", request.getFirstName(), request.getLastName());
+    public ResponseEntity<RegistrationCompleteResponseDTO> completeRegistration(
+            @Valid @RequestBody RegistrationCompleteRequestDTO request) {
+        log.debug("REST request to complete registration for user: {} {}", request.getFirstName(),
+                request.getLastName());
 
         RegistrationCompleteResponseDTO response = keycloakAuthService.completeRegistration(
-            request.getRegToken(),
-            request.getEmail(),
-            request.getFirstName(),
-            request.getLastName(),
-            request.getPassword()
-        );
-        
+                request.getRegToken(),
+                request.getEmail(),
+                request.getFirstName(),
+                request.getLastName(),
+                request.getPassword());
+
         if (response.isSuccess()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
-            if (response.getMessage().contains("already registered") || response.getMessage().contains("phone_exists")) {
+            if (response.getMessage().contains("already registered")
+                    || response.getMessage().contains("phone_exists")) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
             }
             return ResponseEntity.badRequest().body(response);
@@ -109,14 +118,14 @@ public class AuthResource {
      *
      * @param request the phone number request
      * @return the ResponseEntity with status 200 (OK) and OTP send response,
-     * or with status 400 (Bad Request) if the phone number is invalid
+     *         or with status 400 (Bad Request) if the phone number is invalid
      */
     @PostMapping("/password-reset/request")
     public ResponseEntity<SendOtpResponseDTO> requestPasswordReset(@Valid @RequestBody SendOtpRequestDTO request) {
         log.debug("REST request to send password reset OTP to phone: {}", request.getPhone());
 
         SendOtpResponseDTO response = keycloakAuthService.requestPasswordReset(request.getPhone());
-        
+
         if (response.getTxnId() != null) {
             return ResponseEntity.ok(response);
         } else {
@@ -129,14 +138,16 @@ public class AuthResource {
      *
      * @param request the OTP verification request
      * @return the ResponseEntity with status 200 (OK) and verification response,
-     * or with status 400 (Bad Request) if the OTP is invalid
+     *         or with status 400 (Bad Request) if the OTP is invalid
      */
     @PostMapping("/password-reset/verify-otp")
-    public ResponseEntity<VerifyOtpResponseDTO> verifyPasswordResetOtp(@Valid @RequestBody VerifyOtpRequestDTO request) {
+    public ResponseEntity<VerifyOtpResponseDTO> verifyPasswordResetOtp(
+            @Valid @RequestBody VerifyOtpRequestDTO request) {
         log.debug("REST request to verify password reset OTP for txnId: {}", request.getTxnId());
 
-        VerifyOtpResponseDTO response = keycloakAuthService.verifyPasswordResetOtp(request.getTxnId(), request.getCode());
-        
+        VerifyOtpResponseDTO response = keycloakAuthService.verifyPasswordResetOtp(request.getTxnId(),
+                request.getCode());
+
         if (response.getToken() != null) {
             return ResponseEntity.ok(response);
         } else {
@@ -149,15 +160,17 @@ public class AuthResource {
      *
      * @param request the password reset completion request
      * @return the ResponseEntity with status 200 (OK) and reset response,
-     * or with status 400 (Bad Request) if the reset data is invalid,
-     * or with status 404 (Not Found) if the user is not found
+     *         or with status 400 (Bad Request) if the reset data is invalid,
+     *         or with status 404 (Not Found) if the user is not found
      */
     @PostMapping("/password-reset/complete")
-    public ResponseEntity<Map<String, Object>> completePasswordReset(@Valid @RequestBody PasswordResetRequestDTO request) {
+    public ResponseEntity<Map<String, Object>> completePasswordReset(
+            @Valid @RequestBody PasswordResetRequestDTO request) {
         log.debug("REST request to complete password reset");
 
-        Map<String, Object> response = keycloakAuthService.completePasswordReset(request.getResetToken(), request.getNewPassword());
-        
+        Map<String, Object> response = keycloakAuthService.completePasswordReset(request.getResetToken(),
+                request.getNewPassword());
+
         String status = (String) response.get("status");
         if ("success".equals(status)) {
             return ResponseEntity.ok(response);
@@ -174,8 +187,9 @@ public class AuthResource {
      * POST /api/auth/login : Login user with username and password
      *
      * @param request the login request with username and password
-     * @return the ResponseEntity with status 200 (OK) and login response with tokens,
-     * or with status 401 (Unauthorized) if credentials are invalid
+     * @return the ResponseEntity with status 200 (OK) and login response with
+     *         tokens,
+     *         or with status 401 (Unauthorized) if credentials are invalid
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
@@ -198,9 +212,28 @@ public class AuthResource {
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {
         return ResponseEntity.ok(Map.of(
-            "status", "UP",
-            "service", "auth-service",
-            "keycloak", "connected"
-        ));
+                "status", "UP",
+                "service", "auth-service",
+                "keycloak", "connected"));
+    }
+
+    @PostMapping("/create")
+    // @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')") // or your own guard
+    public ResponseEntity<?> create(@RequestBody CreateAdminRequest req) {
+        return ResponseEntity.ok(keycloakAuthService.createAdminUser(req));
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<?> updateDetails(
+            @PathVariable String userId,
+            @RequestBody AdminUpdateUserRequest req) {
+        return ResponseEntity.ok(keycloakAuthService.adminUpdateUserDetails(userId, req));
+    }
+
+    @PutMapping("/{userId}/password")
+    public ResponseEntity<?> updatePassword(
+            @PathVariable String userId,
+            @RequestBody AdminUpdatePasswordRequest req) {
+        return ResponseEntity.ok(keycloakAuthService.adminUpdateUserPassword(userId, req));
     }
 }

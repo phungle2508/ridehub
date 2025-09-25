@@ -82,6 +82,10 @@ Table payment_transaction {
   is_deleted boolean
   deleted_at timestamptz
   deleted_by UUID
+
+  Indexes {
+    (booking_id) [unique] // 1-1 with booking
+  }
 }
 
 Table invoice {
@@ -102,4 +106,75 @@ Table invoice {
   Indexes {
     (booking_id) [unique]
   }
+}
+
+Table pricing_snapshot {
+  id UUID [pk, not null]
+  booking_id UUID [not null, ref: > booking.id]
+  name varchar
+  description text
+  unit_price decimal(12,2) [not null]
+  quantity int [not null]
+  amount decimal(12,2) [not null]
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+
+  Indexes {
+    (booking_id)
+  }
+}
+
+Table applied_promotion {
+  id UUID [pk, not null]
+  booking_id UUID [not null, ref: > booking.id]
+  promotion_code varchar [not null]
+  reduction_amount decimal(12,2) [not null]
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+
+  Indexes {
+    (booking_id)
+  }
+}
+
+Table payment_webhook_log {
+  id UUID [pk, not null]
+  payment_transaction_id UUID [not null, ref: > payment_transaction.id]
+  provider varchar
+  received_at timestamptz [not null]
+  payload_hash varchar [unique]
+  raw_payload text
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+
+  Indexes {
+    (payment_transaction_id)
+  }
+}
+
+Table file_booking {
+  id UUID [pk, not null]
+  ticket_id UUID [not null, ref: > ticket.id, unique]
+  bucket varchar [not null]
+  object_key varchar [not null]
+  content_type varchar
+  size bigint
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
 }

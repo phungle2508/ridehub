@@ -79,4 +79,11 @@ public interface AppUserService {
      * @return the updated user entity
      */
     Optional<AppUserDTO> updateLastLogin(UUID keycloakId);
+
+    /**
+     * Admin-initiated profile update used by Keycloak admin flows.
+     * Applies only non-null fields; does nothing if the user is not found.
+     */
+    Optional<AppUserDTO> updateProfileFromAdmin(UUID keycloakId, String email, String phoneNumber, String firstName,
+            String lastName, Boolean enabled);
 }

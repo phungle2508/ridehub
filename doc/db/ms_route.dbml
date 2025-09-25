@@ -14,13 +14,21 @@ Enum staff_status {
 }
 
 Enum vehicle_type {
-  STANDARD_BUS
+  STANDARD_BUS_VIP
+  STANDARD_BUS_NORMAL
   LIMOUSINE
+}
+
+
+Enum lock_status {
+  HELD
+  EXPIRED
+  COMMITTED
 }
 
 Table province {
   id UUID [pk, not null]
-  province_code varchar [not null]
+  province_code varchar [not null, unique]
   name varchar [not null]
   name_en varchar
   full_name varchar
@@ -39,7 +47,7 @@ Table province {
 Table district {
   id UUID [pk, not null]
   province_id UUID [not null, ref: > province.id]
-  district_code varchar [not null]
+  district_code varchar [not null, unique]
   name varchar [not null]
   name_en varchar
   full_name varchar
@@ -57,7 +65,7 @@ Table district {
 Table ward {
   id UUID [pk, not null]
   district_id UUID [not null, ref: > district.id]
-  ward_code varchar [not null]
+  ward_code varchar [not null, unique]
   name varchar [not null]
   name_en varchar
   full_name varchar
@@ -88,7 +96,7 @@ Table address {
 
 Table station {
   id UUID [pk, not null]
-  address_id UUID [not null, ref: > address.id]
+  address_id UUID [not null, ref: > address.id, unique]
   name varchar [not null]
   phone_number varchar
   description text
@@ -105,7 +113,7 @@ Table route {
   id UUID [pk, not null]
   origin_station_id UUID [not null, ref: > station.id]
   destination_station_id UUID [not null, ref: > station.id]
-  route_code varchar
+  route_code varchar [not null, unique]
   distance_km decimal
 
   created_at timestamptz [not null]
@@ -128,7 +136,7 @@ Table seat_map {
 
 Table vehicle {
   id UUID [pk, not null]
-  seat_map_id UUID [not null, ref: > seat_map.id]
+  seat_map_id UUID [not null, ref: > seat_map.id, unique]
   type vehicle_type [not null]
   type_factor decimal               // pricing factor by vehicle type
   plate_number varchar [not null, unique]
@@ -159,8 +167,8 @@ Table seat {
   id UUID [pk, not null]
   floor_id UUID [not null, ref: > floor.id]
   seat_no varchar [not null]
-  row int
-  col int
+  row_no int
+  col_no int
   price_factor decimal
 
   created_at timestamptz [not null]
@@ -217,9 +225,9 @@ Table trip {
   id UUID [pk, not null]
   route_id UUID [not null, ref: > route.id]
   vehicle_id UUID [not null, ref: > vehicle.id]
-  driver_id UUID [ref: > driver.id]
+  driver_id UUID [not null, ref: > driver.id]
   attendant_id UUID [ref: > attendant.id]
-  trip_code varchar
+  trip_code varchar [not null, unique]
   departure_time timestamptz [not null]
   arrival_time timestamptz [not null]
   base_fare decimal(12,2) [not null]
@@ -250,4 +258,42 @@ Table trip_seat {
   Indexes {
     (trip_id, seat_no) [unique]
   }
+}
+
+Table seat_lock {
+  id UUID [pk, not null]
+  trip_id UUID [not null, ref: > trip.id]
+  seat_no varchar [not null]
+  user_id UUID
+  status lock_status [not null]
+  expires_at timestamptz [not null]
+  idempotency_key varchar
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+
+  Indexes {
+    (trip_id, seat_no) [unique, note: 'Consider partial unique when status in (HELD, COMMITTED)']
+  }
+}
+
+Table file_route {
+  id UUID [pk, not null]
+  bucket varchar [not null]
+  object_key varchar [not null]
+  content_type varchar
+  size bigint
+
+  station_id UUID [ref: > station.id, unique]
+  vehicle_id UUID [ref: > vehicle.id, unique]
+  seat_map_id UUID [ref: > seat_map.id, unique]
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
 }

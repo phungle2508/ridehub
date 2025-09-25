@@ -2,13 +2,12 @@ package com.ridehub.user.web.rest;
 
 import com.ridehub.user.broker.KafkaProducer;
 import com.ridehub.user.service.dto.AppUserDTO;
+import com.ridehub.user.service.dto.auth.CreateAdminRequest;
 import com.ridehub.kafka.service.KafkaUtilityService;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.kafka.common.KafkaException;
-import org.apache.kafka.common.errors.RetriableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -150,4 +149,6 @@ public class MsUserKafkaResource {
         status.put("timestamp", System.currentTimeMillis());
         return ResponseEntity.ok(status);
     }
+
+  
 }

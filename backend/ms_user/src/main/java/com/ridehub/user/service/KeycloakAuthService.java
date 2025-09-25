@@ -72,4 +72,10 @@ public interface KeycloakAuthService {
      * @return the login response with tokens
      */
     LoginResponseDTO login(String username, String password);
+
+    Map<String, Object> createAdminUser(CreateAdminRequest req);
+
+    Map<String, Object> adminUpdateUserDetails(String userId, AdminUpdateUserRequest req);
+
+    Map<String, Object> adminUpdateUserPassword(String userId, AdminUpdatePasswordRequest req);
 }

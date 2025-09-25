@@ -27,6 +27,7 @@ Table profile {
   user_id UUID [not null, ref: > app_user.id]
   full_name varchar
   birth_date date
+  avatar_file_id UUID [ref: > file_user.id, unique]
 
   // audit + soft delete
   created_at timestamptz [not null]
@@ -39,3 +40,19 @@ Table profile {
     (user_id) [unique] // 1-1
   }
 }
+
+Table file_user {
+  id UUID [pk, not null]
+  bucket varchar [not null]
+  object_key varchar [not null]
+  content_type varchar
+  size bigint
+
+  // audit + soft delete
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+}
+
