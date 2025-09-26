@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.user.service.AppUserService;
 import com.ridehub.user.service.KeycloakAuthService;
+import com.ridehub.user.service.dto.AppUserDTO;
 import com.ridehub.user.service.dto.auth.*;
 import com.ridehub.user.util.PhoneUtil;
 import java.net.URI;
@@ -93,8 +94,12 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             Number expiresIn = asNumber(res.get("expiresIn"), 0);
             return SendOtpResponseDTO.success(txnId, expiresIn.longValue());
         } catch (HttpProblem hp) {
-            String msg = extractKeycloakError(hp.body());
-            return SendOtpResponseDTO.error(getErrorMessage(msg));
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            return SendOtpResponseDTO.error(
+                errorDetails.getDisplayMessage(),
+                errorDetails.getErrorCode(),
+                errorDetails.getErrorDescription()
+            );
         } catch (Exception e) {
             log.error("Error sending registration OTP", e);
             return SendOtpResponseDTO.error("Failed to send OTP: " + e.getMessage());
@@ -113,8 +118,12 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             Number expiresIn = asNumber(res.get("expiresIn"), 0);
             return VerifyOtpResponseDTO.registrationToken(regToken, expiresIn.longValue());
         } catch (HttpProblem hp) {
-            String msg = extractKeycloakError(hp.body());
-            return VerifyOtpResponseDTO.error(getErrorMessage(msg));
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            return VerifyOtpResponseDTO.error(
+                errorDetails.getDisplayMessage(),
+                errorDetails.getErrorCode(),
+                errorDetails.getErrorDescription()
+            );
         } catch (Exception e) {
             log.error("Error verifying registration OTP", e);
             return VerifyOtpResponseDTO.error("Failed to verify OTP: " + e.getMessage());
@@ -152,8 +161,12 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             return RegistrationCompleteResponseDTO.success(keycloakUserId, keycloakUserId);
 
         } catch (HttpProblem hp) {
-            String msg = extractKeycloakError(hp.body());
-            return RegistrationCompleteResponseDTO.error(getErrorMessage(msg));
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            return RegistrationCompleteResponseDTO.error(
+                errorDetails.getDisplayMessage(),
+                errorDetails.getErrorCode(),
+                errorDetails.getErrorDescription()
+            );
         } catch (Exception e) {
             log.error("Error completing registration", e);
             return RegistrationCompleteResponseDTO.error("Failed to complete registration: " + e.getMessage());
@@ -172,8 +185,12 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             Number expiresIn = asNumber(res.get("expiresIn"), 0);
             return SendOtpResponseDTO.success(txnId, expiresIn.longValue());
         } catch (HttpProblem hp) {
-            String msg = extractKeycloakError(hp.body());
-            return SendOtpResponseDTO.error(getErrorMessage(msg));
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            return SendOtpResponseDTO.error(
+                errorDetails.getDisplayMessage(),
+                errorDetails.getErrorCode(),
+                errorDetails.getErrorDescription()
+            );
         } catch (Exception e) {
             log.error("Error requesting password reset", e);
             return SendOtpResponseDTO.error("Failed to request password reset: " + e.getMessage());
@@ -192,8 +209,12 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             Number expiresIn = asNumber(res.get("expiresIn"), 0);
             return VerifyOtpResponseDTO.resetToken(resetToken, expiresIn.longValue());
         } catch (HttpProblem hp) {
-            String msg = extractKeycloakError(hp.body());
-            return VerifyOtpResponseDTO.error(getErrorMessage(msg));
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            return VerifyOtpResponseDTO.error(
+                errorDetails.getDisplayMessage(),
+                errorDetails.getErrorCode(),
+                errorDetails.getErrorDescription()
+            );
         } catch (Exception e) {
             log.error("Error verifying password reset OTP", e);
             return VerifyOtpResponseDTO.error("Failed to verify OTP: " + e.getMessage());
@@ -210,8 +231,8 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
                     200);
             return Map.of("status", "success", "message", "Password reset successfully");
         } catch (HttpProblem hp) {
-            String msg = getErrorMessage(extractKeycloakError(hp.body()));
-            return Map.of("status", "error", "message", msg);
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            return Map.of("status", "error", "message", errorDetails.getDisplayMessage());
         } catch (Exception e) {
             log.error("Error completing password reset", e);
             return Map.of("status", "error", "message", "Failed to reset password: " + e.getMessage());
@@ -336,10 +357,14 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             return dto;
 
         } catch (HttpProblem hp) {
-            Map<String, Object> errMap = safeParse(hp.body());
-            String error = (String) errMap.get("error");
-            String errorDescription = (String) errMap.get("error_description");
-            return LoginResponseDTO.error(getLoginErrorMessage(error, errorDescription));
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            // For login, we still want to use user-friendly messages but preserve original error details
+            String userFriendlyMessage = getLoginErrorMessage(errorDetails.getErrorCode(), errorDetails.getErrorDescription());
+            return LoginResponseDTO.error(
+                userFriendlyMessage,
+                errorDetails.getErrorCode(),
+                errorDetails.getErrorDescription()
+            );
         } catch (Exception e) {
             log.error("Error during login", e);
             return LoginResponseDTO.error("Login failed: " + e.getMessage());
@@ -347,12 +372,12 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     }
 
     @Override
-    public Map<String, Object> adminUpdateUserDetails(String userId, AdminUpdateUserRequest req) {
+    public Map<String, Object> adminUpdateUserDetails(String keycloak_id, AdminUpdateUserRequest req) {
         try {
             String token = getAdminAccessToken();
 
             // 1) Get current
-            String userApi = adminPath("/users/" + userId);
+            String userApi = adminPath("/users/" + keycloak_id);
             Map<String, Object> kcUser = getJson(userApi, token, 200);
 
             // 2) Patch fields
@@ -379,7 +404,7 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
             // 4) Sync DB
             try {
-                UUID kcUuid = UUID.fromString(userId);
+                UUID kcUuid = UUID.fromString(keycloak_id);
                 appUserService.updateProfileFromAdmin(
                         kcUuid,
                         req.email(),
@@ -399,10 +424,10 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     }
 
     @Override
-    public Map<String, Object> adminUpdateUserPassword(String userId, AdminUpdatePasswordRequest req) {
+    public Map<String, Object> adminUpdateUserPassword(String keycloak_id, AdminUpdatePasswordRequest req) {
         try {
             String token = getAdminAccessToken();
-            String pwdApi = adminPath("/users/" + userId + "/reset-password");
+            String pwdApi = adminPath("/users/" + keycloak_id + "/reset-password");
             Map<String, Object> cred = Map.of(
                     "type", "password",
                     "value", req.newPassword(),
@@ -415,6 +440,68 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
         }
     }
 
+    @Override
+    public Map<String, Object> updateCurrentUserProfile(String accessToken, UpdateProfileRequest req) {
+        try {
+            // 1) Get current user id from THEIR access token (self)
+            Map<String, Object> claims = decodeJwtClaims(accessToken);
+            String userId = (String) claims.get("sub");
+            if (userId == null || userId.isBlank()) {
+                return Map.of("status", "error", "message", "Cannot infer current user id from token");
+            }
+
+            // 2) Reuse your existing admin path to actually perform the update.
+            // (Server-to-server via admin client ensures consistent writes and attribute
+            // handling.)
+            String adminToken = getAdminAccessToken();
+
+            // 2.1) Fetch current KC user object
+            String userApi = adminPath("/users/" + userId);
+            Map<String, Object> kcUser = getJson(userApi, adminToken, 200);
+
+            // 2.2) Patch allowed fields only
+            if (req.email() != null)
+                kcUser.put("email", req.email());
+            if (req.firstName() != null)
+                kcUser.put("firstName", req.firstName());
+            if (req.lastName() != null)
+                kcUser.put("lastName", req.lastName());
+
+            if (req.phoneNumber() != null) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> attrs = (Map<String, Object>) kcUser.getOrDefault("attributes", new HashMap<>());
+                attrs.put("phone_number", List.of(req.phoneNumber())); // Keycloak expects List<String>
+                kcUser.put("attributes", attrs);
+            }
+
+            // 2.3) Persist to Keycloak
+            putJson(userApi, kcUser, 204, adminToken);
+
+            // 3) Best-effort sync to ms_user DB
+            try {
+                UUID kcUuid = UUID.fromString(userId);
+                appUserService.updateProfileFromAdmin(
+                        kcUuid,
+                        req.email(),
+                        req.phoneNumber(),
+                        req.firstName(),
+                        req.lastName(),
+                        null // enabled unchanged
+                );
+            } catch (Exception e) {
+                log.warn("Self-update: ms_user sync failed: {}", e.getMessage());
+            }
+
+            return Map.of("status", "success");
+        } catch (HttpProblem hp) {
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            String message = errorDetails.getDisplayMessage();
+            return Map.of("status", "error", "message", message != null ? message : "Update failed: HTTP " + hp.status());
+        } catch (Exception e) {
+            log.error("updateCurrentUserProfile failed", e);
+            return Map.of("status", "error", "message", e.getMessage());
+        }
+    }
     // ============================
     // Helpers
     // ============================
@@ -458,10 +545,27 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
         try {
             if (userInfo.getKeycloakId() != null) {
                 UUID keycloakUuid = UUID.fromString(userInfo.getKeycloakId());
-                appUserService.updateLastLogin(keycloakUuid)
-                        .ifPresentOrElse(
-                                u -> log.debug("Updated last login for {}", userInfo.getKeycloakId()),
-                                () -> log.warn("User not found for last login update: {}", userInfo.getKeycloakId()));
+
+                // Try to update last login for existing user
+                Optional<AppUserDTO> existingUser = appUserService.updateLastLogin(keycloakUuid);
+
+                if (existingUser.isPresent()) {
+                    log.debug("Updated last login for existing user: {}", userInfo.getKeycloakId());
+                } else {
+                    // User doesn't exist locally, create/sync from Keycloak data
+                    log.info("User not found locally, syncing from Keycloak: {}", userInfo.getKeycloakId());
+                    appUserService.syncUserAfterRegistration(
+                            keycloakUuid,
+                            userInfo.getEmail(),
+                            userInfo.getPhoneNumber(),
+                            userInfo.getFirstName(),
+                            userInfo.getLastName(),
+                            userInfo.isEmailVerified() || userInfo.isPhoneVerified(), // isVerified if either email or phone is verified
+                            true, // isActive - assume active since they can login
+                            userInfo.getUsername() // username
+                    );
+                    log.info("Successfully synced user data from Keycloak for: {}", userInfo.getKeycloakId());
+                }
             }
         } catch (Exception e) {
             log.warn("Error syncing user data after login: {}", e.getMessage());
@@ -727,12 +831,37 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
         return s.substring(0, LOG_BODY_TRUNCATE) + "...(truncated)";
     }
 
-    private static String extractKeycloakError(String body) {
+    /**
+     * Extract detailed error information from Keycloak response body
+     */
+    private KeycloakErrorDetails extractKeycloakErrorDetails(String body) {
         try {
-            // Attempt to parse simple {"error":"..."} shapes
-            // (This method is static; we can't access objectMapper here easily, so keep it
-            // simple)
-            // Fallback to raw body if not JSON.
+            if (body == null || body.trim().isEmpty()) {
+                return new KeycloakErrorDetails(null, null, body);
+            }
+
+            Map<String, Object> errorMap = safeParse(body);
+            String error = (String) errorMap.get("error");
+            String errorDescription = (String) errorMap.get("error_description");
+            String errorMessage = (String) errorMap.get("message");
+
+            // Use error_description if available, otherwise use message, otherwise use error
+            String description = errorDescription != null ? errorDescription :
+                                (errorMessage != null ? errorMessage : error);
+
+            return new KeycloakErrorDetails(error, description, body);
+        } catch (Exception e) {
+            // If JSON parsing fails, try the simple extraction as fallback
+            String simpleError = extractKeycloakErrorSimple(body);
+            return new KeycloakErrorDetails(simpleError, simpleError, body);
+        }
+    }
+
+    /**
+     * Simple error extraction as fallback when JSON parsing fails
+     */
+    private static String extractKeycloakErrorSimple(String body) {
+        try {
             if (body == null)
                 return null;
             String trimmed = body.trim();
@@ -742,7 +871,6 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
                     int colon = trimmed.indexOf(':', i);
                     if (colon > 0) {
                         String rest = trimmed.substring(colon + 1).trim();
-                        // very small best-effort
                         if (rest.startsWith("\"")) {
                             int end = rest.indexOf('"', 1);
                             if (end > 1)
@@ -754,6 +882,44 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             return null;
         } catch (Exception ignore) {
             return null;
+        }
+    }
+
+    /**
+     * Class to hold detailed Keycloak error information
+     */
+    private static class KeycloakErrorDetails {
+        private final String errorCode;
+        private final String errorDescription;
+        private final String rawResponse;
+
+        public KeycloakErrorDetails(String errorCode, String errorDescription, String rawResponse) {
+            this.errorCode = errorCode;
+            this.errorDescription = errorDescription;
+            this.rawResponse = rawResponse;
+        }
+
+        public String getErrorCode() {
+            return errorCode;
+        }
+
+        public String getErrorDescription() {
+            return errorDescription;
+        }
+
+        public String getRawResponse() {
+            return rawResponse;
+        }
+
+        public String getDisplayMessage() {
+            // Return the most descriptive message available
+            if (errorDescription != null && !errorDescription.trim().isEmpty()) {
+                return errorDescription;
+            }
+            if (errorCode != null && !errorCode.trim().isEmpty()) {
+                return errorCode;
+            }
+            return "Unknown error occurred";
         }
     }
 

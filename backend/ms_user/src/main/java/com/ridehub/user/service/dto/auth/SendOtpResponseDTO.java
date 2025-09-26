@@ -8,6 +8,8 @@ public class SendOtpResponseDTO {
     private String txnId;
     private long expiresIn;
     private String message;
+    private String errorCode;
+    private String errorDescription;
 
     // Constructors
     public SendOtpResponseDTO() {}
@@ -32,6 +34,14 @@ public class SendOtpResponseDTO {
     public static SendOtpResponseDTO error(String message) {
         SendOtpResponseDTO response = new SendOtpResponseDTO();
         response.setMessage(message);
+        return response;
+    }
+
+    public static SendOtpResponseDTO error(String message, String errorCode, String errorDescription) {
+        SendOtpResponseDTO response = new SendOtpResponseDTO();
+        response.setMessage(message);
+        response.setErrorCode(errorCode);
+        response.setErrorDescription(errorDescription);
         return response;
     }
 
@@ -60,12 +70,30 @@ public class SendOtpResponseDTO {
         this.message = message;
     }
 
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getErrorDescription() {
+        return errorDescription;
+    }
+
+    public void setErrorDescription(String errorDescription) {
+        this.errorDescription = errorDescription;
+    }
+
     @Override
     public String toString() {
         return "SendOtpResponseDTO{" +
             "txnId='" + txnId + '\'' +
             ", expiresIn=" + expiresIn +
             ", message='" + message + '\'' +
+            ", errorCode='" + errorCode + '\'' +
+            ", errorDescription='" + errorDescription + '\'' +
             '}';
     }
 }

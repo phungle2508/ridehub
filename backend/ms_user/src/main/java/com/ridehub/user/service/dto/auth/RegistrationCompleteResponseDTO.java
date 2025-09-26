@@ -9,6 +9,8 @@ public class RegistrationCompleteResponseDTO {
     private String keycloakId;
     private String message;
     private boolean success;
+    private String errorCode;
+    private String errorDescription;
 
     // Constructors
     public RegistrationCompleteResponseDTO() {}
@@ -33,6 +35,15 @@ public class RegistrationCompleteResponseDTO {
         RegistrationCompleteResponseDTO response = new RegistrationCompleteResponseDTO();
         response.setSuccess(false);
         response.setMessage(message);
+        return response;
+    }
+
+    public static RegistrationCompleteResponseDTO error(String message, String errorCode, String errorDescription) {
+        RegistrationCompleteResponseDTO response = new RegistrationCompleteResponseDTO();
+        response.setSuccess(false);
+        response.setMessage(message);
+        response.setErrorCode(errorCode);
+        response.setErrorDescription(errorDescription);
         return response;
     }
 
@@ -69,6 +80,22 @@ public class RegistrationCompleteResponseDTO {
         this.success = success;
     }
 
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getErrorDescription() {
+        return errorDescription;
+    }
+
+    public void setErrorDescription(String errorDescription) {
+        this.errorDescription = errorDescription;
+    }
+
     @Override
     public String toString() {
         return "RegistrationCompleteResponseDTO{" +
@@ -76,6 +103,8 @@ public class RegistrationCompleteResponseDTO {
             ", keycloakId='" + keycloakId + '\'' +
             ", message='" + message + '\'' +
             ", success=" + success +
+            ", errorCode='" + errorCode + '\'' +
+            ", errorDescription='" + errorDescription + '\'' +
             '}';
     }
 }

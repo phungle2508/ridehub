@@ -3,6 +3,7 @@ package com.ridehub.user.web.rest;
 import com.ridehub.user.service.KeycloakAuthService;
 import com.ridehub.user.service.dto.auth.SendOtpRequestDTO;
 import com.ridehub.user.service.dto.auth.SendOtpResponseDTO;
+import com.ridehub.user.service.dto.auth.UpdateProfileRequest;
 import com.ridehub.user.service.dto.auth.VerifyOtpRequestDTO;
 import com.ridehub.user.service.dto.auth.VerifyOtpResponseDTO;
 import com.ridehub.user.service.dto.auth.RegistrationCompleteRequestDTO;
@@ -223,17 +224,33 @@ public class AuthResource {
         return ResponseEntity.ok(keycloakAuthService.createAdminUser(req));
     }
 
-    @PutMapping("/{userId}")
+    @PutMapping("/{keycloak_id}")
     public ResponseEntity<?> updateDetails(
-            @PathVariable String userId,
+            @PathVariable String keycloak_id,
             @RequestBody AdminUpdateUserRequest req) {
-        return ResponseEntity.ok(keycloakAuthService.adminUpdateUserDetails(userId, req));
+        return ResponseEntity.ok(keycloakAuthService.adminUpdateUserDetails(keycloak_id, req));
     }
 
-    @PutMapping("/{userId}/password")
+    @PutMapping("/{keycloak_id}/password")
     public ResponseEntity<?> updatePassword(
-            @PathVariable String userId,
+            @PathVariable String keycloak_id,
             @RequestBody AdminUpdatePasswordRequest req) {
-        return ResponseEntity.ok(keycloakAuthService.adminUpdateUserPassword(userId, req));
+        return ResponseEntity.ok(keycloakAuthService.adminUpdateUserPassword(keycloak_id, req));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<Map<String, Object>> updateProfile(
+            @RequestHeader("Authorization") String authorization,
+            @RequestBody UpdateProfileRequest req) {
+        // Expect "Bearer <token>"
+        String token = authorization != null && authorization.startsWith("Bearer ")
+                ? authorization.substring("Bearer ".length()).trim()
+                : authorization;
+
+        Map<String, Object> res = keycloakAuthService.updateCurrentUserProfile(token, req);
+        if ("success".equals(res.get("status"))) {
+            return ResponseEntity.ok(res);
+        }
+        return ResponseEntity.badRequest().body(res);
     }
 }

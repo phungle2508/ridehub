@@ -15,6 +15,8 @@ public class LoginResponseDTO {
     private boolean success;
     private String message;
     private UserInfoDTO userInfo;
+    private String errorCode;
+    private String errorDescription;
 
     // Constructors
     public LoginResponseDTO() {}
@@ -37,6 +39,15 @@ public class LoginResponseDTO {
         LoginResponseDTO response = new LoginResponseDTO();
         response.setSuccess(false);
         response.setMessage(message);
+        return response;
+    }
+
+    public static LoginResponseDTO error(String message, String errorCode, String errorDescription) {
+        LoginResponseDTO response = new LoginResponseDTO();
+        response.setSuccess(false);
+        response.setMessage(message);
+        response.setErrorCode(errorCode);
+        response.setErrorDescription(errorDescription);
         return response;
     }
 
@@ -105,6 +116,22 @@ public class LoginResponseDTO {
         this.userInfo = userInfo;
     }
 
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getErrorDescription() {
+        return errorDescription;
+    }
+
+    public void setErrorDescription(String errorDescription) {
+        this.errorDescription = errorDescription;
+    }
+
     @Override
     public String toString() {
         return "LoginResponseDTO{" +
@@ -116,6 +143,8 @@ public class LoginResponseDTO {
             ", success=" + success +
             ", message='" + message + '\'' +
             ", userInfo=" + userInfo +
+            ", errorCode='" + errorCode + '\'' +
+            ", errorDescription='" + errorDescription + '\'' +
             '}';
     }
 

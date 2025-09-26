@@ -21,7 +21,7 @@ public interface KeycloakAuthService {
      * Verify OTP for registration
      *
      * @param txnId the transaction ID
-     * @param code the OTP code
+     * @param code  the OTP code
      * @return the verification response with registration token
      */
     VerifyOtpResponseDTO verifyRegistrationOtp(String txnId, String code);
@@ -29,14 +29,15 @@ public interface KeycloakAuthService {
     /**
      * Complete user registration
      *
-     * @param regToken the registration token
-     * @param email the user email (optional)
+     * @param regToken  the registration token
+     * @param email     the user email (optional)
      * @param firstName the user first name
-     * @param lastName the user last name
-     * @param password the user password
+     * @param lastName  the user last name
+     * @param password  the user password
      * @return the registration completion response
      */
-    RegistrationCompleteResponseDTO completeRegistration(String regToken, String email, String firstName, String lastName, String password);
+    RegistrationCompleteResponseDTO completeRegistration(String regToken, String email, String firstName,
+            String lastName, String password);
 
     /**
      * Request password reset OTP
@@ -50,7 +51,7 @@ public interface KeycloakAuthService {
      * Verify password reset OTP
      *
      * @param txnId the transaction ID
-     * @param code the OTP code
+     * @param code  the OTP code
      * @return the verification response with reset token
      */
     VerifyOtpResponseDTO verifyPasswordResetOtp(String txnId, String code);
@@ -58,7 +59,7 @@ public interface KeycloakAuthService {
     /**
      * Complete password reset
      *
-     * @param resetToken the reset token
+     * @param resetToken  the reset token
      * @param newPassword the new password
      * @return the reset completion response
      */
@@ -67,7 +68,8 @@ public interface KeycloakAuthService {
     /**
      * Login user with username and password
      *
-     * @param username the username (phone number or email). Phone numbers will be automatically normalized.
+     * @param username the username (phone number or email). Phone numbers will be
+     *                 automatically normalized.
      * @param password the password
      * @return the login response with tokens
      */
@@ -75,7 +77,18 @@ public interface KeycloakAuthService {
 
     Map<String, Object> createAdminUser(CreateAdminRequest req);
 
-    Map<String, Object> adminUpdateUserDetails(String userId, AdminUpdateUserRequest req);
+    Map<String, Object> adminUpdateUserDetails(String keycloak_id, AdminUpdateUserRequest req);
 
-    Map<String, Object> adminUpdateUserPassword(String userId, AdminUpdatePasswordRequest req);
+    Map<String, Object> adminUpdateUserPassword(String keycloak_id, AdminUpdatePasswordRequest req);
+
+    /**
+     * Update the profile of the currently authenticated user, inferred from their
+     * access token.
+     * 
+     * @param accessToken Bearer access token of the current user (not the admin
+     *                    token)
+     * @param req         fields to update (email, firstName, lastName, phoneNumber)
+     * @return { "status": "success" } or { "status":"error", "message": "..." }
+     */
+    Map<String, Object> updateCurrentUserProfile(String accessToken, UpdateProfileRequest req);
 }
