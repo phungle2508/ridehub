@@ -5,6 +5,7 @@ import com.ridehub.promotion.service.PromotionQueryService;
 import com.ridehub.promotion.service.PromotionService;
 import com.ridehub.promotion.service.criteria.PromotionCriteria;
 import com.ridehub.promotion.service.dto.PromotionDTO;
+import com.ridehub.promotion.service.dto.PromotionDetailDTO;
 import com.ridehub.promotion.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -47,10 +48,9 @@ public class PromotionResource {
     private final PromotionQueryService promotionQueryService;
 
     public PromotionResource(
-        PromotionService promotionService,
-        PromotionRepository promotionRepository,
-        PromotionQueryService promotionQueryService
-    ) {
+            PromotionService promotionService,
+            PromotionRepository promotionRepository,
+            PromotionQueryService promotionQueryService) {
         this.promotionService = promotionService;
         this.promotionRepository = promotionRepository;
         this.promotionQueryService = promotionQueryService;
@@ -60,36 +60,42 @@ public class PromotionResource {
      * {@code POST  /promotions} : Create a new promotion.
      *
      * @param promotionDTO the promotionDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new promotionDTO, or with status {@code 400 (Bad Request)} if the promotion has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
+     *         body the new promotionDTO, or with status {@code 400 (Bad Request)}
+     *         if the promotion has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<PromotionDTO> createPromotion(@Valid @RequestBody PromotionDTO promotionDTO) throws URISyntaxException {
+    public ResponseEntity<PromotionDTO> createPromotion(@Valid @RequestBody PromotionDTO promotionDTO)
+            throws URISyntaxException {
         LOG.debug("REST request to save Promotion : {}", promotionDTO);
         if (promotionDTO.getId() != null) {
             throw new BadRequestAlertException("A new promotion cannot already have an ID", ENTITY_NAME, "idexists");
         }
         promotionDTO = promotionService.save(promotionDTO);
         return ResponseEntity.created(new URI("/api/promotions/" + promotionDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, promotionDTO.getId().toString()))
-            .body(promotionDTO);
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        promotionDTO.getId().toString()))
+                .body(promotionDTO);
     }
 
     /**
      * {@code PUT  /promotions/:id} : Updates an existing promotion.
      *
-     * @param id the id of the promotionDTO to save.
+     * @param id           the id of the promotionDTO to save.
      * @param promotionDTO the promotionDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated promotionDTO,
-     * or with status {@code 400 (Bad Request)} if the promotionDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the promotionDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated promotionDTO,
+     *         or with status {@code 400 (Bad Request)} if the promotionDTO is not
+     *         valid,
+     *         or with status {@code 500 (Internal Server Error)} if the
+     *         promotionDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
     public ResponseEntity<PromotionDTO> updatePromotion(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody PromotionDTO promotionDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody PromotionDTO promotionDTO) throws URISyntaxException {
         LOG.debug("REST request to update Promotion : {}, {}", id, promotionDTO);
         if (promotionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -104,26 +110,31 @@ public class PromotionResource {
 
         promotionDTO = promotionService.update(promotionDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, promotionDTO.getId().toString()))
-            .body(promotionDTO);
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        promotionDTO.getId().toString()))
+                .body(promotionDTO);
     }
 
     /**
-     * {@code PATCH  /promotions/:id} : Partial updates given fields of an existing promotion, field will ignore if it is null
+     * {@code PATCH  /promotions/:id} : Partial updates given fields of an existing
+     * promotion, field will ignore if it is null
      *
-     * @param id the id of the promotionDTO to save.
+     * @param id           the id of the promotionDTO to save.
      * @param promotionDTO the promotionDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated promotionDTO,
-     * or with status {@code 400 (Bad Request)} if the promotionDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the promotionDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the promotionDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated promotionDTO,
+     *         or with status {@code 400 (Bad Request)} if the promotionDTO is not
+     *         valid,
+     *         or with status {@code 404 (Not Found)} if the promotionDTO is not
+     *         found,
+     *         or with status {@code 500 (Internal Server Error)} if the
+     *         promotionDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<PromotionDTO> partialUpdatePromotion(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody PromotionDTO promotionDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody PromotionDTO promotionDTO) throws URISyntaxException {
         LOG.debug("REST request to partial update Promotion partially : {}, {}", id, promotionDTO);
         if (promotionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -139,9 +150,9 @@ public class PromotionResource {
         Optional<PromotionDTO> result = promotionService.partialUpdate(promotionDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, promotionDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        promotionDTO.getId().toString()));
     }
 
     /**
@@ -149,17 +160,18 @@ public class PromotionResource {
      *
      * @param pageable the pagination information.
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of promotions in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of promotions in body.
      */
     @GetMapping("")
     public ResponseEntity<List<PromotionDTO>> getAllPromotions(
-        PromotionCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
+            PromotionCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get Promotions by criteria: {}", criteria);
 
         Page<PromotionDTO> page = promotionQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -167,7 +179,8 @@ public class PromotionResource {
      * {@code GET  /promotions/count} : count all the promotions.
      *
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
+     *         in body.
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countPromotions(PromotionCriteria criteria) {
@@ -179,7 +192,8 @@ public class PromotionResource {
      * {@code GET  /promotions/:id} : get the "id" promotion.
      *
      * @param id the id of the promotionDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the promotionDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the promotionDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<PromotionDTO> getPromotion(@PathVariable("id") Long id) {
@@ -199,7 +213,27 @@ public class PromotionResource {
         LOG.debug("REST request to delete Promotion : {}", id);
         promotionService.delete(id);
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
+    }
+
+    /**
+     * {@code GET  /promotions} : get all the promotions.
+     *
+     * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of promotions in body.
+     */
+    @GetMapping("detail")
+    public ResponseEntity<List<PromotionDetailDTO>> getAllPromotionDetails(
+            PromotionCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        LOG.debug("REST request to get Promotions by criteria: {}", criteria);
+
+        Page<PromotionDetailDTO> page = promotionQueryService.getAllDetail(pageable);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

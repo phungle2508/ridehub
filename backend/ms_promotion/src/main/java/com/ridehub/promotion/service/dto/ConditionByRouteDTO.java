@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -24,6 +25,15 @@ public class ConditionByRouteDTO implements Serializable {
     private Instant deletedAt;
 
     private UUID deletedBy;
+    private Set<ConditionRouteItemDTO> items;
+
+    public Set<ConditionRouteItemDTO> getItems() {
+        return items;
+    }
+
+    public void setItems(Set<ConditionRouteItemDTO> items) {
+        this.items = items;
+    }
 
     @NotNull
     private PromotionDTO promotion;
@@ -109,13 +119,13 @@ public class ConditionByRouteDTO implements Serializable {
     @Override
     public String toString() {
         return "ConditionByRouteDTO{" +
-            "id=" + getId() +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            ", isDeleted='" + getIsDeleted() + "'" +
-            ", deletedAt='" + getDeletedAt() + "'" +
-            ", deletedBy='" + getDeletedBy() + "'" +
-            ", promotion=" + getPromotion() +
-            "}";
+                "id=" + getId() +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                ", isDeleted='" + getIsDeleted() + "'" +
+                ", deletedAt='" + getDeletedAt() + "'" +
+                ", deletedBy='" + getDeletedBy() + "'" +
+                ", promotion=" + getPromotion() +
+                "}";
     }
 }

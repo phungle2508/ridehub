@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -27,6 +28,15 @@ public class ConditionByDateDTO implements Serializable {
 
     @NotNull
     private PromotionDTO promotion;
+    private Set<ConditionDateItemDTO> items;
+
+    public Set<ConditionDateItemDTO> getItems() {
+        return items;
+    }
+
+    public void setItems(Set<ConditionDateItemDTO> items) {
+        this.items = items;
+    }
 
     public Long getId() {
         return id;
@@ -109,13 +119,13 @@ public class ConditionByDateDTO implements Serializable {
     @Override
     public String toString() {
         return "ConditionByDateDTO{" +
-            "id=" + getId() +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            ", isDeleted='" + getIsDeleted() + "'" +
-            ", deletedAt='" + getDeletedAt() + "'" +
-            ", deletedBy='" + getDeletedBy() + "'" +
-            ", promotion=" + getPromotion() +
-            "}";
+                "id=" + getId() +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                ", isDeleted='" + getIsDeleted() + "'" +
+                ", deletedAt='" + getDeletedAt() + "'" +
+                ", deletedBy='" + getDeletedBy() + "'" +
+                ", promotion=" + getPromotion() +
+                "}";
     }
 }

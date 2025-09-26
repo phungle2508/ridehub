@@ -4,10 +4,12 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * A DTO for the {@link com.ridehub.promotion.domain.ConditionByLocation} entity.
+ * A DTO for the {@link com.ridehub.promotion.domain.ConditionByLocation}
+ * entity.
  */
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ConditionByLocationDTO implements Serializable {
@@ -27,6 +29,15 @@ public class ConditionByLocationDTO implements Serializable {
 
     @NotNull
     private PromotionDTO promotion;
+    private Set<ConditionLocationItemDTO> items;
+
+    public Set<ConditionLocationItemDTO> getItems() {
+        return items;
+    }
+
+    public void setItems(Set<ConditionLocationItemDTO> items) {
+        this.items = items;
+    }
 
     public Long getId() {
         return id;
@@ -109,13 +120,13 @@ public class ConditionByLocationDTO implements Serializable {
     @Override
     public String toString() {
         return "ConditionByLocationDTO{" +
-            "id=" + getId() +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            ", isDeleted='" + getIsDeleted() + "'" +
-            ", deletedAt='" + getDeletedAt() + "'" +
-            ", deletedBy='" + getDeletedBy() + "'" +
-            ", promotion=" + getPromotion() +
-            "}";
+                "id=" + getId() +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                ", isDeleted='" + getIsDeleted() + "'" +
+                ", deletedAt='" + getDeletedAt() + "'" +
+                ", deletedBy='" + getDeletedBy() + "'" +
+                ", promotion=" + getPromotion() +
+                "}";
     }
 }

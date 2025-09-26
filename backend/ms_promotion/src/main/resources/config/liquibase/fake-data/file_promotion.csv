@@ -1,11 +1,7 @@
-id;bucket;object_key;content_type;size;created_at;updated_at;is_deleted;deleted_at;deleted_by
-1;beneath following cricket;hope;zowie eek plumber;13117;2025-09-22T22:45:01;2025-09-22T15:55:02;false;2025-09-22T23:22:19;2f93c412-7064-49bd-8af0-aa093834b0aa
-2;brilliant;quirkily encode;circle;22674;2025-09-23T03:13:58;2025-09-22T14:12:09;false;2025-09-22T17:56:35;66747f6c-f681-4f66-a996-4af2c779aebd
-3;giant;who interestingly depart;unconscious uselessly;21082;2025-09-22T20:21:24;2025-09-22T18:30:02;true;2025-09-22T14:11:15;f3e2e786-1ec0-482d-a55a-83e54a3f7398
-4;license per next;er minus;brr daily;24268;2025-09-22T14:06:51;2025-09-23T12:54:07;true;2025-09-23T04:19:54;da9a62bf-58a7-471f-8c99-294ebcebc748
-5;more pinion during;instead yahoo including;holster supportive scrutinise;17600;2025-09-22T19:32:19;2025-09-22T17:26:47;true;2025-09-22T18:26:54;b781aa27-1dfa-4c2b-b528-ad2ce49b36b8
-6;follower cavernous illiterate;tightly phew clonk;gah;2717;2025-09-23T10:14:00;2025-09-23T11:48:08;false;2025-09-23T09:34:02;117d08a5-2ca0-496e-80af-7bc0002047d6
-7;deliquesce;stylish mockingly cross;midst bah if;14853;2025-09-23T07:00:42;2025-09-23T11:23:56;true;2025-09-23T09:35:10;92343f02-a8c1-4a3f-940e-fe961a8e29ab
-8;bah;after;even;12054;2025-09-22T22:16:14;2025-09-22T21:45:54;false;2025-09-23T12:28:43;acdfbb55-793e-4754-a18b-adf46258667f
-9;yearly hawk around;ick whole;uncomfortable;15805;2025-09-23T12:18:47;2025-09-23T06:33:43;false;2025-09-22T16:03:26;6254e9b5-492d-4e43-a6dd-c16d715c8c37
-10;shakily;vary concerned meanwhile;concentration past plump;16149;2025-09-23T02:58:20;2025-09-23T05:04:49;true;2025-09-23T13:57:00;27169719-14b2-464e-a8ec-a8c9adca4be2
+id;file_name;file_path;file_type;created_at;updated_at;is_deleted;deleted_at;deleted_by;promotion_id
+1;promotion_2_banner.gif;/uploads/promotions/2/promotion_2_banner.gif;image/gif;2025-09-17T02:26:44;2025-09-18T15:26:44;false;;NULL;2
+2;promotion_20_banner.gif;/uploads/promotions/20/promotion_20_banner.gif;image/gif;2025-09-03T15:38:33;2025-09-03T19:38:33;false;;NULL;20
+3;promotion_9_banner.gif;/uploads/promotions/9/promotion_9_banner.gif;image/gif;2025-09-14T18:39:38;2025-09-15T07:39:38;false;;NULL;9
+4;promotion_5_banner.png;/uploads/promotions/5/promotion_5_banner.png;image/png;2025-10-01T23:22:23;2025-10-03T13:22:23;false;;NULL;5
+5;promotion_10_banner.png;/uploads/promotions/10/promotion_10_banner.png;image/png;2025-09-29T07:09:33;2025-09-30T23:09:33;false;;NULL;10
+6;promotion_13_banner.jpg;/uploads/promotions/13/promotion_13_banner.jpg;image/jpeg;2025-09-27T19:12:32;2025-09-29T09:12:32;false;;NULL;13
