@@ -15,6 +15,8 @@ import com.ridehub.promotion.service.dto.PercentOffTotalDTO;
 import com.ridehub.promotion.service.dto.PromotionDTO;
 import com.ridehub.promotion.service.dto.PromotionDetailDTO;
 import com.ridehub.promotion.service.mapper.PromotionMapper;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.JoinType;
 
 import java.util.List;
@@ -151,6 +153,13 @@ public class PromotionQueryService extends QueryService<Promotion> {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtos, pageable, idPage.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public PromotionDetailDTO getDetailById(Long id) {
+        Promotion p = promotionRepository.findDetailById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Promotion not found: " + id));
+        return convertToPromotionDetailDTO(p);
     }
 
     /**
