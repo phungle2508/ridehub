@@ -227,9 +227,8 @@ public class PromotionResource {
      */
     @GetMapping("detail")
     public ResponseEntity<List<PromotionDetailDTO>> getAllPromotionDetails(
-            PromotionCriteria criteria,
             @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get Promotions by criteria: {}", criteria);
+        LOG.debug("REST request to get Promotions by criteria: {}");
 
         Page<PromotionDetailDTO> page = promotionQueryService.getAllDetail(pageable);
         HttpHeaders headers = PaginationUtil

@@ -131,7 +131,8 @@ public class PromotionQueryService extends QueryService<Promotion> {
     public Page<PromotionDetailDTO> getAllDetail(Pageable pageable) {
         // Step 1: page the IDs only
         Page<Long> idPage = promotionRepository.findPageIds(pageable);
-        List<Long> ids = idPage.getContent();
+        // List<Long> ids = idPage.getContent();
+        List<Long> ids = idPage.getContent().stream().limit(1).toList();
         if (ids.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, idPage.getTotalElements());
         }
