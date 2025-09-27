@@ -561,6 +561,7 @@ entity BuyNGetMFree {
 entity PercentOffTotal {
   percent Integer required
   maxOff BigDecimal
+  minPrice BigDecimal
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
