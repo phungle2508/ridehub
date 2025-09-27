@@ -28,6 +28,8 @@ public class PercentOffTotalCriteria implements Serializable, Criteria {
 
     private BigDecimalFilter maxOff;
 
+    private BigDecimalFilter minPrice;
+
     private InstantFilter createdAt;
 
     private InstantFilter updatedAt;
@@ -48,6 +50,7 @@ public class PercentOffTotalCriteria implements Serializable, Criteria {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.percent = other.optionalPercent().map(IntegerFilter::copy).orElse(null);
         this.maxOff = other.optionalMaxOff().map(BigDecimalFilter::copy).orElse(null);
+        this.minPrice = other.optionalMinPrice().map(BigDecimalFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -117,6 +120,25 @@ public class PercentOffTotalCriteria implements Serializable, Criteria {
 
     public void setMaxOff(BigDecimalFilter maxOff) {
         this.maxOff = maxOff;
+    }
+
+    public BigDecimalFilter getMinPrice() {
+        return minPrice;
+    }
+
+    public Optional<BigDecimalFilter> optionalMinPrice() {
+        return Optional.ofNullable(minPrice);
+    }
+
+    public BigDecimalFilter minPrice() {
+        if (minPrice == null) {
+            setMinPrice(new BigDecimalFilter());
+        }
+        return minPrice;
+    }
+
+    public void setMinPrice(BigDecimalFilter minPrice) {
+        this.minPrice = minPrice;
     }
 
     public InstantFilter getCreatedAt() {
@@ -265,6 +287,7 @@ public class PercentOffTotalCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(percent, that.percent) &&
             Objects.equals(maxOff, that.maxOff) &&
+            Objects.equals(minPrice, that.minPrice) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
@@ -277,7 +300,7 @@ public class PercentOffTotalCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, percent, maxOff, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, promotionId, distinct);
+        return Objects.hash(id, percent, maxOff, minPrice, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, promotionId, distinct);
     }
 
     // prettier-ignore
@@ -287,6 +310,7 @@ public class PercentOffTotalCriteria implements Serializable, Criteria {
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalPercent().map(f -> "percent=" + f + ", ").orElse("") +
             optionalMaxOff().map(f -> "maxOff=" + f + ", ").orElse("") +
+            optionalMinPrice().map(f -> "minPrice=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +

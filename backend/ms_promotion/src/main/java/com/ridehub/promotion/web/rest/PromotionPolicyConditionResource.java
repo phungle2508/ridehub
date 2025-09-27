@@ -94,6 +94,7 @@ public class PromotionPolicyConditionResource {
                                         {
                                           "buyN": 2,
                                           "getM": 1,
+                                          "minPrice":10000
                                           "promotion": {},
                         "createdAt": "2025-09-27T05:24:29.211Z"
                                         }
@@ -153,9 +154,10 @@ public class PromotionPolicyConditionResource {
         @Operation(summary = "Update buyNGetMFree policy")
         @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = BuyNGetMFreeDTO.class), examples = @ExampleObject(name = "Update BuyNGetMFree Policy", description = "Example request body for updating a buyNGetMFree policy. Note: id must match the path parameter, promotion field should be empty object as it will be populated from the URL path parameter. System fields (createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are automatically managed.", value = """
                                         {
-                                          "id": 1,
+                                          "id": {id},
                                           "buyN": 3,
                                           "getM": 2,
+                                          
                                           "promotion": {},
                         "createdAt": "2025-09-27T05:24:29.211Z"
                                         }
@@ -213,6 +215,7 @@ public class PromotionPolicyConditionResource {
                                         {
                                           "percent": 15,
                                           "maxOff": 50.00,
+                                          "minPrice": 10000,
                                           "promotion": {},
                         "createdAt": "2025-09-27T05:24:29.211Z"
                                         }
@@ -273,9 +276,10 @@ public class PromotionPolicyConditionResource {
         @Operation(summary = "Update percentOffTotal policy")
         @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = PercentOffTotalDTO.class), examples = @ExampleObject(name = "Update PercentOffTotal Policy", description = "Example request body for updating a percentOffTotal policy. Note: id must match the path parameter, promotion field should be empty object as it will be populated from the URL path parameter. System fields (createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are automatically managed.", value = """
                                         {
-                                          "id": 1,
+                                          "id": {id},
                                           "percent": 20,
                                           "maxOff": 100.00,
+                                          "minPrice": 10000,
                                           "promotion": {},
                         "createdAt": "2025-09-27T05:24:29.211Z"
                                         }

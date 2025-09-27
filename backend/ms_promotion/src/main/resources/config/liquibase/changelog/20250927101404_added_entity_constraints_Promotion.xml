@@ -6,15 +6,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
     <!--
-        Added the constraints for entity BuyNGetMFree.
+        Added the constraints for entity Promotion.
     -->
-    <changeSet id="20250923135159-2" author="jhipster">
+    <changeSet id="20250927101404-2" author="jhipster">
 
-        <addForeignKeyConstraint baseColumnNames="promotion_id"
-                                 baseTableName="buy_n_get_m_free"
-                                 constraintName="fk_buy_n_get_m_free__promotion_id"
+        <addForeignKeyConstraint baseColumnNames="banner_img_id"
+                                 baseTableName="promotion"
+                                 constraintName="fk_promotion__banner_img_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="promotion"
+                                 referencedTableName="file_promotion"
                                  />
     </changeSet>
 </databaseChangeLog>

@@ -78,6 +78,7 @@ class PercentOffTotalCriteriaTest {
         percentOffTotalCriteria.id();
         percentOffTotalCriteria.percent();
         percentOffTotalCriteria.maxOff();
+        percentOffTotalCriteria.minPrice();
         percentOffTotalCriteria.createdAt();
         percentOffTotalCriteria.updatedAt();
         percentOffTotalCriteria.isDeleted();
@@ -93,6 +94,7 @@ class PercentOffTotalCriteriaTest {
                 condition.apply(criteria.getId()) &&
                 condition.apply(criteria.getPercent()) &&
                 condition.apply(criteria.getMaxOff()) &&
+                condition.apply(criteria.getMinPrice()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
@@ -113,6 +115,7 @@ class PercentOffTotalCriteriaTest {
                 condition.apply(criteria.getId(), copy.getId()) &&
                 condition.apply(criteria.getPercent(), copy.getPercent()) &&
                 condition.apply(criteria.getMaxOff(), copy.getMaxOff()) &&
+                condition.apply(criteria.getMinPrice(), copy.getMinPrice()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&

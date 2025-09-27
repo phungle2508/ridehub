@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923135259"
+    "changelogDate": "20250927101604"
   },
   "applications": ["ms_promotion"],
   "clientRootFolder": "ms_promotion",
@@ -14,6 +14,10 @@
     },
     {
       "fieldName": "maxOff",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "minPrice",
       "fieldType": "BigDecimal"
     },
     {

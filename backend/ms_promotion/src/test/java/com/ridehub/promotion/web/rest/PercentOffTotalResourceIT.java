@@ -49,6 +49,10 @@ class PercentOffTotalResourceIT {
     private static final BigDecimal UPDATED_MAX_OFF = new BigDecimal(2);
     private static final BigDecimal SMALLER_MAX_OFF = new BigDecimal(1 - 1);
 
+    private static final BigDecimal DEFAULT_MIN_PRICE = new BigDecimal(1);
+    private static final BigDecimal UPDATED_MIN_PRICE = new BigDecimal(2);
+    private static final BigDecimal SMALLER_MIN_PRICE = new BigDecimal(1 - 1);
+
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
@@ -99,6 +103,7 @@ class PercentOffTotalResourceIT {
         PercentOffTotal percentOffTotal = new PercentOffTotal()
             .percent(DEFAULT_PERCENT)
             .maxOff(DEFAULT_MAX_OFF)
+            .minPrice(DEFAULT_MIN_PRICE)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -127,6 +132,7 @@ class PercentOffTotalResourceIT {
         PercentOffTotal updatedPercentOffTotal = new PercentOffTotal()
             .percent(UPDATED_PERCENT)
             .maxOff(UPDATED_MAX_OFF)
+            .minPrice(UPDATED_MIN_PRICE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -259,6 +265,7 @@ class PercentOffTotalResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(percentOffTotal.getId().intValue())))
             .andExpect(jsonPath("$.[*].percent").value(hasItem(DEFAULT_PERCENT)))
             .andExpect(jsonPath("$.[*].maxOff").value(hasItem(sameNumber(DEFAULT_MAX_OFF))))
+            .andExpect(jsonPath("$.[*].minPrice").value(hasItem(sameNumber(DEFAULT_MIN_PRICE))))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -280,6 +287,7 @@ class PercentOffTotalResourceIT {
             .andExpect(jsonPath("$.id").value(percentOffTotal.getId().intValue()))
             .andExpect(jsonPath("$.percent").value(DEFAULT_PERCENT))
             .andExpect(jsonPath("$.maxOff").value(sameNumber(DEFAULT_MAX_OFF)))
+            .andExpect(jsonPath("$.minPrice").value(sameNumber(DEFAULT_MIN_PRICE)))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -440,6 +448,79 @@ class PercentOffTotalResourceIT {
 
         // Get all the percentOffTotalList where maxOff is greater than
         defaultPercentOffTotalFiltering("maxOff.greaterThan=" + SMALLER_MAX_OFF, "maxOff.greaterThan=" + DEFAULT_MAX_OFF);
+    }
+
+    @Test
+    @Transactional
+    void getAllPercentOffTotalsByMinPriceIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
+
+        // Get all the percentOffTotalList where minPrice equals to
+        defaultPercentOffTotalFiltering("minPrice.equals=" + DEFAULT_MIN_PRICE, "minPrice.equals=" + UPDATED_MIN_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllPercentOffTotalsByMinPriceIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
+
+        // Get all the percentOffTotalList where minPrice in
+        defaultPercentOffTotalFiltering("minPrice.in=" + DEFAULT_MIN_PRICE + "," + UPDATED_MIN_PRICE, "minPrice.in=" + UPDATED_MIN_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllPercentOffTotalsByMinPriceIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
+
+        // Get all the percentOffTotalList where minPrice is not null
+        defaultPercentOffTotalFiltering("minPrice.specified=true", "minPrice.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllPercentOffTotalsByMinPriceIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
+
+        // Get all the percentOffTotalList where minPrice is greater than or equal to
+        defaultPercentOffTotalFiltering(
+            "minPrice.greaterThanOrEqual=" + DEFAULT_MIN_PRICE,
+            "minPrice.greaterThanOrEqual=" + UPDATED_MIN_PRICE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllPercentOffTotalsByMinPriceIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
+
+        // Get all the percentOffTotalList where minPrice is less than or equal to
+        defaultPercentOffTotalFiltering("minPrice.lessThanOrEqual=" + DEFAULT_MIN_PRICE, "minPrice.lessThanOrEqual=" + SMALLER_MIN_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllPercentOffTotalsByMinPriceIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
+
+        // Get all the percentOffTotalList where minPrice is less than
+        defaultPercentOffTotalFiltering("minPrice.lessThan=" + UPDATED_MIN_PRICE, "minPrice.lessThan=" + DEFAULT_MIN_PRICE);
+    }
+
+    @Test
+    @Transactional
+    void getAllPercentOffTotalsByMinPriceIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
+
+        // Get all the percentOffTotalList where minPrice is greater than
+        defaultPercentOffTotalFiltering("minPrice.greaterThan=" + SMALLER_MIN_PRICE, "minPrice.greaterThan=" + DEFAULT_MIN_PRICE);
     }
 
     @Test
@@ -645,6 +726,7 @@ class PercentOffTotalResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(percentOffTotal.getId().intValue())))
             .andExpect(jsonPath("$.[*].percent").value(hasItem(DEFAULT_PERCENT)))
             .andExpect(jsonPath("$.[*].maxOff").value(hasItem(sameNumber(DEFAULT_MAX_OFF))))
+            .andExpect(jsonPath("$.[*].minPrice").value(hasItem(sameNumber(DEFAULT_MIN_PRICE))))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -700,6 +782,7 @@ class PercentOffTotalResourceIT {
         updatedPercentOffTotal
             .percent(UPDATED_PERCENT)
             .maxOff(UPDATED_MAX_OFF)
+            .minPrice(UPDATED_MIN_PRICE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -799,7 +882,11 @@ class PercentOffTotalResourceIT {
         PercentOffTotal partialUpdatedPercentOffTotal = new PercentOffTotal();
         partialUpdatedPercentOffTotal.setId(percentOffTotal.getId());
 
-        partialUpdatedPercentOffTotal.updatedAt(UPDATED_UPDATED_AT).deletedAt(UPDATED_DELETED_AT).deletedBy(UPDATED_DELETED_BY);
+        partialUpdatedPercentOffTotal
+            .createdAt(UPDATED_CREATED_AT)
+            .isDeleted(UPDATED_IS_DELETED)
+            .deletedAt(UPDATED_DELETED_AT)
+            .deletedBy(UPDATED_DELETED_BY);
 
         restPercentOffTotalMockMvc
             .perform(
@@ -834,6 +921,7 @@ class PercentOffTotalResourceIT {
         partialUpdatedPercentOffTotal
             .percent(UPDATED_PERCENT)
             .maxOff(UPDATED_MAX_OFF)
+            .minPrice(UPDATED_MIN_PRICE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

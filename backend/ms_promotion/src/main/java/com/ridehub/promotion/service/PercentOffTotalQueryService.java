@@ -74,6 +74,7 @@ public class PercentOffTotalQueryService extends QueryService<PercentOffTotal> {
                 buildRangeSpecification(criteria.getId(), PercentOffTotal_.id),
                 buildRangeSpecification(criteria.getPercent(), PercentOffTotal_.percent),
                 buildRangeSpecification(criteria.getMaxOff(), PercentOffTotal_.maxOff),
+                buildRangeSpecification(criteria.getMinPrice(), PercentOffTotal_.minPrice),
                 buildRangeSpecification(criteria.getCreatedAt(), PercentOffTotal_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), PercentOffTotal_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), PercentOffTotal_.isDeleted),

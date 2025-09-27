@@ -35,6 +35,9 @@ public class PercentOffTotal implements Serializable {
     @Column(name = "max_off", precision = 21, scale = 2)
     private BigDecimal maxOff;
 
+    @Column(name = "min_price", precision = 21, scale = 2)
+    private BigDecimal minPrice;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -99,6 +102,19 @@ public class PercentOffTotal implements Serializable {
 
     public void setMaxOff(BigDecimal maxOff) {
         this.maxOff = maxOff;
+    }
+
+    public BigDecimal getMinPrice() {
+        return this.minPrice;
+    }
+
+    public PercentOffTotal minPrice(BigDecimal minPrice) {
+        this.setMinPrice(minPrice);
+        return this;
+    }
+
+    public void setMinPrice(BigDecimal minPrice) {
+        this.minPrice = minPrice;
     }
 
     public Instant getCreatedAt() {
@@ -205,6 +221,7 @@ public class PercentOffTotal implements Serializable {
             "id=" + getId() +
             ", percent=" + getPercent() +
             ", maxOff=" + getMaxOff() +
+            ", minPrice=" + getMinPrice() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

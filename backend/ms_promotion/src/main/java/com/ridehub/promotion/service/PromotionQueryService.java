@@ -215,6 +215,7 @@ public class PromotionQueryService extends QueryService<Promotion> {
                         pdto.setId(p.getId());
                         pdto.setPercent(p.getPercent());
                         pdto.setMaxOff(p.getMaxOff());
+                        pdto.setMinPrice(p.getMinPrice());
                         pdto.setCreatedAt(p.getCreatedAt());
                         pdto.setUpdatedAt(p.getUpdatedAt());
                         pdto.setIsDeleted(p.getIsDeleted());
