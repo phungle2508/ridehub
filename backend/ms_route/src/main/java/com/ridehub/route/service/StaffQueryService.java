@@ -6,6 +6,7 @@ import com.ridehub.route.repository.StaffRepository;
 import com.ridehub.route.service.criteria.StaffCriteria;
 import com.ridehub.route.service.dto.StaffDTO;
 import com.ridehub.route.service.mapper.StaffMapper;
+import jakarta.persistence.criteria.JoinType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,9 @@ public class StaffQueryService extends QueryService<Staff> {
                 buildRangeSpecification(criteria.getUpdatedAt(), Staff_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), Staff_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Staff_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), Staff_.deletedBy)
+                buildSpecification(criteria.getDeletedBy(), Staff_.deletedBy),
+                buildSpecification(criteria.getDriverId(), root -> root.join(Staff_.driver, JoinType.LEFT).get(Driver_.id)),
+                buildSpecification(criteria.getAttendantId(), root -> root.join(Staff_.attendant, JoinType.LEFT).get(Attendant_.id))
             );
         }
         return specification;

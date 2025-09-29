@@ -16,11 +16,13 @@ public class TicketDTO implements Serializable {
     private Long id;
 
     @NotNull
+    @Size(max = 40)
     private String ticketCode;
 
     @NotNull
     private BigDecimal price;
 
+    @Size(max = 256)
     private String qrCode;
 
     private Instant timeFrom;

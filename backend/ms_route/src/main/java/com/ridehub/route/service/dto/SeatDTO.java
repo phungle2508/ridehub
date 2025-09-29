@@ -1,5 +1,6 @@
 package com.ridehub.route.service.dto;
 
+import com.ridehub.route.domain.enumeration.SeatType;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ public class SeatDTO implements Serializable {
     private Long id;
 
     @NotNull
+    @Size(max = 16)
     private String seatNo;
 
     private Integer rowNo;
@@ -23,6 +25,8 @@ public class SeatDTO implements Serializable {
     private Integer colNo;
 
     private BigDecimal priceFactor;
+
+    private SeatType type;
 
     @NotNull
     private Instant createdAt;
@@ -76,6 +80,14 @@ public class SeatDTO implements Serializable {
 
     public void setPriceFactor(BigDecimal priceFactor) {
         this.priceFactor = priceFactor;
+    }
+
+    public SeatType getType() {
+        return type;
+    }
+
+    public void setType(SeatType type) {
+        this.type = type;
     }
 
     public Instant getCreatedAt() {
@@ -156,6 +168,7 @@ public class SeatDTO implements Serializable {
             ", rowNo=" + getRowNo() +
             ", colNo=" + getColNo() +
             ", priceFactor=" + getPriceFactor() +
+            ", type='" + getType() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

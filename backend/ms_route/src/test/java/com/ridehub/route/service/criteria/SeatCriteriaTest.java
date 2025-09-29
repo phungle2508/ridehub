@@ -80,6 +80,7 @@ class SeatCriteriaTest {
         seatCriteria.rowNo();
         seatCriteria.colNo();
         seatCriteria.priceFactor();
+        seatCriteria.type();
         seatCriteria.createdAt();
         seatCriteria.updatedAt();
         seatCriteria.isDeleted();
@@ -97,6 +98,7 @@ class SeatCriteriaTest {
                 condition.apply(criteria.getRowNo()) &&
                 condition.apply(criteria.getColNo()) &&
                 condition.apply(criteria.getPriceFactor()) &&
+                condition.apply(criteria.getType()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
@@ -116,6 +118,7 @@ class SeatCriteriaTest {
                 condition.apply(criteria.getRowNo(), copy.getRowNo()) &&
                 condition.apply(criteria.getColNo(), copy.getColNo()) &&
                 condition.apply(criteria.getPriceFactor(), copy.getPriceFactor()) &&
+                condition.apply(criteria.getType(), copy.getType()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&

@@ -29,14 +29,16 @@ public class Ticket implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "ticket_code", nullable = false, unique = true)
+    @Size(max = 40)
+    @Column(name = "ticket_code", length = 40, nullable = false, unique = true)
     private String ticketCode;
 
     @NotNull
     @Column(name = "price", precision = 21, scale = 2, nullable = false)
     private BigDecimal price;
 
-    @Column(name = "qr_code")
+    @Size(max = 256)
+    @Column(name = "qr_code", length = 256)
     private String qrCode;
 
     @Column(name = "time_from")

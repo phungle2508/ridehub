@@ -22,6 +22,7 @@ public class PaymentWebhookLogDTO implements Serializable {
     @NotNull
     private Instant receivedAt;
 
+    @Size(max = 64)
     private String processingStatus;
 
     @NotNull

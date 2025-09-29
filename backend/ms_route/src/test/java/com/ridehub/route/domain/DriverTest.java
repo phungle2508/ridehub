@@ -1,6 +1,7 @@
 package com.ridehub.route.domain;
 
 import static com.ridehub.route.domain.DriverTestSamples.*;
+import static com.ridehub.route.domain.StaffTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.route.web.rest.TestUtil;
@@ -20,5 +21,17 @@ class DriverTest {
 
         driver2 = getDriverSample2();
         assertThat(driver1).isNotEqualTo(driver2);
+    }
+
+    @Test
+    void staffTest() {
+        Driver driver = getDriverRandomSampleGenerator();
+        Staff staffBack = getStaffRandomSampleGenerator();
+
+        driver.setStaff(staffBack);
+        assertThat(driver.getStaff()).isEqualTo(staffBack);
+
+        driver.staff(null);
+        assertThat(driver.getStaff()).isNull();
     }
 }

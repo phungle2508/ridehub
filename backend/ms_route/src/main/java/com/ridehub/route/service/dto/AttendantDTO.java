@@ -25,6 +25,9 @@ public class AttendantDTO implements Serializable {
 
     private UUID deletedBy;
 
+    @NotNull
+    private StaffDTO staff;
+
     public Long getId() {
         return id;
     }
@@ -73,6 +76,14 @@ public class AttendantDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public StaffDTO getStaff() {
+        return staff;
+    }
+
+    public void setStaff(StaffDTO staff) {
+        this.staff = staff;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -104,6 +115,7 @@ public class AttendantDTO implements Serializable {
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
+            ", staff=" + getStaff() +
             "}";
     }
 }

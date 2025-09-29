@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.route.IntegrationTest;
 import com.ridehub.route.domain.Floor;
 import com.ridehub.route.domain.Seat;
+import com.ridehub.route.domain.enumeration.SeatType;
 import com.ridehub.route.repository.SeatRepository;
 import com.ridehub.route.service.dto.SeatDTO;
 import com.ridehub.route.service.mapper.SeatMapper;
@@ -55,6 +56,9 @@ class SeatResourceIT {
     private static final BigDecimal DEFAULT_PRICE_FACTOR = new BigDecimal(1);
     private static final BigDecimal UPDATED_PRICE_FACTOR = new BigDecimal(2);
     private static final BigDecimal SMALLER_PRICE_FACTOR = new BigDecimal(1 - 1);
+
+    private static final SeatType DEFAULT_TYPE = SeatType.SLEEPER;
+    private static final SeatType UPDATED_TYPE = SeatType.NORMAL;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -108,6 +112,7 @@ class SeatResourceIT {
             .rowNo(DEFAULT_ROW_NO)
             .colNo(DEFAULT_COL_NO)
             .priceFactor(DEFAULT_PRICE_FACTOR)
+            .type(DEFAULT_TYPE)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -138,6 +143,7 @@ class SeatResourceIT {
             .rowNo(UPDATED_ROW_NO)
             .colNo(UPDATED_COL_NO)
             .priceFactor(UPDATED_PRICE_FACTOR)
+            .type(UPDATED_TYPE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -261,6 +267,7 @@ class SeatResourceIT {
             .andExpect(jsonPath("$.[*].rowNo").value(hasItem(DEFAULT_ROW_NO)))
             .andExpect(jsonPath("$.[*].colNo").value(hasItem(DEFAULT_COL_NO)))
             .andExpect(jsonPath("$.[*].priceFactor").value(hasItem(sameNumber(DEFAULT_PRICE_FACTOR))))
+            .andExpect(jsonPath("$.[*].type").value(hasItem(DEFAULT_TYPE.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -284,6 +291,7 @@ class SeatResourceIT {
             .andExpect(jsonPath("$.rowNo").value(DEFAULT_ROW_NO))
             .andExpect(jsonPath("$.colNo").value(DEFAULT_COL_NO))
             .andExpect(jsonPath("$.priceFactor").value(sameNumber(DEFAULT_PRICE_FACTOR)))
+            .andExpect(jsonPath("$.type").value(DEFAULT_TYPE.toString()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -574,6 +582,36 @@ class SeatResourceIT {
 
     @Test
     @Transactional
+    void getAllSeatsByTypeIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSeat = seatRepository.saveAndFlush(seat);
+
+        // Get all the seatList where type equals to
+        defaultSeatFiltering("type.equals=" + DEFAULT_TYPE, "type.equals=" + UPDATED_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatsByTypeIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSeat = seatRepository.saveAndFlush(seat);
+
+        // Get all the seatList where type in
+        defaultSeatFiltering("type.in=" + DEFAULT_TYPE + "," + UPDATED_TYPE, "type.in=" + UPDATED_TYPE);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatsByTypeIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSeat = seatRepository.saveAndFlush(seat);
+
+        // Get all the seatList where type is not null
+        defaultSeatFiltering("type.specified=true", "type.specified=false");
+    }
+
+    @Test
+    @Transactional
     void getAllSeatsByCreatedAtIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedSeat = seatRepository.saveAndFlush(seat);
@@ -762,6 +800,7 @@ class SeatResourceIT {
             .andExpect(jsonPath("$.[*].rowNo").value(hasItem(DEFAULT_ROW_NO)))
             .andExpect(jsonPath("$.[*].colNo").value(hasItem(DEFAULT_COL_NO)))
             .andExpect(jsonPath("$.[*].priceFactor").value(hasItem(sameNumber(DEFAULT_PRICE_FACTOR))))
+            .andExpect(jsonPath("$.[*].type").value(hasItem(DEFAULT_TYPE.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -819,6 +858,7 @@ class SeatResourceIT {
             .rowNo(UPDATED_ROW_NO)
             .colNo(UPDATED_COL_NO)
             .priceFactor(UPDATED_PRICE_FACTOR)
+            .type(UPDATED_TYPE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -916,7 +956,7 @@ class SeatResourceIT {
         Seat partialUpdatedSeat = new Seat();
         partialUpdatedSeat.setId(seat.getId());
 
-        partialUpdatedSeat.createdAt(UPDATED_CREATED_AT).deletedAt(UPDATED_DELETED_AT);
+        partialUpdatedSeat.type(UPDATED_TYPE).isDeleted(UPDATED_IS_DELETED);
 
         restSeatMockMvc
             .perform(
@@ -950,6 +990,7 @@ class SeatResourceIT {
             .rowNo(UPDATED_ROW_NO)
             .colNo(UPDATED_COL_NO)
             .priceFactor(UPDATED_PRICE_FACTOR)
+            .type(UPDATED_TYPE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

@@ -63,6 +63,8 @@ public class DriverAsserts {
      * @param actual the actual entity
      */
     public static void assertDriverUpdatableRelationshipsEquals(Driver expected, Driver actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify Driver relationships")
+            .satisfies(a -> assertThat(a.getStaff()).as("check staff").isEqualTo(expected.getStaff()));
     }
 }

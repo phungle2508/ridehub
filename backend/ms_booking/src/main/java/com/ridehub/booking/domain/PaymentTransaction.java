@@ -33,7 +33,8 @@ public class PaymentTransaction implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "transaction_id", nullable = false, unique = true)
+    @Size(max = 80)
+    @Column(name = "transaction_id", length = 80, nullable = false, unique = true)
     private String transactionId;
 
     @Enumerated(EnumType.STRING)
@@ -50,7 +51,8 @@ public class PaymentTransaction implements Serializable {
     @Column(name = "time")
     private Instant time;
 
-    @Column(name = "gateway_note")
+    @Size(max = 1024)
+    @Column(name = "gateway_note", length = 1024)
     private String gatewayNote;
 
     @NotNull

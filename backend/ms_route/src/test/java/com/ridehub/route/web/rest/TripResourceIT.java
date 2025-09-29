@@ -137,7 +137,7 @@ class TripResourceIT {
         // Add required entity
         Driver driver;
         if (TestUtil.findAll(em, Driver.class).isEmpty()) {
-            driver = DriverResourceIT.createEntity();
+            driver = DriverResourceIT.createEntity(em);
             em.persist(driver);
             em.flush();
         } else {
@@ -187,7 +187,7 @@ class TripResourceIT {
         // Add required entity
         Driver driver;
         if (TestUtil.findAll(em, Driver.class).isEmpty()) {
-            driver = DriverResourceIT.createUpdatedEntity();
+            driver = DriverResourceIT.createUpdatedEntity(em);
             em.persist(driver);
             em.flush();
         } else {
@@ -784,7 +784,7 @@ class TripResourceIT {
         Driver driver;
         if (TestUtil.findAll(em, Driver.class).isEmpty()) {
             tripRepository.saveAndFlush(trip);
-            driver = DriverResourceIT.createEntity();
+            driver = DriverResourceIT.createEntity(em);
         } else {
             driver = TestUtil.findAll(em, Driver.class).get(0);
         }
@@ -806,7 +806,7 @@ class TripResourceIT {
         Attendant attendant;
         if (TestUtil.findAll(em, Attendant.class).isEmpty()) {
             tripRepository.saveAndFlush(trip);
-            attendant = AttendantResourceIT.createEntity();
+            attendant = AttendantResourceIT.createEntity(em);
         } else {
             attendant = TestUtil.findAll(em, Attendant.class).get(0);
         }

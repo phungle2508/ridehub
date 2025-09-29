@@ -1,11 +1,11 @@
 id;type;type_factor;plate_number;brand;description;created_at;updated_at;is_deleted;deleted_at;deleted_by;seat_map_id
-1;STANDARD_BUS_VIP;23448.1;coarse via;proud barring cheese;longingly remark jogging;2025-09-23T07:49:32;2025-09-23T08:53:43;true;2025-09-22T20:53:26;475a7dff-94ce-49c2-a264-2df952248d1e;1
-2;STANDARD_BUS_NORMAL;21955.28;lobster propound uh-huh;searchingly;tarragon as furthermore;2025-09-23T07:26:12;2025-09-22T22:55:13;true;2025-09-22T17:41:31;a0643fe3-da26-4e78-93fb-b4ad69134ddb;2
-3;LIMOUSINE;3587.64;per now versus;toward duh;briefly;2025-09-23T08:02:29;2025-09-22T16:01:20;true;2025-09-22T23:22:19;11f44055-e515-4448-9d76-365fa446d6a2;3
-4;LIMOUSINE;21620.08;patiently meh;before clonk mysterious;furlough;2025-09-23T07:41:40;2025-09-23T07:08:40;true;2025-09-22T22:55:34;898bcc67-b5ee-4954-8531-f363f3dd817b;4
-5;STANDARD_BUS_NORMAL;29571.28;whoever gosh;descriptive wilderness vivaciously;furthermore whenever;2025-09-23T10:54:57;2025-09-23T07:45:34;false;2025-09-23T04:30:12;551e43ca-051e-4ff4-80eb-3cc4471eef2f;5
-6;LIMOUSINE;3386.72;soon;hearten at;quizzically;2025-09-23T02:01:29;2025-09-23T03:00:49;false;2025-09-22T14:48:08;7f206c46-cf20-48ed-84b3-7c2b2899a39f;6
-7;LIMOUSINE;24548.05;passport;swiftly vivid;enormously wisely who;2025-09-22T21:29:02;2025-09-22T19:07:00;true;2025-09-22T23:31:23;2b35652c-4335-4dde-9a24-cfde82b1c3c4;7
-8;STANDARD_BUS_NORMAL;15607.33;spring sympathetically;knavishly kookily artistic;up while;2025-09-23T13:49:50;2025-09-22T20:49:24;false;2025-09-23T12:53:40;82f7e0ad-6fa4-4120-a3f7-953016e838ce;8
-9;STANDARD_BUS_NORMAL;24227.42;amongst carboxyl gradient;since;what;2025-09-22T17:05:36;2025-09-22T21:07:36;false;2025-09-23T11:52:32;c0ad9ccd-6337-4c72-a7f5-b0ce2881893e;9
-10;STANDARD_BUS_VIP;4833.87;barring;patiently;instead ouch barge;2025-09-23T04:31:48;2025-09-23T01:27:03;true;2025-09-23T11:31:57;84352714-92a7-4515-881e-bfafa7e6eb41;10
+1;STANDARD_BUS_VIP;23448.1;coarse via;proud barring cheese;longingly remark jogging;2025-09-28T02:11:06;2025-09-28T03:15:17;true;2025-09-27T15:15:00;475a7dff-94ce-49c2-a264-2df952248d1e;1
+2;STANDARD_BUS_NORMAL;21955.28;lobster propound uh-huh;searchingly;tarragon as furthermore;2025-09-28T01:47:46;2025-09-27T17:16:47;true;2025-09-27T12:03:05;a0643fe3-da26-4e78-93fb-b4ad69134ddb;2
+3;LIMOUSINE;3587.64;per now versus;toward duh;briefly;2025-09-28T02:24:03;2025-09-27T10:22:54;true;2025-09-27T17:43:53;11f44055-e515-4448-9d76-365fa446d6a2;3
+4;LIMOUSINE;21620.08;patiently meh;before clonk mysterious;furlough;2025-09-28T02:03:14;2025-09-28T01:30:14;true;2025-09-27T17:17:08;898bcc67-b5ee-4954-8531-f363f3dd817b;4
+5;STANDARD_BUS_NORMAL;29571.28;whoever gosh;descriptive wilderness vivaciously;furthermore whenever;2025-09-28T05:16:31;2025-09-28T02:07:08;false;2025-09-27T22:51:46;551e43ca-051e-4ff4-80eb-3cc4471eef2f;5
+6;LIMOUSINE;3386.72;soon;hearten at;quizzically;2025-09-27T20:23:03;2025-09-27T21:22:23;false;2025-09-27T09:09:42;7f206c46-cf20-48ed-84b3-7c2b2899a39f;6
+7;LIMOUSINE;24548.05;passport;swiftly vivid;enormously wisely who;2025-09-27T15:50:36;2025-09-27T13:28:34;true;2025-09-27T17:52:57;2b35652c-4335-4dde-9a24-cfde82b1c3c4;7
+8;STANDARD_BUS_NORMAL;15607.33;spring sympathetically;knavishly kookily artistic;up while;2025-09-28T08:11:24;2025-09-27T15:10:58;false;2025-09-28T07:15:14;82f7e0ad-6fa4-4120-a3f7-953016e838ce;8
+9;STANDARD_BUS_NORMAL;24227.42;amongst carboxyl gradient;since;what;2025-09-27T11:27:10;2025-09-27T15:29:10;false;2025-09-28T06:14:06;c0ad9ccd-6337-4c72-a7f5-b0ce2881893e;9
+10;STANDARD_BUS_VIP;4833.87;barring;patiently;instead ouch barge;2025-09-27T22:53:22;2025-09-27T19:48:37;true;2025-09-28T05:53:31;84352714-92a7-4515-881e-bfafa7e6eb41;10

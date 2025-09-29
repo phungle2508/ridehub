@@ -73,9 +73,11 @@ public class Trip implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
+    @JsonIgnoreProperties(value = { "staff" }, allowSetters = true)
     private Driver driver;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "staff" }, allowSetters = true)
     private Attendant attendant;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

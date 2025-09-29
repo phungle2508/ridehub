@@ -38,7 +38,8 @@ public class PaymentWebhookLog implements Serializable {
     @Column(name = "received_at", nullable = false)
     private Instant receivedAt;
 
-    @Column(name = "processing_status")
+    @Size(max = 64)
+    @Column(name = "processing_status", length = 64)
     private String processingStatus;
 
     @NotNull

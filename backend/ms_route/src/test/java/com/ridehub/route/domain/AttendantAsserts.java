@@ -61,6 +61,8 @@ public class AttendantAsserts {
      * @param actual the actual entity
      */
     public static void assertAttendantUpdatableRelationshipsEquals(Attendant expected, Attendant actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify Attendant relationships")
+            .satisfies(a -> assertThat(a.getStaff()).as("check staff").isEqualTo(expected.getStaff()));
     }
 }

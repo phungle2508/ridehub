@@ -1,6 +1,7 @@
 package com.ridehub.route.domain;
 
 import static com.ridehub.route.domain.AttendantTestSamples.*;
+import static com.ridehub.route.domain.StaffTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.route.web.rest.TestUtil;
@@ -20,5 +21,17 @@ class AttendantTest {
 
         attendant2 = getAttendantSample2();
         assertThat(attendant1).isNotEqualTo(attendant2);
+    }
+
+    @Test
+    void staffTest() {
+        Attendant attendant = getAttendantRandomSampleGenerator();
+        Staff staffBack = getStaffRandomSampleGenerator();
+
+        attendant.setStaff(staffBack);
+        assertThat(attendant.getStaff()).isEqualTo(staffBack);
+
+        attendant.staff(null);
+        assertThat(attendant.getStaff()).isNull();
     }
 }

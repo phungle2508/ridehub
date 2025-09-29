@@ -9,14 +9,18 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link Route} and its DTO {@link RouteDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {StationMapper.class})
 public interface RouteMapper extends EntityMapper<RouteDTO, Route> {
-    @Mapping(target = "origin", source = "origin", qualifiedByName = "stationId")
-    @Mapping(target = "destination", source = "destination", qualifiedByName = "stationId")
+    @Mapping(target = "origin", source = "origin", qualifiedByName = "stationFull")
+    @Mapping(target = "destination", source = "destination", qualifiedByName = "stationFull")
     RouteDTO toDto(Route s);
 
     @Named("stationId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     StationDTO toDtoStationId(Station station);
+
+    @Named("stationFull")
+    @BeanMapping(ignoreByDefault = false)
+    StationDTO toDtoStationFull(Station station);
 }

@@ -1,6 +1,7 @@
 package com.ridehub.route.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ridehub.route.domain.enumeration.SeatType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -29,7 +30,8 @@ public class Seat implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "seat_no", nullable = false)
+    @Size(max = 16)
+    @Column(name = "seat_no", length = 16, nullable = false)
     private String seatNo;
 
     @Column(name = "row_no")
@@ -40,6 +42,10 @@ public class Seat implements Serializable {
 
     @Column(name = "price_factor", precision = 21, scale = 2)
     private BigDecimal priceFactor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private SeatType type;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -128,6 +134,19 @@ public class Seat implements Serializable {
 
     public void setPriceFactor(BigDecimal priceFactor) {
         this.priceFactor = priceFactor;
+    }
+
+    public SeatType getType() {
+        return this.type;
+    }
+
+    public Seat type(SeatType type) {
+        this.setType(type);
+        return this;
+    }
+
+    public void setType(SeatType type) {
+        this.type = type;
     }
 
     public Instant getCreatedAt() {
@@ -236,6 +255,7 @@ public class Seat implements Serializable {
             ", rowNo=" + getRowNo() +
             ", colNo=" + getColNo() +
             ", priceFactor=" + getPriceFactor() +
+            ", type='" + getType() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

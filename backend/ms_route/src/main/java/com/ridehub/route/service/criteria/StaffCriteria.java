@@ -80,6 +80,10 @@ public class StaffCriteria implements Serializable, Criteria {
 
     private UUIDFilter deletedBy;
 
+    private LongFilter driverId;
+
+    private LongFilter attendantId;
+
     private Boolean distinct;
 
     public StaffCriteria() {}
@@ -96,6 +100,8 @@ public class StaffCriteria implements Serializable, Criteria {
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
         this.deletedAt = other.optionalDeletedAt().map(InstantFilter::copy).orElse(null);
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
+        this.driverId = other.optionalDriverId().map(LongFilter::copy).orElse(null);
+        this.attendantId = other.optionalAttendantId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -313,6 +319,44 @@ public class StaffCriteria implements Serializable, Criteria {
         this.deletedBy = deletedBy;
     }
 
+    public LongFilter getDriverId() {
+        return driverId;
+    }
+
+    public Optional<LongFilter> optionalDriverId() {
+        return Optional.ofNullable(driverId);
+    }
+
+    public LongFilter driverId() {
+        if (driverId == null) {
+            setDriverId(new LongFilter());
+        }
+        return driverId;
+    }
+
+    public void setDriverId(LongFilter driverId) {
+        this.driverId = driverId;
+    }
+
+    public LongFilter getAttendantId() {
+        return attendantId;
+    }
+
+    public Optional<LongFilter> optionalAttendantId() {
+        return Optional.ofNullable(attendantId);
+    }
+
+    public LongFilter attendantId() {
+        if (attendantId == null) {
+            setAttendantId(new LongFilter());
+        }
+        return attendantId;
+    }
+
+    public void setAttendantId(LongFilter attendantId) {
+        this.attendantId = attendantId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -353,13 +397,30 @@ public class StaffCriteria implements Serializable, Criteria {
             Objects.equals(isDeleted, that.isDeleted) &&
             Objects.equals(deletedAt, that.deletedAt) &&
             Objects.equals(deletedBy, that.deletedBy) &&
+            Objects.equals(driverId, that.driverId) &&
+            Objects.equals(attendantId, that.attendantId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, age, gender, phoneNumber, status, createdAt, updatedAt, isDeleted, deletedAt, deletedBy, distinct);
+        return Objects.hash(
+            id,
+            name,
+            age,
+            gender,
+            phoneNumber,
+            status,
+            createdAt,
+            updatedAt,
+            isDeleted,
+            deletedAt,
+            deletedBy,
+            driverId,
+            attendantId,
+            distinct
+        );
     }
 
     // prettier-ignore
@@ -377,6 +438,8 @@ public class StaffCriteria implements Serializable, Criteria {
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
             optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
             optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+            optionalDriverId().map(f -> "driverId=" + f + ", ").orElse("") +
+            optionalAttendantId().map(f -> "attendantId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

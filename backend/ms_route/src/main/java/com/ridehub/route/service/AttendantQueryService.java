@@ -6,6 +6,7 @@ import com.ridehub.route.repository.AttendantRepository;
 import com.ridehub.route.service.criteria.AttendantCriteria;
 import com.ridehub.route.service.dto.AttendantDTO;
 import com.ridehub.route.service.mapper.AttendantMapper;
+import jakarta.persistence.criteria.JoinType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,8 @@ public class AttendantQueryService extends QueryService<Attendant> {
                 buildRangeSpecification(criteria.getUpdatedAt(), Attendant_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), Attendant_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Attendant_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), Attendant_.deletedBy)
+                buildSpecification(criteria.getDeletedBy(), Attendant_.deletedBy),
+                buildSpecification(criteria.getStaffId(), root -> root.join(Attendant_.staff, JoinType.LEFT).get(Staff_.id))
             );
         }
         return specification;

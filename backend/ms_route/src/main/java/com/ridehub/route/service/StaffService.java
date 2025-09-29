@@ -1,6 +1,7 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.StaffDTO;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -30,6 +31,19 @@ public interface StaffService {
      * @return the persisted entity.
      */
     Optional<StaffDTO> partialUpdate(StaffDTO staffDTO);
+
+    /**
+     * Get all the StaffDTO where Driver is {@code null}.
+     *
+     * @return the {@link List} of entities.
+     */
+    List<StaffDTO> findAllWhereDriverIsNull();
+    /**
+     * Get all the StaffDTO where Attendant is {@code null}.
+     *
+     * @return the {@link List} of entities.
+     */
+    List<StaffDTO> findAllWhereAttendantIsNull();
 
     /**
      * Get the "id" staff.

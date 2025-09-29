@@ -6,6 +6,7 @@ import com.ridehub.route.domain.Station;
 import com.ridehub.route.service.dto.AddressDTO;
 import com.ridehub.route.service.dto.FileRouteDTO;
 import com.ridehub.route.service.dto.StationDTO;
+import com.ridehub.route.service.dto.StationWithRoutesDTO;
 import org.mapstruct.*;
 
 /**
@@ -26,4 +27,11 @@ public interface StationMapper extends EntityMapper<StationDTO, Station> {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     FileRouteDTO toDtoFileRouteId(FileRoute fileRoute);
+
+    /**
+     * Convert Station entity to StationWithRoutesDTO
+     * Note: routes will be populated separately in the service layer
+     */
+    @Mapping(target = "routes", ignore = true)
+    StationWithRoutesDTO toStationWithRoutesDto(Station station);
 }

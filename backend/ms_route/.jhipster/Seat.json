@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923135959"
+    "changelogDate": "20250928082133"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -10,7 +10,8 @@
     {
       "fieldName": "seatNo",
       "fieldType": "String",
-      "fieldValidateRules": ["required"]
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "16"
     },
     {
       "fieldName": "rowNo",
@@ -23,6 +24,11 @@
     {
       "fieldName": "priceFactor",
       "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "SeatType",
+      "fieldValues": "SLEEPER,NORMAL"
     },
     {
       "fieldName": "createdAt",

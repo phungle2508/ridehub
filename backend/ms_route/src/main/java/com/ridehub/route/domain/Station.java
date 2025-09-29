@@ -29,15 +29,18 @@ public class Station implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "name", nullable = false)
+    @Size(max = 200)
+    @Column(name = "name", length = 200, nullable = false)
     @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
     private String name;
 
-    @Column(name = "phone_number")
+    @Size(max = 32)
+    @Column(name = "phone_number", length = 32)
     @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
     private String phoneNumber;
 
-    @Column(name = "description")
+    @Size(max = 1024)
+    @Column(name = "description", length = 1024)
     @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
     private String description;
 

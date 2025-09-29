@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.route.IntegrationTest;
 import com.ridehub.route.domain.Attendant;
+import com.ridehub.route.domain.Staff;
 import com.ridehub.route.repository.AttendantRepository;
 import com.ridehub.route.service.dto.AttendantDTO;
 import com.ridehub.route.service.mapper.AttendantMapper;
@@ -84,13 +85,24 @@ class AttendantResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Attendant createEntity() {
-        return new Attendant()
+    public static Attendant createEntity(EntityManager em) {
+        Attendant attendant = new Attendant()
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
             .deletedAt(DEFAULT_DELETED_AT)
             .deletedBy(DEFAULT_DELETED_BY);
+        // Add required entity
+        Staff staff;
+        if (TestUtil.findAll(em, Staff.class).isEmpty()) {
+            staff = StaffResourceIT.createEntity();
+            em.persist(staff);
+            em.flush();
+        } else {
+            staff = TestUtil.findAll(em, Staff.class).get(0);
+        }
+        attendant.setStaff(staff);
+        return attendant;
     }
 
     /**
@@ -99,18 +111,29 @@ class AttendantResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Attendant createUpdatedEntity() {
-        return new Attendant()
+    public static Attendant createUpdatedEntity(EntityManager em) {
+        Attendant updatedAttendant = new Attendant()
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
             .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
+        // Add required entity
+        Staff staff;
+        if (TestUtil.findAll(em, Staff.class).isEmpty()) {
+            staff = StaffResourceIT.createUpdatedEntity();
+            em.persist(staff);
+            em.flush();
+        } else {
+            staff = TestUtil.findAll(em, Staff.class).get(0);
+        }
+        updatedAttendant.setStaff(staff);
+        return updatedAttendant;
     }
 
     @BeforeEach
     void initTest() {
-        attendant = createEntity();
+        attendant = createEntity(em);
     }
 
     @AfterEach
@@ -383,6 +406,20 @@ class AttendantResourceIT {
 
         // Get all the attendantList where deletedBy is not null
         defaultAttendantFiltering("deletedBy.specified=true", "deletedBy.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAttendantsByStaffIsEqualToSomething() throws Exception {
+        // Get already existing entity
+        Staff staff = attendant.getStaff();
+        attendantRepository.saveAndFlush(attendant);
+        Long staffId = staff.getId();
+        // Get all the attendantList where staff equals to staffId
+        defaultAttendantShouldBeFound("staffId.equals=" + staffId);
+
+        // Get all the attendantList where staff equals to (staffId + 1)
+        defaultAttendantShouldNotBeFound("staffId.equals=" + (staffId + 1));
     }
 
     private void defaultAttendantFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

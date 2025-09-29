@@ -5,7 +5,11 @@ import com.ridehub.route.repository.StaffRepository;
 import com.ridehub.route.service.StaffService;
 import com.ridehub.route.service.dto.StaffDTO;
 import com.ridehub.route.service.mapper.StaffMapper;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -58,6 +62,32 @@ public class StaffServiceImpl implements StaffService {
             })
             .map(staffRepository::save)
             .map(staffMapper::toDto);
+    }
+
+    /**
+     *  Get all the staff where Driver is {@code null}.
+     *  @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<StaffDTO> findAllWhereDriverIsNull() {
+        LOG.debug("Request to get all staff where Driver is null");
+        return StreamSupport.stream(staffRepository.findAll().spliterator(), false)
+            .filter(staff -> staff.getDriver() == null)
+            .map(staffMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    /**
+     *  Get all the staff where Attendant is {@code null}.
+     *  @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<StaffDTO> findAllWhereAttendantIsNull() {
+        LOG.debug("Request to get all staff where Attendant is null");
+        return StreamSupport.stream(staffRepository.findAll().spliterator(), false)
+            .filter(staff -> staff.getAttendant() == null)
+            .map(staffMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override

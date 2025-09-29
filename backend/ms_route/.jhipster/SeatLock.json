@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923140559"
+    "changelogDate": "20250928082733"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -15,7 +15,8 @@
     {
       "fieldName": "seatNo",
       "fieldType": "String",
-      "fieldValidateRules": ["required"]
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "16"
     },
     {
       "fieldName": "userId",
@@ -34,7 +35,9 @@
     },
     {
       "fieldName": "idempotencyKey",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["unique", "maxlength"],
+      "fieldValidateRulesMaxlength": "80"
     },
     {
       "fieldName": "createdAt",

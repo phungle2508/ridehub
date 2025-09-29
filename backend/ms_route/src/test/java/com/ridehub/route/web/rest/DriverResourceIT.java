@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.route.IntegrationTest;
 import com.ridehub.route.domain.Driver;
+import com.ridehub.route.domain.Staff;
 import com.ridehub.route.repository.DriverRepository;
 import com.ridehub.route.service.dto.DriverDTO;
 import com.ridehub.route.service.mapper.DriverMapper;
@@ -91,8 +92,8 @@ class DriverResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Driver createEntity() {
-        return new Driver()
+    public static Driver createEntity(EntityManager em) {
+        Driver driver = new Driver()
             .licenseClass(DEFAULT_LICENSE_CLASS)
             .yearsExperience(DEFAULT_YEARS_EXPERIENCE)
             .createdAt(DEFAULT_CREATED_AT)
@@ -100,6 +101,17 @@ class DriverResourceIT {
             .isDeleted(DEFAULT_IS_DELETED)
             .deletedAt(DEFAULT_DELETED_AT)
             .deletedBy(DEFAULT_DELETED_BY);
+        // Add required entity
+        Staff staff;
+        if (TestUtil.findAll(em, Staff.class).isEmpty()) {
+            staff = StaffResourceIT.createEntity();
+            em.persist(staff);
+            em.flush();
+        } else {
+            staff = TestUtil.findAll(em, Staff.class).get(0);
+        }
+        driver.setStaff(staff);
+        return driver;
     }
 
     /**
@@ -108,8 +120,8 @@ class DriverResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Driver createUpdatedEntity() {
-        return new Driver()
+    public static Driver createUpdatedEntity(EntityManager em) {
+        Driver updatedDriver = new Driver()
             .licenseClass(UPDATED_LICENSE_CLASS)
             .yearsExperience(UPDATED_YEARS_EXPERIENCE)
             .createdAt(UPDATED_CREATED_AT)
@@ -117,11 +129,22 @@ class DriverResourceIT {
             .isDeleted(UPDATED_IS_DELETED)
             .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
+        // Add required entity
+        Staff staff;
+        if (TestUtil.findAll(em, Staff.class).isEmpty()) {
+            staff = StaffResourceIT.createUpdatedEntity();
+            em.persist(staff);
+            em.flush();
+        } else {
+            staff = TestUtil.findAll(em, Staff.class).get(0);
+        }
+        updatedDriver.setStaff(staff);
+        return updatedDriver;
     }
 
     @BeforeEach
     void initTest() {
-        driver = createEntity();
+        driver = createEntity(em);
     }
 
     @AfterEach
@@ -537,6 +560,20 @@ class DriverResourceIT {
 
         // Get all the driverList where deletedBy is not null
         defaultDriverFiltering("deletedBy.specified=true", "deletedBy.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllDriversByStaffIsEqualToSomething() throws Exception {
+        // Get already existing entity
+        Staff staff = driver.getStaff();
+        driverRepository.saveAndFlush(driver);
+        Long staffId = staff.getId();
+        // Get all the driverList where staff equals to staffId
+        defaultDriverShouldBeFound("staffId.equals=" + staffId);
+
+        // Get all the driverList where staff equals to (staffId + 1)
+        defaultDriverShouldNotBeFound("staffId.equals=" + (staffId + 1));
     }
 
     private void defaultDriverFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {

@@ -3,8 +3,9 @@ package com.ridehub.route.web.rest;
 import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.TripQueryService;
 import com.ridehub.route.service.TripService;
+import com.ridehub.route.service.criteria.RouteCriteria;
 import com.ridehub.route.service.criteria.TripCriteria;
-import com.ridehub.route.service.dto.RouteListDTO;
+import com.ridehub.route.service.dto.TripDetailDTO;
 import com.ridehub.route.service.dto.TripDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -195,6 +196,23 @@ public class TripResource {
     }
 
     /**
+     * {@code GET  /trips/:id} : get the "id" trip.
+     *
+     * @param id the id of the tripDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the tripDTO, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/detailList")
+    public ResponseEntity<List<TripDetailDTO>> getRouteDetailList(TripCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        LOG.debug("REST request to get Trip : {}", criteria);
+        Page<TripDetailDTO> page = tripQueryService.getRouteDetailList(criteria, pageable);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
      * {@code DELETE  /trips/:id} : delete the "id" trip.
      *
      * @param id the id of the tripDTO to delete.
@@ -207,23 +225,5 @@ public class TripResource {
         return ResponseEntity.noContent()
                 .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
-    }
-
-    /**
-     * {@code GET  /trips/route-list} : get all route list information.
-     *
-     * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
-     *         of route information in body.
-     */
-    @GetMapping("/route-list")
-    public ResponseEntity<List<RouteListDTO>> getRouteList(
-            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get route list with pagination: {}", pageable);
-
-        Page<RouteListDTO> page = tripService.getRouteList(pageable);
-        HttpHeaders headers = PaginationUtil
-                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

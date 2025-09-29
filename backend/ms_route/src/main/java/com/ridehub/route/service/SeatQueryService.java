@@ -76,6 +76,7 @@ public class SeatQueryService extends QueryService<Seat> {
                 buildRangeSpecification(criteria.getRowNo(), Seat_.rowNo),
                 buildRangeSpecification(criteria.getColNo(), Seat_.colNo),
                 buildRangeSpecification(criteria.getPriceFactor(), Seat_.priceFactor),
+                buildSpecification(criteria.getType(), Seat_.type),
                 buildRangeSpecification(criteria.getCreatedAt(), Seat_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), Seat_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), Seat_.isDeleted),

@@ -14,8 +14,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface TripRepository extends JpaRepository<Trip, Long>, JpaSpecificationExecutor<Trip> {
-    @EntityGraph(attributePaths = { "route", "route.origin", "route.destination", "vehicle", "driver" })
-    @Query("select t from Trip t")
+    @EntityGraph(attributePaths = { "route", "route.origin", "route.destination", "vehicle", "driver", "driver.staff", "attendant", "attendant.staff" })
+    @Query("select t from Trip t where t.isDeleted = false or t.isDeleted is null")
     Page<Trip> findAllWithDetails(Pageable pageable);
 
     @EntityGraph(attributePaths = { "route", "route.origin", "route.destination", "driver" })

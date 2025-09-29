@@ -1,5 +1,6 @@
 package com.ridehub.route.service.criteria;
 
+import com.ridehub.route.domain.enumeration.SeatType;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +21,23 @@ import tech.jhipster.service.filter.*;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class SeatCriteria implements Serializable, Criteria {
 
+    /**
+     * Class for filtering SeatType
+     */
+    public static class SeatTypeFilter extends Filter<SeatType> {
+
+        public SeatTypeFilter() {}
+
+        public SeatTypeFilter(SeatTypeFilter filter) {
+            super(filter);
+        }
+
+        @Override
+        public SeatTypeFilter copy() {
+            return new SeatTypeFilter(this);
+        }
+    }
+
     private static final long serialVersionUID = 1L;
 
     private LongFilter id;
@@ -31,6 +49,8 @@ public class SeatCriteria implements Serializable, Criteria {
     private IntegerFilter colNo;
 
     private BigDecimalFilter priceFactor;
+
+    private SeatTypeFilter type;
 
     private InstantFilter createdAt;
 
@@ -54,6 +74,7 @@ public class SeatCriteria implements Serializable, Criteria {
         this.rowNo = other.optionalRowNo().map(IntegerFilter::copy).orElse(null);
         this.colNo = other.optionalColNo().map(IntegerFilter::copy).orElse(null);
         this.priceFactor = other.optionalPriceFactor().map(BigDecimalFilter::copy).orElse(null);
+        this.type = other.optionalType().map(SeatTypeFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -161,6 +182,25 @@ public class SeatCriteria implements Serializable, Criteria {
 
     public void setPriceFactor(BigDecimalFilter priceFactor) {
         this.priceFactor = priceFactor;
+    }
+
+    public SeatTypeFilter getType() {
+        return type;
+    }
+
+    public Optional<SeatTypeFilter> optionalType() {
+        return Optional.ofNullable(type);
+    }
+
+    public SeatTypeFilter type() {
+        if (type == null) {
+            setType(new SeatTypeFilter());
+        }
+        return type;
+    }
+
+    public void setType(SeatTypeFilter type) {
+        this.type = type;
     }
 
     public InstantFilter getCreatedAt() {
@@ -311,6 +351,7 @@ public class SeatCriteria implements Serializable, Criteria {
             Objects.equals(rowNo, that.rowNo) &&
             Objects.equals(colNo, that.colNo) &&
             Objects.equals(priceFactor, that.priceFactor) &&
+            Objects.equals(type, that.type) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
@@ -329,6 +370,7 @@ public class SeatCriteria implements Serializable, Criteria {
             rowNo,
             colNo,
             priceFactor,
+            type,
             createdAt,
             updatedAt,
             isDeleted,
@@ -348,6 +390,7 @@ public class SeatCriteria implements Serializable, Criteria {
             optionalRowNo().map(f -> "rowNo=" + f + ", ").orElse("") +
             optionalColNo().map(f -> "colNo=" + f + ", ").orElse("") +
             optionalPriceFactor().map(f -> "priceFactor=" + f + ", ").orElse("") +
+            optionalType().map(f -> "type=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +

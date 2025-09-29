@@ -19,6 +19,7 @@ public class SeatLockDTO implements Serializable {
     private UUID tripId;
 
     @NotNull
+    @Size(max = 16)
     private String seatNo;
 
     private UUID userId;
@@ -29,6 +30,7 @@ public class SeatLockDTO implements Serializable {
     @NotNull
     private Instant expiresAt;
 
+    @Size(max = 80)
     private String idempotencyKey;
 
     @NotNull

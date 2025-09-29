@@ -18,6 +18,7 @@ public class PaymentTransactionDTO implements Serializable {
     private Long id;
 
     @NotNull
+    @Size(max = 80)
     private String transactionId;
 
     private PaymentMethod method;
@@ -28,6 +29,7 @@ public class PaymentTransactionDTO implements Serializable {
 
     private Instant time;
 
+    @Size(max = 1024)
     private String gatewayNote;
 
     @NotNull

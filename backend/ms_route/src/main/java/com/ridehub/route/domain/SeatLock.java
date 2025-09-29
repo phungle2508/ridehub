@@ -33,7 +33,8 @@ public class SeatLock implements Serializable {
     private UUID tripId;
 
     @NotNull
-    @Column(name = "seat_no", nullable = false)
+    @Size(max = 16)
+    @Column(name = "seat_no", length = 16, nullable = false)
     private String seatNo;
 
     @JdbcTypeCode(SqlTypes.VARCHAR)
@@ -49,7 +50,8 @@ public class SeatLock implements Serializable {
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
-    @Column(name = "idempotency_key")
+    @Size(max = 80)
+    @Column(name = "idempotency_key", length = 80, unique = true)
     private String idempotencyKey;
 
     @NotNull

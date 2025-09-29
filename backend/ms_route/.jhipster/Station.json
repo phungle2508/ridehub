@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923135459"
+    "changelogDate": "20250928081633"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -10,15 +10,20 @@
     {
       "fieldName": "name",
       "fieldType": "String",
-      "fieldValidateRules": ["required"]
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "200"
     },
     {
       "fieldName": "phoneNumber",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "32"
     },
     {
       "fieldName": "description",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1024"
     },
     {
       "fieldName": "active",

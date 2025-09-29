@@ -30,7 +30,8 @@ public class Route implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "route_code", nullable = false, unique = true)
+    @Size(max = 40)
+    @Column(name = "route_code", length = 40, nullable = false, unique = true)
     @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
     private String routeCode;
 

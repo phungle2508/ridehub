@@ -16,6 +16,7 @@ public class RouteDTO implements Serializable {
     private Long id;
 
     @NotNull
+    @Size(max = 40)
     private String routeCode;
 
     private BigDecimal distanceKm;

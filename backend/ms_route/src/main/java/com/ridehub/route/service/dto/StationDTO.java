@@ -15,10 +15,13 @@ public class StationDTO implements Serializable {
     private Long id;
 
     @NotNull
+    @Size(max = 200)
     private String name;
 
+    @Size(max = 32)
     private String phoneNumber;
 
+    @Size(max = 1024)
     private String description;
 
     @NotNull

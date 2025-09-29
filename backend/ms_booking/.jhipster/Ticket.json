@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923135159"
+    "changelogDate": "20250928081333"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -10,7 +10,8 @@
     {
       "fieldName": "ticketCode",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "unique"]
+      "fieldValidateRules": ["required", "unique", "maxlength"],
+      "fieldValidateRulesMaxlength": "40"
     },
     {
       "fieldName": "price",
@@ -19,7 +20,9 @@
     },
     {
       "fieldName": "qrCode",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "256"
     },
     {
       "fieldName": "timeFrom",

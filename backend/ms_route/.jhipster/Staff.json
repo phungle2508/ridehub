@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250923140259"
+    "changelogDate": "20250928082433"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -55,7 +55,22 @@
   "jpaMetamodelFiltering": true,
   "microserviceName": "ms_route",
   "name": "Staff",
-  "relationships": [],
+  "relationships": [
+    {
+      "otherEntityName": "driver",
+      "otherEntityRelationshipName": "staff",
+      "relationshipName": "driver",
+      "relationshipSide": "right",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityName": "attendant",
+      "otherEntityRelationshipName": "staff",
+      "relationshipName": "attendant",
+      "relationshipSide": "right",
+      "relationshipType": "one-to-one"
+    }
+  ],
   "searchEngine": "no",
   "service": "serviceImpl"
 }

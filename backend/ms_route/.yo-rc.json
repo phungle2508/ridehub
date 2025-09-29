@@ -28,9 +28,9 @@
       "FileRoute"
     ],
     "jhipsterVersion": "8.11.0",
-    "jwtSecretKey": "MmJkNDhlMmNmYTAwYmZhNmUyMjRlZDVkZmZjYWI5ZDM3NzVkOGY4YzU2Mzg5NDA5MzRlOTQ5ZDQwZGUzNTM2ZDEyYjRhNjVmYTcwMjRhMzJjZjE0OTJjZjdlMzA5NGQ3MzcxMjYxZDJiZmM5ODNlMDc5NDIwMGU0YjZlZmM4YzU=",
+    "jwtSecretKey": "ODM4YTIxNzUzYzMxNTcwMGFlYzdlODNhOWE3YWNmMmI3OWM3MGQwNjg1ZmFlNjFlNDdiNWQ4OTZlZGRmZDY1YTFjMTkzMDc5ZDFlNDc5OWI5OGMxODZkYTM0YWQ1MmFmOGMzYjljOTM5ZTQyMmYyZmE3MzQ2NjBkYzRkZTQ5MjA=",
     "languages": ["en"],
-    "lastLiquibaseTimestamp": 1758636419000,
+    "lastLiquibaseTimestamp": 1759048113000,
     "messageBroker": "kafka",
     "monorepository": true,
     "nativeLanguage": "en",

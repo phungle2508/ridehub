@@ -6,6 +6,7 @@ import com.ridehub.route.repository.DriverRepository;
 import com.ridehub.route.service.criteria.DriverCriteria;
 import com.ridehub.route.service.dto.DriverDTO;
 import com.ridehub.route.service.mapper.DriverMapper;
+import jakarta.persistence.criteria.JoinType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +78,8 @@ public class DriverQueryService extends QueryService<Driver> {
                 buildRangeSpecification(criteria.getUpdatedAt(), Driver_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), Driver_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), Driver_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), Driver_.deletedBy)
+                buildSpecification(criteria.getDeletedBy(), Driver_.deletedBy),
+                buildSpecification(criteria.getStaffId(), root -> root.join(Driver_.staff, JoinType.LEFT).get(Staff_.id))
             );
         }
         return specification;

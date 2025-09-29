@@ -86,6 +86,8 @@ class StaffCriteriaTest {
         staffCriteria.isDeleted();
         staffCriteria.deletedAt();
         staffCriteria.deletedBy();
+        staffCriteria.driverId();
+        staffCriteria.attendantId();
         staffCriteria.distinct();
     }
 
@@ -103,6 +105,8 @@ class StaffCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getDriverId()) &&
+                condition.apply(criteria.getAttendantId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -122,6 +126,8 @@ class StaffCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getDriverId(), copy.getDriverId()) &&
+                condition.apply(criteria.getAttendantId(), copy.getAttendantId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

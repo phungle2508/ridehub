@@ -1,5 +1,6 @@
 package com.ridehub.route.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ridehub.route.domain.enumeration.Gender;
 import com.ridehub.route.domain.enumeration.StaffStatus;
 import jakarta.persistence.*;
@@ -62,6 +63,14 @@ public class Staff implements Serializable {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
+
+    @JsonIgnoreProperties(value = { "staff" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "staff")
+    private Driver driver;
+
+    @JsonIgnoreProperties(value = { "staff" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "staff")
+    private Attendant attendant;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -206,6 +215,44 @@ public class Staff implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
+    }
+
+    public Driver getDriver() {
+        return this.driver;
+    }
+
+    public void setDriver(Driver driver) {
+        if (this.driver != null) {
+            this.driver.setStaff(null);
+        }
+        if (driver != null) {
+            driver.setStaff(this);
+        }
+        this.driver = driver;
+    }
+
+    public Staff driver(Driver driver) {
+        this.setDriver(driver);
+        return this;
+    }
+
+    public Attendant getAttendant() {
+        return this.attendant;
+    }
+
+    public void setAttendant(Attendant attendant) {
+        if (this.attendant != null) {
+            this.attendant.setStaff(null);
+        }
+        if (attendant != null) {
+            attendant.setStaff(this);
+        }
+        this.attendant = attendant;
+    }
+
+    public Staff attendant(Attendant attendant) {
+        this.setAttendant(attendant);
+        return this;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
