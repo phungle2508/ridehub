@@ -2,6 +2,9 @@ package com.ridehub.route.repository;
 
 import com.ridehub.route.domain.Vehicle;
 import com.ridehub.route.service.dto.VehicleListDTO;
+
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -27,4 +30,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpec
             ORDER BY v.plateNumber ASC
             """)
     Page<Vehicle> findVehicleListWithDetails(Pageable pageable);
+
+    @EntityGraph(attributePaths = { "seatMap", "seatMap.seatMapImg", "vehicleImg" })
+    Optional<Vehicle> findDetailById(Long id);
 }

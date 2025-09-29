@@ -49,11 +49,4 @@ public interface VehicleService {
      */
     void delete(Long id);
 
-    /**
-     * Get all vehicles with their current route assignments and driver information.
-     *
-     * @param pageable the pagination information.
-     * @return the list of vehicles with route and driver details.
-     */
-    Page<VehicleListDTO> getVehicleList(Pageable pageable);
 }

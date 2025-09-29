@@ -120,6 +120,28 @@ public class StationQueryService extends QueryService<Station> {
                             root -> root.join(Station_.address, JoinType.LEFT).get(Address_.id)),
                     buildSpecification(criteria.getStationImgId(),
                             root -> root.join(Station_.stationImg, JoinType.LEFT).get(FileRoute_.id)));
+            // 🔹 Filter by districtCode
+            if (criteria.getDistrictCode() != null) {
+                specification = specification.and(
+                        buildSpecification(
+                                criteria.getDistrictCode(), // StringFilter
+                                root -> root.join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .get(District_.districtCode)));
+            }
+
+            // provinceCode by equals/in/notEquals/specified
+            if (criteria.getProvinceCode() != null) {
+                specification = specification.and(
+                        buildSpecification(
+                                criteria.getProvinceCode(), // StringFilter
+                                root -> root.join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .join(District_.province, JoinType.LEFT)
+                                        .get(Province_.provinceCode)));
+            }
         }
         return specification;
     }

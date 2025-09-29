@@ -5,6 +5,7 @@ import com.ridehub.route.service.VehicleQueryService;
 import com.ridehub.route.service.VehicleService;
 import com.ridehub.route.service.criteria.VehicleCriteria;
 import com.ridehub.route.service.dto.VehicleDTO;
+import com.ridehub.route.service.dto.VehicleDetailDTO;
 import com.ridehub.route.service.dto.VehicleWithSeatCountDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -232,5 +233,13 @@ public class VehicleResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
                 ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    // New "full detail" endpoint (no DTO/entity changes)
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<VehicleDetailDTO> getVehicleDetail(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get Vehicle Detail : {}", id);
+        Optional<VehicleDetailDTO> vm = vehicleQueryService.findDetail(id);
+        return ResponseUtil.wrapOrNotFound(vm);
     }
 }

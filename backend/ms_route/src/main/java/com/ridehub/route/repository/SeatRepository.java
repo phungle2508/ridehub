@@ -3,6 +3,7 @@ package com.ridehub.route.repository;
 import com.ridehub.route.domain.Seat;
 import com.ridehub.route.repository.projection.VehicleSeatCount;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.*;
@@ -29,4 +30,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long>, JpaSpecificat
           GROUP BY v.id
       """)
   List<VehicleSeatCount> countSeatsByVehicleIds(@Param("vehicleIds") List<Long> vehicleIds);
+
+  @Query("select s from Seat s where s.floor.id in :floorIds")
+  List<Seat> findByFloorIds(@Param("floorIds") Collection<Long> floorIds);
 }

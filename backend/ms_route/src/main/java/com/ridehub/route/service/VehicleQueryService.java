@@ -1,18 +1,25 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.domain.*; // for static metamodels
+import com.ridehub.route.repository.FloorRepository;
 import com.ridehub.route.repository.SeatRepository;
 import com.ridehub.route.repository.VehicleRepository;
 import com.ridehub.route.repository.projection.VehicleSeatCount;
 import com.ridehub.route.service.criteria.VehicleCriteria;
+import com.ridehub.route.service.dto.FloorDTO;
+import com.ridehub.route.service.dto.SeatDTO;
 import com.ridehub.route.service.dto.VehicleDTO;
+import com.ridehub.route.service.dto.VehicleDetailDTO;
 import com.ridehub.route.service.dto.VehicleWithSeatCountDTO;
+import com.ridehub.route.service.mapper.FloorMapper;
+import com.ridehub.route.service.mapper.SeatMapper;
 import com.ridehub.route.service.mapper.VehicleMapper;
 import jakarta.persistence.criteria.JoinType;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -44,11 +51,18 @@ public class VehicleQueryService extends QueryService<Vehicle> {
     private final VehicleMapper vehicleMapper;
     private final SeatRepository seatRepository;
 
+    private final FloorRepository floorRepository;
+    private final FloorMapper floorMapper;
+    private final SeatMapper seatMapper;
+
     public VehicleQueryService(VehicleRepository vehicleRepository, VehicleMapper vehicleMapper,
-            SeatRepository seatRepository) {
+            SeatRepository seatRepository, FloorMapper floorMapper, FloorRepository floorRepository, SeatMapper seatMapper) {
         this.vehicleRepository = vehicleRepository;
         this.vehicleMapper = vehicleMapper;
         this.seatRepository = seatRepository;
+        this.floorRepository = floorRepository;
+        this.floorMapper = floorMapper;
+        this.seatMapper = seatMapper;
     }
 
     /**
@@ -136,5 +150,35 @@ public class VehicleQueryService extends QueryService<Vehicle> {
                             root -> root.join(Vehicle_.vehicleImg, JoinType.LEFT).get(FileRoute_.id)));
         }
         return specification;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<VehicleDetailDTO> findDetail(Long id) {
+        return vehicleRepository.findDetailById(id).map(vehicle -> {
+            VehicleDTO vehicleDTO = vehicleMapper.toDto(vehicle);
+
+            SeatMap seatMap = vehicle.getSeatMap();
+            if (seatMap == null || seatMap.getId() == null) {
+                return new VehicleDetailDTO(vehicleDTO, List.of(), Map.of());
+            }
+
+            // floors
+            List<Floor> floors = floorRepository.findBySeatMapId(seatMap.getId());
+            List<FloorDTO> floorDTOs = floorMapper.toDto(floors);
+
+            // seats grouped by floorId
+            Map<Long, List<SeatDTO>> seatsByFloorId = Map.of();
+            if (!floors.isEmpty()) {
+                List<Long> floorIds = floors.stream().map(Floor::getId).filter(Objects::nonNull).toList();
+                if (!floorIds.isEmpty()) {
+                    List<Seat> seats = seatRepository.findByFloorIds(floorIds);
+                    seatsByFloorId = seats.stream().collect(Collectors.groupingBy(
+                            s -> s.getFloor().getId(),
+                            Collectors.mapping(seatMapper::toDto, Collectors.toList())));
+                }
+            }
+
+            return new VehicleDetailDTO(vehicleDTO, floorDTOs, seatsByFloorId);
+        });
     }
 }
