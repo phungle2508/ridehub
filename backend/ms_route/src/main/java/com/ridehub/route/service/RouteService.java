@@ -1,6 +1,8 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.RouteDTO;
+import com.ridehub.route.service.dto.RouteStationRequestDTO;
+import com.ridehub.route.service.dto.RouteStationResponseDTO;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,4 +59,21 @@ public interface RouteService {
      * @return the list of entities.
      */
     Page<RouteDTO> search(String query, Pageable pageable);
+
+    /**
+     * Create a new route based on station ID with flag-based logic.
+     *
+     * @param requestDTO the route station request containing station ID and flag
+     * @return the created route response
+     */
+    RouteStationResponseDTO createRouteWithStation(RouteStationRequestDTO requestDTO);
+
+    /**
+     * Update an existing route based on station ID with flag-based logic.
+     *
+     * @param routeId the ID of the route to update
+     * @param requestDTO the route station request containing station ID and flag
+     * @return the updated route response
+     */
+    RouteStationResponseDTO updateRouteWithStation(Long routeId, RouteStationRequestDTO requestDTO);
 }

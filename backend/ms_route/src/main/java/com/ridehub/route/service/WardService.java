@@ -1,6 +1,8 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.WardDTO;
+import com.ridehub.route.service.dto.WardSimpleDTO;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -45,4 +47,11 @@ public interface WardService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Get all wards with only ID and name.
+     *
+     * @return the list of simple ward DTOs.
+     */
+    List<WardSimpleDTO> findAllSimple();
 }

@@ -5,6 +5,8 @@ import com.ridehub.route.service.RouteQueryService;
 import com.ridehub.route.service.RouteService;
 import com.ridehub.route.service.criteria.RouteCriteria;
 import com.ridehub.route.service.dto.RouteDTO;
+import com.ridehub.route.service.dto.RouteStationRequestDTO;
+import com.ridehub.route.service.dto.RouteStationResponseDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import com.ridehub.route.web.rest.errors.ElasticsearchExceptionMapper;
 import jakarta.validation.Valid;
@@ -221,5 +223,45 @@ public class RouteResource {
         } catch (RuntimeException e) {
             throw ElasticsearchExceptionMapper.mapException(e);
         }
+    }
+
+    /**
+     * {@code POST  /routes/station} : Create a new route based on station ID with flag-based logic.
+     *
+     * @param requestDTO the route station request containing station ID and flag.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new route response, or with status {@code 400 (Bad Request)} if the request is invalid.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/station")
+    public ResponseEntity<RouteStationResponseDTO> createRouteWithStation(@Valid @RequestBody RouteStationRequestDTO requestDTO) throws URISyntaxException {
+        LOG.debug("REST request to create Route with station : {}", requestDTO);
+
+        RouteStationResponseDTO result = routeService.createRouteWithStation(requestDTO);
+        return ResponseEntity.created(new URI("/api/routes/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code PUT  /routes/{id}/station} : Update an existing route based on station ID with flag-based logic.
+     *
+     * @param id the id of the route to update.
+     * @param requestDTO the route station request containing station ID and flag.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated route response,
+     * or with status {@code 400 (Bad Request)} if the request is invalid,
+     * or with status {@code 404 (Not Found)} if the route is not found.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/station/{id}")
+    public ResponseEntity<RouteStationResponseDTO> updateRouteWithStation(
+        @PathVariable("id") Long id,
+        @Valid @RequestBody RouteStationRequestDTO requestDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to update Route {} with station : {}", id, requestDTO);
+
+        RouteStationResponseDTO result = routeService.updateRouteWithStation(id, requestDTO);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 }

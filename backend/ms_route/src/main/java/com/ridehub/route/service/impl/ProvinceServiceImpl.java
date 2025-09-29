@@ -4,8 +4,11 @@ import com.ridehub.route.domain.Province;
 import com.ridehub.route.repository.ProvinceRepository;
 import com.ridehub.route.service.ProvinceService;
 import com.ridehub.route.service.dto.ProvinceDTO;
+import com.ridehub.route.service.dto.ProvinceSimpleDTO;
 import com.ridehub.route.service.mapper.ProvinceMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -71,5 +74,15 @@ public class ProvinceServiceImpl implements ProvinceService {
     public void delete(Long id) {
         LOG.debug("Request to delete Province : {}", id);
         provinceRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProvinceSimpleDTO> findAllSimple() {
+        LOG.debug("Request to get all Provinces with ID and name only");
+        return provinceRepository.findAll().stream()
+            .filter(province -> province.getIsDeleted() == null || !province.getIsDeleted())
+            .map(province -> new ProvinceSimpleDTO(province.getId(), province.getName()))
+            .collect(Collectors.toList());
     }
 }

@@ -34,40 +34,59 @@ public class TripDetailDTO implements Serializable {
     private String status; // Based on trip status or current time vs departure time
     private BigDecimal baseFare;
 
+    private Boolean tripDeleted;
+    private Boolean routeDeleted;
+    private Boolean originDeleted;
+    private Boolean destinationDeleted;
+    private Boolean vehicleDeleted;
+    private Boolean driverDeleted;
+    private Boolean driverStaffDeleted;
+    private Boolean attendantDeleted;
+    private Boolean attendantStaffDeleted;
+
     // Constructors
     public TripDetailDTO() {
     }
 
-    public TripDetailDTO(Long tripId, String tripCode, String routeCode, String origin, String destination,
-            BigDecimal distanceKm, Instant departureTime, Instant arrivalTime,
-            VehicleType vehicleType, String vehiclePlateNumber, String vehicleBrand,
-            Long driverId,String driverName, String driverLicenseClass, Integer driverYearsExperience,
-            Long attendantId, String attendantName, String attendantPhoneNumber,
-            BigDecimal baseFare) {
+    public TripDetailDTO(Long tripId, String tripCode, String routeCode, String routeName, String origin,
+            String destination, BigDecimal distanceKm, Instant departureTime, Instant arrivalTime,
+            String plannedJourney, VehicleType vehicleType, String vehiclePlateNumber, String vehicleBrand,
+            Long driverId, String driverLicenseClass, Integer driverYearsExperience, String driverName,
+            Long attendantId, String attendantName, String attendantPhoneNumber, String status, BigDecimal baseFare,
+            Boolean tripDeleted, Boolean routeDeleted, Boolean originDeleted, Boolean destinationDeleted,
+            Boolean vehicleDeleted, Boolean driverDeleted, Boolean driverStaffDeleted, Boolean attendantDeleted,
+            Boolean attendantStaffDeleted) {
         this.tripId = tripId;
         this.tripCode = tripCode;
         this.routeCode = routeCode;
+        this.routeName = routeName;
         this.origin = origin;
         this.destination = destination;
         this.distanceKm = distanceKm;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
+        this.plannedJourney = plannedJourney;
         this.vehicleType = vehicleType;
         this.vehiclePlateNumber = vehiclePlateNumber;
         this.vehicleBrand = vehicleBrand;
         this.driverId = driverId;
-        this.driverName = driverName;
         this.driverLicenseClass = driverLicenseClass;
         this.driverYearsExperience = driverYearsExperience;
+        this.driverName = driverName;
         this.attendantId = attendantId;
         this.attendantName = attendantName;
         this.attendantPhoneNumber = attendantPhoneNumber;
+        this.status = status;
         this.baseFare = baseFare;
-
-        // Generate computed fields
-        this.routeName = origin + " - " + destination;
-        this.plannedJourney = formatPlannedJourney();
-        this.status = determineStatus();
+        this.tripDeleted = tripDeleted;
+        this.routeDeleted = routeDeleted;
+        this.originDeleted = originDeleted;
+        this.destinationDeleted = destinationDeleted;
+        this.vehicleDeleted = vehicleDeleted;
+        this.driverDeleted = driverDeleted;
+        this.driverStaffDeleted = driverStaffDeleted;
+        this.attendantDeleted = attendantDeleted;
+        this.attendantStaffDeleted = attendantStaffDeleted;
     }
 
     // Getters and Setters
@@ -274,6 +293,78 @@ public class TripDetailDTO implements Serializable {
         } else {
             return "Đang chạy"; // In progress
         }
+    }
+
+    public Boolean getTripDeleted() {
+        return tripDeleted;
+    }
+
+    public void setTripDeleted(Boolean tripDeleted) {
+        this.tripDeleted = tripDeleted;
+    }
+
+    public Boolean getRouteDeleted() {
+        return routeDeleted;
+    }
+
+    public void setRouteDeleted(Boolean routeDeleted) {
+        this.routeDeleted = routeDeleted;
+    }
+
+    public Boolean getOriginDeleted() {
+        return originDeleted;
+    }
+
+    public void setOriginDeleted(Boolean originDeleted) {
+        this.originDeleted = originDeleted;
+    }
+
+    public Boolean getDestinationDeleted() {
+        return destinationDeleted;
+    }
+
+    public void setDestinationDeleted(Boolean destinationDeleted) {
+        this.destinationDeleted = destinationDeleted;
+    }
+
+    public Boolean getVehicleDeleted() {
+        return vehicleDeleted;
+    }
+
+    public void setVehicleDeleted(Boolean vehicleDeleted) {
+        this.vehicleDeleted = vehicleDeleted;
+    }
+
+    public Boolean getDriverDeleted() {
+        return driverDeleted;
+    }
+
+    public void setDriverDeleted(Boolean driverDeleted) {
+        this.driverDeleted = driverDeleted;
+    }
+
+    public Boolean getDriverStaffDeleted() {
+        return driverStaffDeleted;
+    }
+
+    public void setDriverStaffDeleted(Boolean driverStaffDeleted) {
+        this.driverStaffDeleted = driverStaffDeleted;
+    }
+
+    public Boolean getAttendantDeleted() {
+        return attendantDeleted;
+    }
+
+    public void setAttendantDeleted(Boolean attendantDeleted) {
+        this.attendantDeleted = attendantDeleted;
+    }
+
+    public Boolean getAttendantStaffDeleted() {
+        return attendantStaffDeleted;
+    }
+
+    public void setAttendantStaffDeleted(Boolean attendantStaffDeleted) {
+        this.attendantStaffDeleted = attendantStaffDeleted;
     }
 
     @Override

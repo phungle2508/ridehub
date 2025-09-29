@@ -84,11 +84,27 @@ public interface KeycloakAuthService {
     /**
      * Update the profile of the currently authenticated user, inferred from their
      * access token.
-     * 
+     *
      * @param accessToken Bearer access token of the current user (not the admin
      *                    token)
      * @param req         fields to update (email, firstName, lastName, phoneNumber)
      * @return { "status": "success" } or { "status":"error", "message": "..." }
      */
     Map<String, Object> updateCurrentUserProfile(String accessToken, UpdateProfileRequest req);
+
+    /**
+     * Refresh access token using refresh token
+     *
+     * @param refreshToken the refresh token
+     * @return the login response with new tokens
+     */
+    LoginResponseDTO refreshToken(String refreshToken);
+
+    /**
+     * Logout user by revoking refresh token
+     *
+     * @param refreshToken the refresh token to revoke
+     * @return the logout response
+     */
+    Map<String, Object> logout(String refreshToken);
 }

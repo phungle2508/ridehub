@@ -502,6 +502,86 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             return Map.of("status", "error", "message", e.getMessage());
         }
     }
+
+    @Override
+    public LoginResponseDTO refreshToken(String refreshToken) {
+        log.debug("Refreshing access token");
+        try {
+            Map<String, String> form = new HashMap<>();
+            form.put("grant_type", "refresh_token");
+            form.put("client_id", userClientId);
+            if (!userClientSecret.isBlank())
+                form.put("client_secret", userClientSecret);
+            form.put("refresh_token", refreshToken);
+
+            Map<String, Object> tokenResponse = postForm(
+                    realmPath("/protocol/openid-connect/token"),
+                    form,
+                    200);
+
+            String accessToken = (String) tokenResponse.get("access_token");
+            String newRefreshToken = (String) tokenResponse.get("refresh_token");
+            String tokenType = (String) tokenResponse.get("token_type");
+            Number expiresIn = asNumber(tokenResponse.get("expires_in"), 0);
+            String scope = (String) tokenResponse.get("scope");
+
+            LoginResponseDTO dto = LoginResponseDTO.success(accessToken, newRefreshToken, tokenType,
+                    expiresIn.longValue());
+            dto.setScope(scope);
+
+            try {
+                LoginResponseDTO.UserInfoDTO userInfo = extractUserInfoFromToken(accessToken);
+                dto.setUserInfo(userInfo);
+                // Update last login time for refresh token usage
+                syncUserDataAfterLogin(userInfo);
+            } catch (Exception ex) {
+                log.warn("Failed to extract user info or sync data during refresh: {}", ex.getMessage());
+            }
+
+            return dto;
+
+        } catch (HttpProblem hp) {
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            String userFriendlyMessage = getRefreshTokenErrorMessage(errorDetails.getErrorCode(), errorDetails.getErrorDescription());
+            return LoginResponseDTO.error(
+                userFriendlyMessage,
+                errorDetails.getErrorCode(),
+                errorDetails.getErrorDescription()
+            );
+        } catch (Exception e) {
+            log.error("Error during token refresh", e);
+            return LoginResponseDTO.error("Token refresh failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Map<String, Object> logout(String refreshToken) {
+        log.debug("Logging out user by revoking refresh token");
+        try {
+            Map<String, String> form = new HashMap<>();
+            form.put("token", refreshToken);
+            form.put("token_type_hint", "refresh_token");
+            form.put("client_id", userClientId);
+            if (!userClientSecret.isBlank())
+                form.put("client_secret", userClientSecret);
+
+            // Call Keycloak's token revocation endpoint
+            postForm(
+                    realmPath("/protocol/openid-connect/revoke"),
+                    form,
+                    200);
+
+            return Map.of("status", "success", "message", "Logout successful");
+
+        } catch (HttpProblem hp) {
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            log.warn("Logout failed with HTTP {}: {}", hp.status(), errorDetails.getDisplayMessage());
+            return Map.of("status", "error", "message", errorDetails.getDisplayMessage());
+        } catch (Exception e) {
+            log.error("Error during logout", e);
+            return Map.of("status", "error", "message", "Logout failed: " + e.getMessage());
+        }
+    }
     // ============================
     // Helpers
     // ============================
@@ -628,6 +708,19 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             case "unsupported_grant_type" -> "Unsupported grant type";
             case "invalid_scope" -> "Invalid scope";
             default -> (description != null ? description : "Login failed: " + error);
+        };
+    }
+
+    private String getRefreshTokenErrorMessage(String error, String description) {
+        if (error == null && description != null)
+            return description;
+        return switch (String.valueOf(error)) {
+            case "invalid_grant" -> "Invalid or expired refresh token";
+            case "invalid_client" -> "Invalid client configuration";
+            case "unauthorized_client" -> "Client not authorized";
+            case "unsupported_grant_type" -> "Unsupported grant type";
+            case "invalid_scope" -> "Invalid scope";
+            default -> (description != null ? description : "Token refresh failed: " + error);
         };
     }
 

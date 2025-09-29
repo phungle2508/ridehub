@@ -5,6 +5,7 @@ import com.ridehub.route.service.ProvinceQueryService;
 import com.ridehub.route.service.ProvinceService;
 import com.ridehub.route.service.criteria.ProvinceCriteria;
 import com.ridehub.route.service.dto.ProvinceDTO;
+import com.ridehub.route.service.dto.ProvinceSimpleDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -191,5 +192,17 @@ public class ProvinceResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code GET  /provinces/simple} : get all provinces with only ID and name.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of simple province DTOs in body.
+     */
+    @GetMapping("/simple")
+    public ResponseEntity<List<ProvinceSimpleDTO>> getAllProvincesSimple() {
+        LOG.debug("REST request to get all Provinces with ID and name only");
+        List<ProvinceSimpleDTO> provinces = provinceService.findAllSimple();
+        return ResponseEntity.ok().body(provinces);
     }
 }

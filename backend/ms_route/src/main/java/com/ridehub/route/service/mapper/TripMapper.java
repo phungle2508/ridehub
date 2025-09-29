@@ -69,5 +69,17 @@ public interface TripMapper extends EntityMapper<TripDTO, Trip> {
     @Mapping(target = "routeName", ignore = true) // Computed field
     @Mapping(target = "plannedJourney", ignore = true) // Computed field
     @Mapping(target = "status", ignore = true) // Computed field
+    // soft-delete flags
+    @Mapping(target = "tripDeleted", source = "isDeleted")
+    @Mapping(target = "routeDeleted", source = "route.isDeleted")
+    @Mapping(target = "originDeleted", source = "route.origin.isDeleted")
+    @Mapping(target = "destinationDeleted", source = "route.destination.isDeleted")
+    @Mapping(target = "vehicleDeleted", source = "vehicle.isDeleted")
+
+    @Mapping(target = "driverDeleted", expression = "java(trip.getDriver() == null ? null : Boolean.TRUE.equals(trip.getDriver().getIsDeleted()))")
+    @Mapping(target = "driverStaffDeleted", expression = "java(trip.getDriver() == null || trip.getDriver().getStaff() == null ? null : Boolean.TRUE.equals(trip.getDriver().getStaff().getIsDeleted()))")
+
+    @Mapping(target = "attendantDeleted", expression = "java(trip.getAttendant() == null ? null : Boolean.TRUE.equals(trip.getAttendant().getIsDeleted()))")
+    @Mapping(target = "attendantStaffDeleted", expression = "java(trip.getAttendant() == null || trip.getAttendant().getStaff() == null ? null : Boolean.TRUE.equals(trip.getAttendant().getStaff().getIsDeleted()))")
     TripDetailDTO toTripDetailDto(Trip trip);
 }

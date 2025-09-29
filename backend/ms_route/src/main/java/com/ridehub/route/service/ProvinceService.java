@@ -1,6 +1,8 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.ProvinceDTO;
+import com.ridehub.route.service.dto.ProvinceSimpleDTO;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -45,4 +47,11 @@ public interface ProvinceService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Get all provinces with only ID and name.
+     *
+     * @return the list of simple province DTOs.
+     */
+    List<ProvinceSimpleDTO> findAllSimple();
 }

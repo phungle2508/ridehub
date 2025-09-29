@@ -6,6 +6,12 @@ import com.ridehub.user.service.dto.auth.SendOtpResponseDTO;
 import com.ridehub.user.service.dto.auth.UpdateProfileRequest;
 import com.ridehub.user.service.dto.auth.VerifyOtpRequestDTO;
 import com.ridehub.user.service.dto.auth.VerifyOtpResponseDTO;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import com.ridehub.user.service.dto.auth.RegistrationCompleteRequestDTO;
 import com.ridehub.user.service.dto.auth.RegistrationCompleteResponseDTO;
 import com.ridehub.user.service.dto.auth.PasswordResetRequestDTO;
@@ -16,7 +22,6 @@ import com.ridehub.user.service.dto.auth.LoginRequestDTO;
 import com.ridehub.user.service.dto.auth.LoginResponseDTO;
 import jakarta.validation.Valid;
 import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,6 +207,89 @@ public class AuthResource {
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    /**
+     * POST /api/auth/refresh : Refresh access token using refresh token
+     *
+     * @param request the refresh token request
+     * @return the ResponseEntity with status 200 (OK) and new tokens,
+     *         or with status 401 (Unauthorized) if refresh token is invalid
+     */
+    /**
+     * POST /api/auth/refresh : Refresh access token using refresh token
+     *
+     * @param request the refresh token request
+     * @return the ResponseEntity with status 200 (OK) and new tokens,
+     *         or with status 401 (Unauthorized) if refresh token is invalid
+     */
+    @Operation(summary = "Refresh access token",
+               description = "Refresh access token using refresh token",
+               requestBody = @RequestBody(required = true,
+                   content = @Content(mediaType = "application/json",
+                       schema = @Schema(implementation = Map.class),
+                       examples = @ExampleObject(name = "RefreshTokenRequest",
+                           summary = "Example refresh token request",
+                           value = """
+                           {
+                             "refreshToken": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJyc2EtZ2VuZXJhdGVkIn0..."
+                           }
+                           """))))
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDTO> refreshToken(@Valid @RequestBody Map<String, String> request) {
+        log.debug("REST request to refresh access token");
+
+        String refreshToken = request.get("refreshToken");
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            LoginResponseDTO errorResponse = LoginResponseDTO.error("Refresh token is required");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        LoginResponseDTO response = keycloakAuthService.refreshToken(refreshToken);
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    /**
+     * POST /api/auth/logout : Logout user by revoking refresh token
+     *
+     * @param request the logout request containing refresh token
+     * @return the ResponseEntity with status 200 (OK) and logout response,
+     *         or with status 400 (Bad Request) if logout fails
+     */
+    @Operation(summary = "Logout user",
+               description = "Logout user by revoking refresh token",
+               requestBody = @RequestBody(required = true,
+                   content = @Content(mediaType = "application/json",
+                       schema = @Schema(implementation = Map.class),
+                       examples = @ExampleObject(name = "LogoutRequest",
+                           summary = "Example logout request",
+                           value = """
+                           {
+                             "refreshToken": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJyc2EtZ2VuZXJhdGVkIn0..."
+                           }
+                           """))))
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout(@Valid @RequestBody Map<String, String> request) {
+        log.debug("REST request to logout user");
+
+        String refreshToken = request.get("refreshToken");
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Refresh token is required"));
+        }
+
+        Map<String, Object> response = keycloakAuthService.logout(refreshToken);
+
+        if ("success".equals(response.get("status"))) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
