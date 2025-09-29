@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250928081433"
+    "changelogDate": "20250929065706"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -62,6 +62,7 @@
   "jpaMetamodelFiltering": true,
   "microserviceName": "ms_route",
   "name": "Ward",
+  "pagination": "infinite-scroll",
   "relationships": [
     {
       "otherEntityName": "address",

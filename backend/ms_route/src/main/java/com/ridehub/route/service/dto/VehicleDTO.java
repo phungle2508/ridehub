@@ -1,5 +1,6 @@
 package com.ridehub.route.service.dto;
 
+import com.ridehub.route.domain.enumeration.VehicleStatus;
 import com.ridehub.route.domain.enumeration.VehicleType;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -27,6 +28,9 @@ public class VehicleDTO implements Serializable {
     private String brand;
 
     private String description;
+
+    @NotNull
+    private VehicleStatus status;
 
     @NotNull
     private Instant createdAt;
@@ -90,6 +94,14 @@ public class VehicleDTO implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public VehicleStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(VehicleStatus status) {
+        this.status = status;
     }
 
     public Instant getCreatedAt() {
@@ -179,6 +191,7 @@ public class VehicleDTO implements Serializable {
             ", plateNumber='" + getPlateNumber() + "'" +
             ", brand='" + getBrand() + "'" +
             ", description='" + getDescription() + "'" +
+            ", status='" + getStatus() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

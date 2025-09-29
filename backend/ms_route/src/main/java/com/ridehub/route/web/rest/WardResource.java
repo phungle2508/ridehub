@@ -18,9 +18,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -53,9 +56,7 @@ public class WardResource {
      * {@code POST  /wards} : Create a new ward.
      *
      * @param wardDTO the wardDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
-     *         body the new wardDTO, or with status {@code 400 (Bad Request)} if the
-     *         ward has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new wardDTO, or with status {@code 400 (Bad Request)} if the ward has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -66,27 +67,25 @@ public class WardResource {
         }
         wardDTO = wardService.save(wardDTO);
         return ResponseEntity.created(new URI("/api/wards/" + wardDTO.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
-                        wardDTO.getId().toString()))
-                .body(wardDTO);
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, wardDTO.getId().toString()))
+            .body(wardDTO);
     }
 
     /**
      * {@code PUT  /wards/:id} : Updates an existing ward.
      *
-     * @param id      the id of the wardDTO to save.
+     * @param id the id of the wardDTO to save.
      * @param wardDTO the wardDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-     *         the updated wardDTO,
-     *         or with status {@code 400 (Bad Request)} if the wardDTO is not valid,
-     *         or with status {@code 500 (Internal Server Error)} if the wardDTO
-     *         couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated wardDTO,
+     * or with status {@code 400 (Bad Request)} if the wardDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the wardDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
     public ResponseEntity<WardDTO> updateWard(
-            @PathVariable(value = "id", required = false) final Long id,
-            @Valid @RequestBody WardDTO wardDTO) throws URISyntaxException {
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody WardDTO wardDTO
+    ) throws URISyntaxException {
         LOG.debug("REST request to update Ward : {}, {}", id, wardDTO);
         if (wardDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -101,29 +100,26 @@ public class WardResource {
 
         wardDTO = wardService.update(wardDTO);
         return ResponseEntity.ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
-                        wardDTO.getId().toString()))
-                .body(wardDTO);
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, wardDTO.getId().toString()))
+            .body(wardDTO);
     }
 
     /**
-     * {@code PATCH  /wards/:id} : Partial updates given fields of an existing ward,
-     * field will ignore if it is null
+     * {@code PATCH  /wards/:id} : Partial updates given fields of an existing ward, field will ignore if it is null
      *
-     * @param id      the id of the wardDTO to save.
+     * @param id the id of the wardDTO to save.
      * @param wardDTO the wardDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-     *         the updated wardDTO,
-     *         or with status {@code 400 (Bad Request)} if the wardDTO is not valid,
-     *         or with status {@code 404 (Not Found)} if the wardDTO is not found,
-     *         or with status {@code 500 (Internal Server Error)} if the wardDTO
-     *         couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated wardDTO,
+     * or with status {@code 400 (Bad Request)} if the wardDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the wardDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the wardDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<WardDTO> partialUpdateWard(
-            @PathVariable(value = "id", required = false) final Long id,
-            @NotNull @RequestBody WardDTO wardDTO) throws URISyntaxException {
+        @PathVariable(value = "id", required = false) final Long id,
+        @NotNull @RequestBody WardDTO wardDTO
+    ) throws URISyntaxException {
         LOG.debug("REST request to partial update Ward partially : {}, {}", id, wardDTO);
         if (wardDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -139,32 +135,35 @@ public class WardResource {
         Optional<WardDTO> result = wardService.partialUpdate(wardDTO);
 
         return ResponseUtil.wrapOrNotFound(
-                result,
-                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, wardDTO.getId().toString()));
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, wardDTO.getId().toString())
+        );
     }
 
     /**
      * {@code GET  /wards} : get all the wards.
      *
+     * @param pageable the pagination information.
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
-     *         of wards in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of wards in body.
      */
     @GetMapping("")
-    public ResponseEntity<Page<WardDTO>> getAllWards(WardCriteria criteria,
-            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    public ResponseEntity<List<WardDTO>> getAllWards(
+        WardCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
         LOG.debug("REST request to get Wards by criteria: {}", criteria);
 
-        Page<WardDTO> entityList = wardQueryService.findByCriteria(criteria, pageable);
-        return ResponseEntity.ok().body(entityList);
+        Page<WardDTO> page = wardQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
      * {@code GET  /wards/count} : count all the wards.
      *
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
-     *         in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countWards(WardCriteria criteria) {
@@ -176,8 +175,7 @@ public class WardResource {
      * {@code GET  /wards/:id} : get the "id" ward.
      *
      * @param id the id of the wardDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-     *         the wardDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the wardDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<WardDTO> getWard(@PathVariable("id") Long id) {
@@ -197,7 +195,7 @@ public class WardResource {
         LOG.debug("REST request to delete Ward : {}", id);
         wardService.delete(id);
         return ResponseEntity.noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-                .build();
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
     }
 }

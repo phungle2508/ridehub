@@ -81,6 +81,7 @@ class VehicleCriteriaTest {
         vehicleCriteria.plateNumber();
         vehicleCriteria.brand();
         vehicleCriteria.description();
+        vehicleCriteria.status();
         vehicleCriteria.createdAt();
         vehicleCriteria.updatedAt();
         vehicleCriteria.isDeleted();
@@ -100,6 +101,7 @@ class VehicleCriteriaTest {
                 condition.apply(criteria.getPlateNumber()) &&
                 condition.apply(criteria.getBrand()) &&
                 condition.apply(criteria.getDescription()) &&
+                condition.apply(criteria.getStatus()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
@@ -121,6 +123,7 @@ class VehicleCriteriaTest {
                 condition.apply(criteria.getPlateNumber(), copy.getPlateNumber()) &&
                 condition.apply(criteria.getBrand(), copy.getBrand()) &&
                 condition.apply(criteria.getDescription(), copy.getDescription()) &&
+                condition.apply(criteria.getStatus(), copy.getStatus()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&

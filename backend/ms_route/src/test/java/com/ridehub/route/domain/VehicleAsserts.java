@@ -58,6 +58,7 @@ public class VehicleAsserts {
             .satisfies(a -> assertThat(a.getPlateNumber()).as("check plateNumber").isEqualTo(expected.getPlateNumber()))
             .satisfies(a -> assertThat(a.getBrand()).as("check brand").isEqualTo(expected.getBrand()))
             .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()))
+            .satisfies(a -> assertThat(a.getStatus()).as("check status").isEqualTo(expected.getStatus()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))

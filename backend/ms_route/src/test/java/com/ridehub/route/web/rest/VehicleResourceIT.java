@@ -14,6 +14,7 @@ import com.ridehub.route.IntegrationTest;
 import com.ridehub.route.domain.FileRoute;
 import com.ridehub.route.domain.SeatMap;
 import com.ridehub.route.domain.Vehicle;
+import com.ridehub.route.domain.enumeration.VehicleStatus;
 import com.ridehub.route.domain.enumeration.VehicleType;
 import com.ridehub.route.repository.VehicleRepository;
 import com.ridehub.route.service.dto.VehicleDTO;
@@ -58,6 +59,9 @@ class VehicleResourceIT {
 
     private static final String DEFAULT_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_DESCRIPTION = "BBBBBBBBBB";
+
+    private static final VehicleStatus DEFAULT_STATUS = VehicleStatus.ACTIVE;
+    private static final VehicleStatus UPDATED_STATUS = VehicleStatus.MAINTENANCE;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -112,6 +116,7 @@ class VehicleResourceIT {
             .plateNumber(DEFAULT_PLATE_NUMBER)
             .brand(DEFAULT_BRAND)
             .description(DEFAULT_DESCRIPTION)
+            .status(DEFAULT_STATUS)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -143,6 +148,7 @@ class VehicleResourceIT {
             .plateNumber(UPDATED_PLATE_NUMBER)
             .brand(UPDATED_BRAND)
             .description(UPDATED_DESCRIPTION)
+            .status(UPDATED_STATUS)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -254,6 +260,23 @@ class VehicleResourceIT {
 
     @Test
     @Transactional
+    void checkStatusIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        // set the field null
+        vehicle.setStatus(null);
+
+        // Create the Vehicle, which fails.
+        VehicleDTO vehicleDTO = vehicleMapper.toDto(vehicle);
+
+        restVehicleMockMvc
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(vehicleDTO)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     void checkCreatedAtIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null
@@ -286,6 +309,7 @@ class VehicleResourceIT {
             .andExpect(jsonPath("$.[*].plateNumber").value(hasItem(DEFAULT_PLATE_NUMBER)))
             .andExpect(jsonPath("$.[*].brand").value(hasItem(DEFAULT_BRAND)))
             .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -310,6 +334,7 @@ class VehicleResourceIT {
             .andExpect(jsonPath("$.plateNumber").value(DEFAULT_PLATE_NUMBER))
             .andExpect(jsonPath("$.brand").value(DEFAULT_BRAND))
             .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -593,6 +618,36 @@ class VehicleResourceIT {
 
     @Test
     @Transactional
+    void getAllVehiclesByStatusIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedVehicle = vehicleRepository.saveAndFlush(vehicle);
+
+        // Get all the vehicleList where status equals to
+        defaultVehicleFiltering("status.equals=" + DEFAULT_STATUS, "status.equals=" + UPDATED_STATUS);
+    }
+
+    @Test
+    @Transactional
+    void getAllVehiclesByStatusIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedVehicle = vehicleRepository.saveAndFlush(vehicle);
+
+        // Get all the vehicleList where status in
+        defaultVehicleFiltering("status.in=" + DEFAULT_STATUS + "," + UPDATED_STATUS, "status.in=" + UPDATED_STATUS);
+    }
+
+    @Test
+    @Transactional
+    void getAllVehiclesByStatusIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedVehicle = vehicleRepository.saveAndFlush(vehicle);
+
+        // Get all the vehicleList where status is not null
+        defaultVehicleFiltering("status.specified=true", "status.specified=false");
+    }
+
+    @Test
+    @Transactional
     void getAllVehiclesByCreatedAtIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedVehicle = vehicleRepository.saveAndFlush(vehicle);
@@ -796,6 +851,7 @@ class VehicleResourceIT {
             .andExpect(jsonPath("$.[*].plateNumber").value(hasItem(DEFAULT_PLATE_NUMBER)))
             .andExpect(jsonPath("$.[*].brand").value(hasItem(DEFAULT_BRAND)))
             .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -854,6 +910,7 @@ class VehicleResourceIT {
             .plateNumber(UPDATED_PLATE_NUMBER)
             .brand(UPDATED_BRAND)
             .description(UPDATED_DESCRIPTION)
+            .status(UPDATED_STATUS)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -954,8 +1011,9 @@ class VehicleResourceIT {
         partialUpdatedVehicle
             .type(UPDATED_TYPE)
             .description(UPDATED_DESCRIPTION)
+            .status(UPDATED_STATUS)
             .createdAt(UPDATED_CREATED_AT)
-            .updatedAt(UPDATED_UPDATED_AT);
+            .deletedBy(UPDATED_DELETED_BY);
 
         restVehicleMockMvc
             .perform(
@@ -990,6 +1048,7 @@ class VehicleResourceIT {
             .plateNumber(UPDATED_PLATE_NUMBER)
             .brand(UPDATED_BRAND)
             .description(UPDATED_DESCRIPTION)
+            .status(UPDATED_STATUS)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

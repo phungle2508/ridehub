@@ -14,6 +14,8 @@ enum StaffStatus { ACTIVE, INACTIVE }
 
 enum Gender { MALE, FEMALE, OTHER }
 
+enum VehicleStatus { ACTIVE, MAINTENANCE, RETIRED } // Hoạt động / Bảo trì / Đã ngừng
+
 enum VehicleType { STANDARD_BUS_VIP, STANDARD_BUS_NORMAL, LIMOUSINE }
 
 enum LockStatus { HELD, EXPIRED, COMMITTED } // NEW
@@ -487,6 +489,8 @@ entity Vehicle {
   brand String
 
   description String
+
+  status VehicleStatus required   // <-- NEW
 
   createdAt Instant required
 

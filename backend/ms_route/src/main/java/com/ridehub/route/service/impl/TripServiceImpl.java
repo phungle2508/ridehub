@@ -50,14 +50,14 @@ public class TripServiceImpl implements TripService {
         LOG.debug("Request to partially update Trip : {}", tripDTO);
 
         return tripRepository
-                .findById(tripDTO.getId())
-                .map(existingTrip -> {
-                    tripMapper.partialUpdate(existingTrip, tripDTO);
+            .findById(tripDTO.getId())
+            .map(existingTrip -> {
+                tripMapper.partialUpdate(existingTrip, tripDTO);
 
-                    return existingTrip;
-                })
-                .map(tripRepository::save)
-                .map(tripMapper::toDto);
+                return existingTrip;
+            })
+            .map(tripRepository::save)
+            .map(tripMapper::toDto);
     }
 
     @Override
@@ -72,6 +72,4 @@ public class TripServiceImpl implements TripService {
         LOG.debug("Request to delete Trip : {}", id);
         tripRepository.deleteById(id);
     }
-
-
 }

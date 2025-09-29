@@ -2,22 +2,15 @@ package com.ridehub.route.service;
 
 import com.ridehub.route.domain.*; // for static metamodels
 import com.ridehub.route.domain.Route;
-import com.ridehub.route.domain.Trip;
-import com.ridehub.route.domain.enumeration.VehicleType;
 import com.ridehub.route.repository.RouteRepository;
-import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.repository.search.RouteSearchRepository;
 import com.ridehub.route.service.criteria.RouteCriteria;
 import com.ridehub.route.service.dto.RouteDTO;
-import com.ridehub.route.service.dto.TripDetailDTO;
 import com.ridehub.route.service.mapper.RouteMapper;
 import jakarta.persistence.criteria.JoinType;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -42,13 +35,10 @@ public class RouteQueryService extends QueryService<Route> {
 
     private final RouteSearchRepository routeSearchRepository;
 
-    private final TripRepository tripRepository;
-
-    public RouteQueryService(RouteRepository routeRepository, RouteMapper routeMapper, RouteSearchRepository routeSearchRepository, TripRepository tripRepository) {
+    public RouteQueryService(RouteRepository routeRepository, RouteMapper routeMapper, RouteSearchRepository routeSearchRepository) {
         this.routeRepository = routeRepository;
         this.routeMapper = routeMapper;
         this.routeSearchRepository = routeSearchRepository;
-        this.tripRepository = tripRepository;
     }
 
     /**
@@ -75,9 +65,6 @@ public class RouteQueryService extends QueryService<Route> {
         final Specification<Route> specification = createSpecification(criteria);
         return routeRepository.count(specification);
     }
-
-
-
 
     /**
      * Function to convert {@link RouteCriteria} to a {@link Specification}

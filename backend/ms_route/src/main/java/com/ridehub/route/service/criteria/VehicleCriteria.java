@@ -1,5 +1,6 @@
 package com.ridehub.route.service.criteria;
 
+import com.ridehub.route.domain.enumeration.VehicleStatus;
 import com.ridehub.route.domain.enumeration.VehicleType;
 import java.io.Serializable;
 import java.util.Objects;
@@ -38,6 +39,23 @@ public class VehicleCriteria implements Serializable, Criteria {
         }
     }
 
+    /**
+     * Class for filtering VehicleStatus
+     */
+    public static class VehicleStatusFilter extends Filter<VehicleStatus> {
+
+        public VehicleStatusFilter() {}
+
+        public VehicleStatusFilter(VehicleStatusFilter filter) {
+            super(filter);
+        }
+
+        @Override
+        public VehicleStatusFilter copy() {
+            return new VehicleStatusFilter(this);
+        }
+    }
+
     private static final long serialVersionUID = 1L;
 
     private LongFilter id;
@@ -51,6 +69,8 @@ public class VehicleCriteria implements Serializable, Criteria {
     private StringFilter brand;
 
     private StringFilter description;
+
+    private VehicleStatusFilter status;
 
     private InstantFilter createdAt;
 
@@ -77,6 +97,7 @@ public class VehicleCriteria implements Serializable, Criteria {
         this.plateNumber = other.optionalPlateNumber().map(StringFilter::copy).orElse(null);
         this.brand = other.optionalBrand().map(StringFilter::copy).orElse(null);
         this.description = other.optionalDescription().map(StringFilter::copy).orElse(null);
+        this.status = other.optionalStatus().map(VehicleStatusFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -204,6 +225,25 @@ public class VehicleCriteria implements Serializable, Criteria {
 
     public void setDescription(StringFilter description) {
         this.description = description;
+    }
+
+    public VehicleStatusFilter getStatus() {
+        return status;
+    }
+
+    public Optional<VehicleStatusFilter> optionalStatus() {
+        return Optional.ofNullable(status);
+    }
+
+    public VehicleStatusFilter status() {
+        if (status == null) {
+            setStatus(new VehicleStatusFilter());
+        }
+        return status;
+    }
+
+    public void setStatus(VehicleStatusFilter status) {
+        this.status = status;
     }
 
     public InstantFilter getCreatedAt() {
@@ -374,6 +414,7 @@ public class VehicleCriteria implements Serializable, Criteria {
             Objects.equals(plateNumber, that.plateNumber) &&
             Objects.equals(brand, that.brand) &&
             Objects.equals(description, that.description) &&
+            Objects.equals(status, that.status) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
@@ -394,6 +435,7 @@ public class VehicleCriteria implements Serializable, Criteria {
             plateNumber,
             brand,
             description,
+            status,
             createdAt,
             updatedAt,
             isDeleted,
@@ -415,6 +457,7 @@ public class VehicleCriteria implements Serializable, Criteria {
             optionalPlateNumber().map(f -> "plateNumber=" + f + ", ").orElse("") +
             optionalBrand().map(f -> "brand=" + f + ", ").orElse("") +
             optionalDescription().map(f -> "description=" + f + ", ").orElse("") +
+            optionalStatus().map(f -> "status=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +

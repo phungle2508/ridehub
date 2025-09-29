@@ -5,6 +5,7 @@ import com.ridehub.route.service.VehicleQueryService;
 import com.ridehub.route.service.VehicleService;
 import com.ridehub.route.service.criteria.VehicleCriteria;
 import com.ridehub.route.service.dto.VehicleDTO;
+import com.ridehub.route.service.dto.VehicleWithSeatCountDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -46,7 +47,8 @@ public class VehicleResource {
 
     private final VehicleQueryService vehicleQueryService;
 
-    public VehicleResource(VehicleService vehicleService, VehicleRepository vehicleRepository, VehicleQueryService vehicleQueryService) {
+    public VehicleResource(VehicleService vehicleService, VehicleRepository vehicleRepository,
+            VehicleQueryService vehicleQueryService) {
         this.vehicleService = vehicleService;
         this.vehicleRepository = vehicleRepository;
         this.vehicleQueryService = vehicleQueryService;
@@ -56,36 +58,42 @@ public class VehicleResource {
      * {@code POST  /vehicles} : Create a new vehicle.
      *
      * @param vehicleDTO the vehicleDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new vehicleDTO, or with status {@code 400 (Bad Request)} if the vehicle has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
+     *         body the new vehicleDTO, or with status {@code 400 (Bad Request)} if
+     *         the vehicle has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<VehicleDTO> createVehicle(@Valid @RequestBody VehicleDTO vehicleDTO) throws URISyntaxException {
+    public ResponseEntity<VehicleDTO> createVehicle(@Valid @RequestBody VehicleDTO vehicleDTO)
+            throws URISyntaxException {
         LOG.debug("REST request to save Vehicle : {}", vehicleDTO);
         if (vehicleDTO.getId() != null) {
             throw new BadRequestAlertException("A new vehicle cannot already have an ID", ENTITY_NAME, "idexists");
         }
         vehicleDTO = vehicleService.save(vehicleDTO);
         return ResponseEntity.created(new URI("/api/vehicles/" + vehicleDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, vehicleDTO.getId().toString()))
-            .body(vehicleDTO);
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        vehicleDTO.getId().toString()))
+                .body(vehicleDTO);
     }
 
     /**
      * {@code PUT  /vehicles/:id} : Updates an existing vehicle.
      *
-     * @param id the id of the vehicleDTO to save.
+     * @param id         the id of the vehicleDTO to save.
      * @param vehicleDTO the vehicleDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated vehicleDTO,
-     * or with status {@code 400 (Bad Request)} if the vehicleDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the vehicleDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated vehicleDTO,
+     *         or with status {@code 400 (Bad Request)} if the vehicleDTO is not
+     *         valid,
+     *         or with status {@code 500 (Internal Server Error)} if the vehicleDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
     public ResponseEntity<VehicleDTO> updateVehicle(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody VehicleDTO vehicleDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody VehicleDTO vehicleDTO) throws URISyntaxException {
         LOG.debug("REST request to update Vehicle : {}, {}", id, vehicleDTO);
         if (vehicleDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -100,26 +108,31 @@ public class VehicleResource {
 
         vehicleDTO = vehicleService.update(vehicleDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, vehicleDTO.getId().toString()))
-            .body(vehicleDTO);
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        vehicleDTO.getId().toString()))
+                .body(vehicleDTO);
     }
 
     /**
-     * {@code PATCH  /vehicles/:id} : Partial updates given fields of an existing vehicle, field will ignore if it is null
+     * {@code PATCH  /vehicles/:id} : Partial updates given fields of an existing
+     * vehicle, field will ignore if it is null
      *
-     * @param id the id of the vehicleDTO to save.
+     * @param id         the id of the vehicleDTO to save.
      * @param vehicleDTO the vehicleDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated vehicleDTO,
-     * or with status {@code 400 (Bad Request)} if the vehicleDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the vehicleDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the vehicleDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated vehicleDTO,
+     *         or with status {@code 400 (Bad Request)} if the vehicleDTO is not
+     *         valid,
+     *         or with status {@code 404 (Not Found)} if the vehicleDTO is not
+     *         found,
+     *         or with status {@code 500 (Internal Server Error)} if the vehicleDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<VehicleDTO> partialUpdateVehicle(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody VehicleDTO vehicleDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody VehicleDTO vehicleDTO) throws URISyntaxException {
         LOG.debug("REST request to partial update Vehicle partially : {}, {}", id, vehicleDTO);
         if (vehicleDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -135,9 +148,8 @@ public class VehicleResource {
         Optional<VehicleDTO> result = vehicleService.partialUpdate(vehicleDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, vehicleDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, vehicleDTO.getId().toString()));
     }
 
     /**
@@ -145,17 +157,18 @@ public class VehicleResource {
      *
      * @param pageable the pagination information.
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of vehicles in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of vehicles in body.
      */
     @GetMapping("")
     public ResponseEntity<List<VehicleDTO>> getAllVehicles(
-        VehicleCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
+            VehicleCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get Vehicles by criteria: {}", criteria);
 
         Page<VehicleDTO> page = vehicleQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -163,7 +176,8 @@ public class VehicleResource {
      * {@code GET  /vehicles/count} : count all the vehicles.
      *
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
+     *         in body.
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countVehicles(VehicleCriteria criteria) {
@@ -175,7 +189,8 @@ public class VehicleResource {
      * {@code GET  /vehicles/:id} : get the "id" vehicle.
      *
      * @param id the id of the vehicleDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the vehicleDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the vehicleDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<VehicleDTO> getVehicle(@PathVariable("id") Long id) {
@@ -195,7 +210,27 @@ public class VehicleResource {
         LOG.debug("REST request to delete Vehicle : {}", id);
         vehicleService.delete(id);
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
+    }
+
+    /**
+     * {@code GET  /vehicles} : get all the vehicles.
+     *
+     * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of vehicles in body.
+     */
+    @GetMapping("/with-seats-count")
+    public ResponseEntity<List<VehicleWithSeatCountDTO>> getAllVehiclesWithSeatsCount(
+            VehicleCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        LOG.debug("REST request to get Vehicles by criteria (with seats count): {}", criteria);
+
+        Page<VehicleWithSeatCountDTO> page = vehicleQueryService.findByCriteriaWithSeatCount(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
+                ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

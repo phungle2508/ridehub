@@ -1,6 +1,7 @@
 package com.ridehub.route.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ridehub.route.domain.enumeration.VehicleStatus;
 import com.ridehub.route.domain.enumeration.VehicleType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -46,6 +47,11 @@ public class Vehicle implements Serializable {
 
     @Column(name = "description")
     private String description;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private VehicleStatus status;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -153,6 +159,19 @@ public class Vehicle implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public VehicleStatus getStatus() {
+        return this.status;
+    }
+
+    public Vehicle status(VehicleStatus status) {
+        this.setStatus(status);
+        return this;
+    }
+
+    public void setStatus(VehicleStatus status) {
+        this.status = status;
     }
 
     public Instant getCreatedAt() {
@@ -275,6 +294,7 @@ public class Vehicle implements Serializable {
             ", plateNumber='" + getPlateNumber() + "'" +
             ", brand='" + getBrand() + "'" +
             ", description='" + getDescription() + "'" +
+            ", status='" + getStatus() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

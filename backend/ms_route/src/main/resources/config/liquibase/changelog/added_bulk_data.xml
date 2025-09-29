@@ -398,6 +398,7 @@
       plate_number,
       brand,
       description,
+      status,
       created_at,
       @updated_at,
       @is_deleted,
