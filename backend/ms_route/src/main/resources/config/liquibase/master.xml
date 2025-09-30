@@ -45,4 +45,5 @@
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
     <!-- <include file="config/liquibase/changelog/added_bulk_data.xml" relativeToChangelogFile="false"/> -->
+    <!-- <include file="config/liquibase/changelog/added_index.xml" relativeToChangelogFile="false"/> -->
 </databaseChangeLog>
