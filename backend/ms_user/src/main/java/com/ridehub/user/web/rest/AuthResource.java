@@ -208,7 +208,7 @@ public class AuthResource {
     }
 
     // --- Refresh Token ---
-    @PostMapping(value = "/refresh", consumes = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/refresh", consumes = { MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<LoginResponseDTO> refreshToken(@RequestBody String refreshToken) {
         refreshToken = refreshToken == null ? "" : refreshToken.trim();
 
@@ -226,7 +226,7 @@ public class AuthResource {
     }
 
     // --- Logout ---
-    @PostMapping(value = "/logout", consumes = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/logout", consumes = { MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> logout(@RequestBody String refreshToken) {
         refreshToken = refreshToken == null ? "" : refreshToken.trim();
 
