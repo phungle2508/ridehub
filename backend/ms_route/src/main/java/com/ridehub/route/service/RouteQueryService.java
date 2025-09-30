@@ -1,7 +1,6 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.domain.*; // for static metamodels
-import com.ridehub.route.domain.Route;
 import com.ridehub.route.repository.RouteRepository;
 import com.ridehub.route.repository.search.RouteSearchRepository;
 import com.ridehub.route.service.criteria.RouteCriteria;
@@ -18,8 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
 
 /**
- * Service for executing complex queries for {@link Route} entities in the database.
- * The main input is a {@link RouteCriteria} which gets converted to {@link Specification},
+ * Service for executing complex queries for {@link Route} entities in the
+ * database.
+ * The main input is a {@link RouteCriteria} which gets converted to
+ * {@link Specification},
  * in a way that all the filters must apply.
  * It returns a {@link Page} of {@link RouteDTO} which fulfills the criteria.
  */
@@ -35,16 +36,20 @@ public class RouteQueryService extends QueryService<Route> {
 
     private final RouteSearchRepository routeSearchRepository;
 
-    public RouteQueryService(RouteRepository routeRepository, RouteMapper routeMapper, RouteSearchRepository routeSearchRepository) {
+    public RouteQueryService(RouteRepository routeRepository, RouteMapper routeMapper,
+            RouteSearchRepository routeSearchRepository) {
         this.routeRepository = routeRepository;
         this.routeMapper = routeMapper;
         this.routeSearchRepository = routeSearchRepository;
     }
 
     /**
-     * Return a {@link Page} of {@link RouteDTO} which matches the criteria from the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @param page The page, which should be returned.
+     * Return a {@link Page} of {@link RouteDTO} which matches the criteria from the
+     * database.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
+     * @param page     The page, which should be returned.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
@@ -56,7 +61,9 @@ public class RouteQueryService extends QueryService<Route> {
 
     /**
      * Return the number of matching entities in the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
      * @return the number of matching entities.
      */
     @Transactional(readOnly = true)
@@ -68,7 +75,9 @@ public class RouteQueryService extends QueryService<Route> {
 
     /**
      * Function to convert {@link RouteCriteria} to a {@link Specification}
-     * @param criteria The object which holds all the filters, which the entities should match.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
      * @return the matching {@link Specification} of the entity.
      */
     protected Specification<Route> createSpecification(RouteCriteria criteria) {
@@ -76,18 +85,69 @@ public class RouteQueryService extends QueryService<Route> {
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
             specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), Route_.id),
-                buildStringSpecification(criteria.getRouteCode(), Route_.routeCode),
-                buildRangeSpecification(criteria.getDistanceKm(), Route_.distanceKm),
-                buildRangeSpecification(criteria.getCreatedAt(), Route_.createdAt),
-                buildRangeSpecification(criteria.getUpdatedAt(), Route_.updatedAt),
-                buildSpecification(criteria.getIsDeleted(), Route_.isDeleted),
-                buildRangeSpecification(criteria.getDeletedAt(), Route_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), Route_.deletedBy),
-                buildSpecification(criteria.getOriginId(), root -> root.join(Route_.origin, JoinType.LEFT).get(Station_.id)),
-                buildSpecification(criteria.getDestinationId(), root -> root.join(Route_.destination, JoinType.LEFT).get(Station_.id))
-            );
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), Route_.id),
+                    buildStringSpecification(criteria.getRouteCode(), Route_.routeCode),
+                    buildRangeSpecification(criteria.getDistanceKm(), Route_.distanceKm),
+                    buildRangeSpecification(criteria.getCreatedAt(), Route_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), Route_.updatedAt),
+                    buildSpecification(criteria.getIsDeleted(), Route_.isDeleted),
+                    buildRangeSpecification(criteria.getDeletedAt(), Route_.deletedAt),
+                    buildSpecification(criteria.getDeletedBy(), Route_.deletedBy),
+                    buildSpecification(criteria.getOriginId(),
+                            root -> root.join(Route_.origin, JoinType.LEFT).get(Station_.id)),
+                    buildSpecification(criteria.getDestinationId(),
+                            root -> root.join(Route_.destination, JoinType.LEFT).get(Station_.id)));
+            // 🔹 origin.districtCode
+            if (criteria.getOriginDistrictCode() != null) {
+                specification = specification.and(
+                        buildSpecification(
+                                criteria.getOriginDistrictCode(),
+                                root -> root.join(Route_.origin, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .get(District_.districtCode)));
+            }
+
+            // 🔹 origin.provinceCode
+            if (criteria.getOriginProvinceCode() != null) {
+                specification = specification.and(
+                        buildSpecification(
+                                criteria.getOriginProvinceCode(),
+                                root -> root.join(Route_.origin, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .join(District_.province, JoinType.LEFT)
+                                        .get(Province_.provinceCode)));
+            }
+
+            // 🔹 destination.districtCode
+            if (criteria.getDestinationDistrictCode() != null) {
+                specification = specification.and(
+                        buildSpecification(
+                                criteria.getDestinationDistrictCode(),
+                                root -> root.join(Route_.destination, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .get(District_.districtCode)));
+            }
+
+            // 🔹 destination.provinceCode
+            if (criteria.getDestinationProvinceCode() != null) {
+                specification = specification.and(
+                        buildSpecification(
+                                criteria.getDestinationProvinceCode(),
+                                root -> root.join(Route_.destination, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .join(District_.province, JoinType.LEFT)
+                                        .get(Province_.provinceCode)));
+            }
+
         }
         return specification;
     }

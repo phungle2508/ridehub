@@ -100,9 +100,6 @@ public class TripQueryService extends QueryService<Trip> {
         return new PageImpl<>(tripDetailDTOs, pageable, trips.getTotalElements());
     }
 
-
-
-
     /**
      * Function to convert {@link TripCriteria} to a {@link Specification}
      * 
@@ -134,7 +131,55 @@ public class TripQueryService extends QueryService<Trip> {
                             root -> root.join(Trip_.driver, JoinType.LEFT).get(Driver_.id)),
                     buildSpecification(criteria.getAttendantId(),
                             root -> root.join(Trip_.attendant, JoinType.LEFT).get(Attendant_.id)));
+
+            if (criteria.getOriginDistrictCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getOriginDistrictCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.origin, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .get(District_.districtCode)));
+            }
+
+            if (criteria.getOriginProvinceCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getOriginProvinceCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.origin, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .join(District_.province, JoinType.LEFT)
+                                        .get(Province_.provinceCode)));
+            }
+
+            // === NEW: Filter by destination district / province ===
+            if (criteria.getDestinationDistrictCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getDestinationDistrictCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.destination, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .get(District_.districtCode)));
+            }
+
+            if (criteria.getDestinationProvinceCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getDestinationProvinceCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.destination, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .join(District_.province, JoinType.LEFT)
+                                        .get(Province_.provinceCode)));
+            }
         }
         return specification;
     }
+
 }

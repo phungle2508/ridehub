@@ -8,12 +8,15 @@ import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
 
 /**
- * Criteria class for the {@link com.ridehub.route.domain.Route} entity. This class is used
- * in {@link com.ridehub.route.web.rest.RouteResource} to receive all the possible filtering options from
+ * Criteria class for the {@link com.ridehub.route.domain.Route} entity. This
+ * class is used
+ * in {@link com.ridehub.route.web.rest.RouteResource} to receive all the
+ * possible filtering options from
  * the Http GET request parameters.
  * For example the following could be a valid request:
  * {@code /routes?id.greaterThan=5&attr1.contains=something&attr2.specified=false}
- * As Spring is unable to properly convert the types, unless specific {@link Filter} class are used, we need to use
+ * As Spring is unable to properly convert the types, unless specific
+ * {@link Filter} class are used, we need to use
  * fix type specific filters.
  */
 @ParameterObject
@@ -42,9 +45,18 @@ public class RouteCriteria implements Serializable, Criteria {
 
     private LongFilter destinationId;
 
+    private StringFilter originDistrictCode;
+
+    private StringFilter originProvinceCode;
+
+    private StringFilter destinationDistrictCode;
+
+    private StringFilter destinationProvinceCode;
+
     private Boolean distinct;
 
-    public RouteCriteria() {}
+    public RouteCriteria() {
+    }
 
     public RouteCriteria(RouteCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
@@ -57,12 +69,72 @@ public class RouteCriteria implements Serializable, Criteria {
         this.deletedBy = other.optionalDeletedBy().map(UUIDFilter::copy).orElse(null);
         this.originId = other.optionalOriginId().map(LongFilter::copy).orElse(null);
         this.destinationId = other.optionalDestinationId().map(LongFilter::copy).orElse(null);
+        this.originDistrictCode = other.optionalOriginDistrictCode().map(StringFilter::copy).orElse(null);
+        this.originProvinceCode = other.optionalOriginProvinceCode().map(StringFilter::copy).orElse(null);
+        this.destinationDistrictCode = other.optionalDestinationDistrictCode().map(StringFilter::copy).orElse(null);
+        this.destinationProvinceCode = other.optionalDestinationProvinceCode().map(StringFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
     @Override
     public RouteCriteria copy() {
         return new RouteCriteria(this);
+    }
+
+    public StringFilter getOriginDistrictCode() {
+        if (originDistrictCode == null)
+            originDistrictCode = new StringFilter();
+        return originDistrictCode;
+    }
+
+    public void setOriginDistrictCode(StringFilter f) {
+        this.originDistrictCode = f;
+    }
+
+    public Optional<StringFilter> optionalOriginDistrictCode() {
+        return Optional.ofNullable(originDistrictCode);
+    }
+
+    public StringFilter getOriginProvinceCode() {
+        if (originProvinceCode == null)
+            originProvinceCode = new StringFilter();
+        return originProvinceCode;
+    }
+
+    public void setOriginProvinceCode(StringFilter f) {
+        this.originProvinceCode = f;
+    }
+
+    public Optional<StringFilter> optionalOriginProvinceCode() {
+        return Optional.ofNullable(originProvinceCode);
+    }
+
+    public StringFilter getDestinationDistrictCode() {
+        if (destinationDistrictCode == null)
+            destinationDistrictCode = new StringFilter();
+        return destinationDistrictCode;
+    }
+
+    public void setDestinationDistrictCode(StringFilter f) {
+        this.destinationDistrictCode = f;
+    }
+
+    public Optional<StringFilter> optionalDestinationDistrictCode() {
+        return Optional.ofNullable(destinationDistrictCode);
+    }
+
+    public StringFilter getDestinationProvinceCode() {
+        if (destinationProvinceCode == null)
+            destinationProvinceCode = new StringFilter();
+        return destinationProvinceCode;
+    }
+
+    public void setDestinationProvinceCode(StringFilter f) {
+        this.destinationProvinceCode = f;
+    }
+
+    public Optional<StringFilter> optionalDestinationProvinceCode() {
+        return Optional.ofNullable(destinationProvinceCode);
     }
 
     public LongFilter getId() {
@@ -283,53 +355,54 @@ public class RouteCriteria implements Serializable, Criteria {
             return false;
         }
         final RouteCriteria that = (RouteCriteria) o;
-        return (
-            Objects.equals(id, that.id) &&
-            Objects.equals(routeCode, that.routeCode) &&
-            Objects.equals(distanceKm, that.distanceKm) &&
-            Objects.equals(createdAt, that.createdAt) &&
-            Objects.equals(updatedAt, that.updatedAt) &&
-            Objects.equals(isDeleted, that.isDeleted) &&
-            Objects.equals(deletedAt, that.deletedAt) &&
-            Objects.equals(deletedBy, that.deletedBy) &&
-            Objects.equals(originId, that.originId) &&
-            Objects.equals(destinationId, that.destinationId) &&
-            Objects.equals(distinct, that.distinct)
-        );
+        return (Objects.equals(id, that.id) &&
+                Objects.equals(routeCode, that.routeCode) &&
+                Objects.equals(distanceKm, that.distanceKm) &&
+                Objects.equals(createdAt, that.createdAt) &&
+                Objects.equals(updatedAt, that.updatedAt) &&
+                Objects.equals(isDeleted, that.isDeleted) &&
+                Objects.equals(deletedAt, that.deletedAt) &&
+                Objects.equals(deletedBy, that.deletedBy) &&
+                Objects.equals(originId, that.originId) &&
+                Objects.equals(destinationId, that.destinationId) &&
+                Objects.equals(distinct, that.distinct));
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-            id,
-            routeCode,
-            distanceKm,
-            createdAt,
-            updatedAt,
-            isDeleted,
-            deletedAt,
-            deletedBy,
-            originId,
-            destinationId,
-            distinct
-        );
+                id,
+                routeCode,
+                distanceKm,
+                createdAt,
+                updatedAt,
+                isDeleted,
+                deletedAt,
+                deletedBy,
+                originId,
+                destinationId,
+                distinct);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "RouteCriteria{" +
-            optionalId().map(f -> "id=" + f + ", ").orElse("") +
-            optionalRouteCode().map(f -> "routeCode=" + f + ", ").orElse("") +
-            optionalDistanceKm().map(f -> "distanceKm=" + f + ", ").orElse("") +
-            optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
-            optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
-            optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
-            optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
-            optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
-            optionalOriginId().map(f -> "originId=" + f + ", ").orElse("") +
-            optionalDestinationId().map(f -> "destinationId=" + f + ", ").orElse("") +
-            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
-        "}";
+                optionalId().map(f -> "id=" + f + ", ").orElse("") +
+                optionalRouteCode().map(f -> "routeCode=" + f + ", ").orElse("") +
+                optionalDistanceKm().map(f -> "distanceKm=" + f + ", ").orElse("") +
+                optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
+                optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
+                optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +
+                optionalDeletedAt().map(f -> "deletedAt=" + f + ", ").orElse("") +
+                optionalDeletedBy().map(f -> "deletedBy=" + f + ", ").orElse("") +
+                optionalOriginId().map(f -> "originId=" + f + ", ").orElse("") +
+                optionalDestinationId().map(f -> "destinationId=" + f + ", ").orElse("") +
+                optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
+                optionalOriginDistrictCode().map(f -> "originDistrictCode=" + f + ", ").orElse("") +
+                optionalOriginProvinceCode().map(f -> "originProvinceCode=" + f + ", ").orElse("") +
+                optionalDestinationDistrictCode().map(f -> "destinationDistrictCode=" + f + ", ").orElse("") +
+                optionalDestinationProvinceCode().map(f -> "destinationProvinceCode=" + f + ", ").orElse("") +
+                "}";
     }
 }
