@@ -5,8 +5,8 @@ import com.ridehub.route.service.VehicleQueryService;
 import com.ridehub.route.service.VehicleService;
 import com.ridehub.route.service.criteria.VehicleCriteria;
 import com.ridehub.route.service.dto.VehicleDTO;
-import com.ridehub.route.service.dto.VehicleDetailDTO;
-import com.ridehub.route.service.dto.VehicleWithSeatCountDTO;
+import com.ridehub.route.service.vm.VehicleDetailVM;
+import com.ridehub.route.service.vm.VehicleWithSeatCountVM;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -224,12 +224,12 @@ public class VehicleResource {
      *         of vehicles in body.
      */
     @GetMapping("/with-seats-count")
-    public ResponseEntity<List<VehicleWithSeatCountDTO>> getAllVehiclesWithSeatsCount(
+    public ResponseEntity<List<VehicleWithSeatCountVM>> getAllVehiclesWithSeatsCount(
             VehicleCriteria criteria,
             @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get Vehicles by criteria (with seats count): {}", criteria);
 
-        Page<VehicleWithSeatCountDTO> page = vehicleQueryService.findByCriteriaWithSeatCount(criteria, pageable);
+        Page<VehicleWithSeatCountVM> page = vehicleQueryService.findByCriteriaWithSeatCount(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
                 ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -237,9 +237,9 @@ public class VehicleResource {
 
     // New "full detail" endpoint (no DTO/entity changes)
     @GetMapping("/{id}/detail")
-    public ResponseEntity<VehicleDetailDTO> getVehicleDetail(@PathVariable("id") Long id) {
+    public ResponseEntity<VehicleDetailVM> getVehicleDetail(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Vehicle Detail : {}", id);
-        Optional<VehicleDetailDTO> vm = vehicleQueryService.findDetail(id);
+        Optional<VehicleDetailVM> vm = vehicleQueryService.findDetail(id);
         return ResponseUtil.wrapOrNotFound(vm);
     }
 }

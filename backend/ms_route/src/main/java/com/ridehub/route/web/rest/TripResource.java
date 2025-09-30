@@ -5,8 +5,8 @@ import com.ridehub.route.service.TripQueryService;
 import com.ridehub.route.service.TripService;
 import com.ridehub.route.service.criteria.RouteCriteria;
 import com.ridehub.route.service.criteria.TripCriteria;
-import com.ridehub.route.service.dto.TripDetailDTO;
 import com.ridehub.route.service.dto.TripDTO;
+import com.ridehub.route.service.vm.TripDetailVM;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -203,10 +203,10 @@ public class TripResource {
      *         the tripDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/detailList")
-    public ResponseEntity<List<TripDetailDTO>> getRouteDetailList(TripCriteria criteria,
+    public ResponseEntity<List<TripDetailVM>> getRouteDetailList(TripCriteria criteria,
             @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get Trip : {}", criteria);
-        Page<TripDetailDTO> page = tripQueryService.getRouteDetailList(criteria, pageable);
+        Page<TripDetailVM> page = tripQueryService.getRouteDetailList(criteria, pageable);
         HttpHeaders headers = PaginationUtil
                 .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());

@@ -1,7 +1,8 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.WardDTO;
-import com.ridehub.route.service.dto.WardSimpleDTO;
+import com.ridehub.route.service.vm.WardSimpleVM;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -53,5 +54,5 @@ public interface WardService {
      *
      * @return the list of simple ward DTOs.
      */
-    List<WardSimpleDTO> findAllSimple();
+    List<WardSimpleVM> findAllSimple();
 }

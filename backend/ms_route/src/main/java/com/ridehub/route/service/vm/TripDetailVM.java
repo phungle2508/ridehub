@@ -1,4 +1,4 @@
-package com.ridehub.route.service.dto;
+package com.ridehub.route.service.vm;
 
 import com.ridehub.route.domain.enumeration.VehicleType;
 import java.io.Serializable;
@@ -9,7 +9,7 @@ import java.time.Instant;
  * A DTO for displaying route list information combining Trip, Route, Driver,
  * and Vehicle data.
  */
-public class TripDetailDTO implements Serializable {
+public class TripDetailVM implements Serializable {
 
     private Long tripId;
     private String tripCode;
@@ -45,10 +45,10 @@ public class TripDetailDTO implements Serializable {
     private Boolean attendantStaffDeleted;
 
     // Constructors
-    public TripDetailDTO() {
+    public TripDetailVM() {
     }
 
-    public TripDetailDTO(Long tripId, String tripCode, String routeCode, String routeName, String origin,
+    public TripDetailVM(Long tripId, String tripCode, String routeCode, String routeName, String origin,
             String destination, BigDecimal distanceKm, Instant departureTime, Instant arrivalTime,
             String plannedJourney, VehicleType vehicleType, String vehiclePlateNumber, String vehicleBrand,
             Long driverId, String driverLicenseClass, Integer driverYearsExperience, String driverName,

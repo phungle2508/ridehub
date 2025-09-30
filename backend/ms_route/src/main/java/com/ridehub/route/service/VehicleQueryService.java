@@ -9,11 +9,12 @@ import com.ridehub.route.service.criteria.VehicleCriteria;
 import com.ridehub.route.service.dto.FloorDTO;
 import com.ridehub.route.service.dto.SeatDTO;
 import com.ridehub.route.service.dto.VehicleDTO;
-import com.ridehub.route.service.dto.VehicleDetailDTO;
-import com.ridehub.route.service.dto.VehicleWithSeatCountDTO;
 import com.ridehub.route.service.mapper.FloorMapper;
 import com.ridehub.route.service.mapper.SeatMapper;
 import com.ridehub.route.service.mapper.VehicleMapper;
+import com.ridehub.route.service.vm.VehicleDetailVM;
+import com.ridehub.route.service.vm.VehicleWithSeatCountVM;
+
 import jakarta.persistence.criteria.JoinType;
 
 import java.util.List;
@@ -96,7 +97,7 @@ public class VehicleQueryService extends QueryService<Vehicle> {
     }
 
     @Transactional(readOnly = true)
-    public Page<VehicleWithSeatCountDTO> findByCriteriaWithSeatCount(VehicleCriteria criteria, Pageable pageable) {
+    public Page<VehicleWithSeatCountVM> findByCriteriaWithSeatCount(VehicleCriteria criteria, Pageable pageable) {
         Page<VehicleDTO> vehiclePage = findByCriteria(criteria, pageable);
         List<VehicleDTO> vehicleDTOs = vehiclePage.getContent();
 
@@ -112,8 +113,8 @@ public class VehicleQueryService extends QueryService<Vehicle> {
         Map<Long, Long> seatCounts = seatRepository.countSeatsByVehicleIds(vehicleIds).stream()
                 .collect(Collectors.toMap(VehicleSeatCount::getVehicleId, VehicleSeatCount::getSeatCount));
 
-        List<VehicleWithSeatCountDTO> wrapped = vehicleDTOs.stream()
-                .map(v -> new VehicleWithSeatCountDTO(seatCounts.getOrDefault(v.getId(), 0L), v))
+        List<VehicleWithSeatCountVM> wrapped = vehicleDTOs.stream()
+                .map(v -> new VehicleWithSeatCountVM(seatCounts.getOrDefault(v.getId(), 0L), v))
                 .toList();
 
         return new PageImpl<>(wrapped, pageable, vehiclePage.getTotalElements());
@@ -153,13 +154,13 @@ public class VehicleQueryService extends QueryService<Vehicle> {
     }
 
     @Transactional(readOnly = true)
-    public Optional<VehicleDetailDTO> findDetail(Long id) {
+    public Optional<VehicleDetailVM> findDetail(Long id) {
         return vehicleRepository.findDetailById(id).map(vehicle -> {
             VehicleDTO vehicleDTO = vehicleMapper.toDto(vehicle);
 
             SeatMap seatMap = vehicle.getSeatMap();
             if (seatMap == null || seatMap.getId() == null) {
-                return new VehicleDetailDTO(vehicleDTO, List.of(), Map.of());
+                return new VehicleDetailVM(vehicleDTO, List.of(), Map.of());
             }
 
             // floors
@@ -178,7 +179,7 @@ public class VehicleQueryService extends QueryService<Vehicle> {
                 }
             }
 
-            return new VehicleDetailDTO(vehicleDTO, floorDTOs, seatsByFloorId);
+            return new VehicleDetailVM(vehicleDTO, floorDTOs, seatsByFloorId);
         });
     }
 }

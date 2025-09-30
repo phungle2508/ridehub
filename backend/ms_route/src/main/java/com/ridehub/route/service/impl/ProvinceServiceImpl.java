@@ -4,8 +4,9 @@ import com.ridehub.route.domain.Province;
 import com.ridehub.route.repository.ProvinceRepository;
 import com.ridehub.route.service.ProvinceService;
 import com.ridehub.route.service.dto.ProvinceDTO;
-import com.ridehub.route.service.dto.ProvinceSimpleDTO;
 import com.ridehub.route.service.mapper.ProvinceMapper;
+import com.ridehub.route.service.vm.ProvinceSimpleVM;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -78,11 +79,11 @@ public class ProvinceServiceImpl implements ProvinceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProvinceSimpleDTO> findAllSimple() {
+    public List<ProvinceSimpleVM> findAllSimple() {
         LOG.debug("Request to get all Provinces with ID and name only");
         return provinceRepository.findAll().stream()
             .filter(province -> province.getIsDeleted() == null || !province.getIsDeleted())
-            .map(province -> new ProvinceSimpleDTO(province.getId(), province.getName()))
+            .map(province -> new ProvinceSimpleVM(province.getId(), province.getName()))
             .collect(Collectors.toList());
     }
 }

@@ -9,8 +9,9 @@ import com.ridehub.route.service.dto.AttendantDTO;
 import com.ridehub.route.service.dto.DriverDTO;
 import com.ridehub.route.service.dto.RouteDTO;
 import com.ridehub.route.service.dto.TripDTO;
-import com.ridehub.route.service.dto.TripDetailDTO;
 import com.ridehub.route.service.dto.VehicleDTO;
+import com.ridehub.route.service.vm.TripDetailVM;
+
 import org.mapstruct.*;
 
 /**
@@ -81,5 +82,5 @@ public interface TripMapper extends EntityMapper<TripDTO, Trip> {
 
     @Mapping(target = "attendantDeleted", expression = "java(trip.getAttendant() == null ? null : Boolean.TRUE.equals(trip.getAttendant().getIsDeleted()))")
     @Mapping(target = "attendantStaffDeleted", expression = "java(trip.getAttendant() == null || trip.getAttendant().getStaff() == null ? null : Boolean.TRUE.equals(trip.getAttendant().getStaff().getIsDeleted()))")
-    TripDetailDTO toTripDetailDto(Trip trip);
+    TripDetailVM toTripDetailVM(Trip trip);
 }

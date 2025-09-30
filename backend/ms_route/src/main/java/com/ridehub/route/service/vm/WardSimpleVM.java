@@ -1,22 +1,22 @@
-package com.ridehub.route.service.dto;
+package com.ridehub.route.service.vm;
 
 import java.io.Serializable;
 
 /**
- * A simple DTO for the {@link com.ridehub.route.domain.Province} entity containing only ID and name.
+ * A simple DTO for the {@link com.ridehub.route.domain.Ward} entity containing only ID and name.
  */
-public class ProvinceSimpleDTO implements Serializable {
+public class WardSimpleVM implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
     private String name;
 
-    public ProvinceSimpleDTO() {
+    public WardSimpleVM() {
         // Empty constructor needed for Jackson.
     }
 
-    public ProvinceSimpleDTO(Long id, String name) {
+    public WardSimpleVM(Long id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -42,15 +42,15 @@ public class ProvinceSimpleDTO implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ProvinceSimpleDTO)) {
+        if (!(o instanceof WardSimpleVM)) {
             return false;
         }
 
-        ProvinceSimpleDTO provinceSimpleDTO = (ProvinceSimpleDTO) o;
+        WardSimpleVM wardSimpleDTO = (WardSimpleVM) o;
         if (this.id == null) {
             return false;
         }
-        return this.id.equals(provinceSimpleDTO.id);
+        return this.id.equals(wardSimpleDTO.id);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ProvinceSimpleDTO implements Serializable {
 
     @Override
     public String toString() {
-        return "ProvinceSimpleDTO{" +
+        return "WardSimpleVM{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             "}";

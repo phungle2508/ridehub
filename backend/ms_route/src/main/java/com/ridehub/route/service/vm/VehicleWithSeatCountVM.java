@@ -1,18 +1,20 @@
-package com.ridehub.route.service.dto;
+package com.ridehub.route.service.vm;
 
 import java.io.Serializable;
 
-public class VehicleWithSeatCountDTO implements Serializable {
+import com.ridehub.route.service.dto.VehicleDTO;
+
+public class VehicleWithSeatCountVM implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long seatsCount;
     private VehicleDTO vehicleDTO;
 
-    public VehicleWithSeatCountDTO() {
+    public VehicleWithSeatCountVM() {
     }
 
-    public VehicleWithSeatCountDTO(Long seatsCount, VehicleDTO vehicleDTO) {
+    public VehicleWithSeatCountVM(Long seatsCount, VehicleDTO vehicleDTO) {
         this.seatsCount = seatsCount;
         this.vehicleDTO = vehicleDTO;
     }

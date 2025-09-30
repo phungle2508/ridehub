@@ -5,8 +5,8 @@ import com.ridehub.route.repository.StationRepository;
 import com.ridehub.route.repository.search.StationSearchRepository;
 import com.ridehub.route.service.criteria.StationCriteria;
 import com.ridehub.route.service.dto.StationDTO;
-import com.ridehub.route.service.dto.StationWithRoutesDTO;
 import com.ridehub.route.service.mapper.StationMapper;
+import com.ridehub.route.service.vm.StationWithRoutesVM;
 import com.ridehub.route.repository.RouteRepository;
 import com.ridehub.route.service.mapper.RouteMapper;
 
@@ -160,10 +160,10 @@ public class StationQueryService extends QueryService<Station> {
      * Get all stations with their associated routes
      * 
      * @param pageable pagination information
-     * @return Page of StationWithRoutesDTO
+     * @return Page of StationWithRoutesVM
      */
     @Transactional(readOnly = true)
-    public Page<StationWithRoutesDTO> getStationsWithRoutes(Pageable pageable) {
+    public Page<StationWithRoutesVM> getStationsWithRoutes(Pageable pageable) {
         LOG.debug("Request to get all stations with routes");
 
         Page<Station> stations = stationRepository.findAll(pageable);
@@ -171,9 +171,9 @@ public class StationQueryService extends QueryService<Station> {
         Map<Long, Long> counts = getRouteCountsByStationIds(stationIds);
 
         // Map each station to DTO
-        List<StationWithRoutesDTO> stationWithRoutesDTOs = stations.stream()
+        List<StationWithRoutesVM> stationWithRoutesDTOs = stations.stream()
                 .map(s -> {
-                    StationWithRoutesDTO dto = stationMapper.toStationWithRoutesDto(s);
+                    StationWithRoutesVM dto = stationMapper.toStationWithRoutesDto(s);
                     dto.setRoutresCount(counts.getOrDefault(s.getId(), 0L));
                     return dto;
                 })
@@ -186,13 +186,13 @@ public class StationQueryService extends QueryService<Station> {
      * Get a station by ID with all its associated routes.
      *
      * @param id the ID of the station to retrieve.
-     * @return an Optional containing the StationWithRoutesDTO with its routes, or
+     * @return an Optional containing the StationWithRoutesVM with its routes, or
      *         empty if not found.
      */
     @Transactional(readOnly = true)
-    public Optional<StationWithRoutesDTO> getStationsWithRoutesAndId(Long id, Pageable pageable) {
+    public Optional<StationWithRoutesVM> getStationsWithRoutesAndId(Long id, Pageable pageable) {
         return stationRepository.findById(id).map(station -> {
-            StationWithRoutesDTO dto = stationMapper.toStationWithRoutesDto(station);
+            StationWithRoutesVM dto = stationMapper.toStationWithRoutesDto(station);
 
             Page<Route> routePage = routeRepository.findByOriginOrDestination(station, pageable);
             dto.setRoutes(routePage.getContent().stream().map(routeMapper::toDto).toList());

@@ -4,8 +4,9 @@ import com.ridehub.route.domain.*; // for static metamodels
 import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.criteria.TripCriteria;
 import com.ridehub.route.service.dto.TripDTO;
-import com.ridehub.route.service.dto.TripDetailDTO;
 import com.ridehub.route.service.mapper.TripMapper;
+import com.ridehub.route.service.vm.TripDetailVM;
+
 import jakarta.persistence.criteria.JoinType;
 
 import java.util.List;
@@ -83,7 +84,7 @@ public class TripQueryService extends QueryService<Trip> {
      * @return the list of route information.
      */
     @Transactional(readOnly = true)
-    public Page<TripDetailDTO> getRouteDetailList(TripCriteria criteria, Pageable pageable) {
+    public Page<TripDetailVM> getRouteDetailList(TripCriteria criteria, Pageable pageable) {
         LOG.debug("Request to get route list with criteria: {} and pagination: {}", criteria, pageable);
 
         // Create specification for Trip entity based on Route criteria
@@ -92,8 +93,8 @@ public class TripQueryService extends QueryService<Trip> {
         Page<Trip> trips = tripRepository.findAll(specification, pageable);
 
         // Convert to TripDetailDTO using mapper
-        List<TripDetailDTO> tripDetailDTOs = trips.getContent().stream()
-                .map(tripMapper::toTripDetailDto)
+        List<TripDetailVM> tripDetailDTOs = trips.getContent().stream()
+                .map(tripMapper::toTripDetailVM)
                 .collect(Collectors.toList());
 
         return new PageImpl<>(tripDetailDTOs, pageable, trips.getTotalElements());

@@ -1,4 +1,4 @@
-package com.ridehub.route.service.dto;
+package com.ridehub.route.service.dto.request;
 
 import jakarta.validation.constraints.*;
 import java.io.Serializable;

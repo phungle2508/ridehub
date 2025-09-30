@@ -5,7 +5,7 @@ import com.ridehub.route.service.WardQueryService;
 import com.ridehub.route.service.WardService;
 import com.ridehub.route.service.criteria.WardCriteria;
 import com.ridehub.route.service.dto.WardDTO;
-import com.ridehub.route.service.dto.WardSimpleDTO;
+import com.ridehub.route.service.vm.WardSimpleVM;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -206,9 +206,9 @@ public class WardResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of simple ward DTOs in body.
      */
     @GetMapping("/simple")
-    public ResponseEntity<List<WardSimpleDTO>> getAllWardsSimple() {
+    public ResponseEntity<List<WardSimpleVM>> getAllWardsSimple() {
         LOG.debug("REST request to get all Wards with ID and name only");
-        List<WardSimpleDTO> wards = wardService.findAllSimple();
+        List<WardSimpleVM> wards = wardService.findAllSimple();
         return ResponseEntity.ok().body(wards);
     }
 }

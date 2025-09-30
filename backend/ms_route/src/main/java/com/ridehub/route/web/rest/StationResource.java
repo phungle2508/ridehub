@@ -5,7 +5,7 @@ import com.ridehub.route.service.StationQueryService;
 import com.ridehub.route.service.StationService;
 import com.ridehub.route.service.criteria.StationCriteria;
 import com.ridehub.route.service.dto.StationDTO;
-import com.ridehub.route.service.dto.StationWithRoutesDTO;
+import com.ridehub.route.service.vm.StationWithRoutesVM;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import com.ridehub.route.web.rest.errors.ElasticsearchExceptionMapper;
 import jakarta.validation.Valid;
@@ -248,10 +248,10 @@ public class StationResource {
      *         of stations with routes in body.
      */
     @GetMapping("/with-routes")
-    public ResponseEntity<List<StationWithRoutesDTO>> getStationsWithRoutes(
+    public ResponseEntity<List<StationWithRoutesVM>> getStationsWithRoutes(
             @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get all stations with routes");
-        Page<StationWithRoutesDTO> page = stationQueryService.getStationsWithRoutes(pageable);
+        Page<StationWithRoutesVM> page = stationQueryService.getStationsWithRoutes(pageable);
         HttpHeaders headers = PaginationUtil
                 .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -268,14 +268,14 @@ public class StationResource {
      *         {@code 404 (Not Found)} if not found.
      */
     @GetMapping("/{id}/with-routes")
-    public ResponseEntity<StationWithRoutesDTO> getStationsWithRoutesAndId(@PathVariable("id") Long id,
+    public ResponseEntity<StationWithRoutesVM> getStationsWithRoutesAndId(@PathVariable("id") Long id,
             @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get Station with routes: id={}, page={}, size={}, sort={}",
                 id,
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
                 pageable.getSort());
-        Optional<StationWithRoutesDTO> stationDTO = stationQueryService.getStationsWithRoutesAndId(id, pageable);
+        Optional<StationWithRoutesVM> stationDTO = stationQueryService.getStationsWithRoutesAndId(id, pageable);
         return ResponseUtil.wrapOrNotFound(stationDTO);
     }
 }

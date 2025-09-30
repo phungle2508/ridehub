@@ -4,8 +4,9 @@ import com.ridehub.route.domain.Ward;
 import com.ridehub.route.repository.WardRepository;
 import com.ridehub.route.service.WardService;
 import com.ridehub.route.service.dto.WardDTO;
-import com.ridehub.route.service.dto.WardSimpleDTO;
 import com.ridehub.route.service.mapper.WardMapper;
+import com.ridehub.route.service.vm.WardSimpleVM;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -78,11 +79,11 @@ public class WardServiceImpl implements WardService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WardSimpleDTO> findAllSimple() {
+    public List<WardSimpleVM> findAllSimple() {
         LOG.debug("Request to get all Wards with ID and name only");
         return wardRepository.findAll().stream()
             .filter(ward -> ward.getIsDeleted() == null || !ward.getIsDeleted())
-            .map(ward -> new WardSimpleDTO(ward.getId(), ward.getName()))
+            .map(ward -> new WardSimpleVM(ward.getId(), ward.getName()))
             .collect(Collectors.toList());
     }
 }

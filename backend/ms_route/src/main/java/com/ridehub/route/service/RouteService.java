@@ -1,8 +1,9 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.RouteDTO;
-import com.ridehub.route.service.dto.RouteStationRequestDTO;
-import com.ridehub.route.service.dto.RouteStationResponseDTO;
+import com.ridehub.route.service.dto.request.RouteStationRequestDTO;
+import com.ridehub.route.service.dto.response.RouteStationResponseDTO;
+
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

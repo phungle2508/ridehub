@@ -1,4 +1,4 @@
-package com.ridehub.route.service.dto;
+package com.ridehub.route.service.vm;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -6,10 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.ridehub.route.service.dto.AddressDTO;
+import com.ridehub.route.service.dto.FileRouteDTO;
+import com.ridehub.route.service.dto.RouteDTO;
+
 /**
  * A DTO for displaying station information with associated routes.
  */
-public class StationWithRoutesDTO implements Serializable {
+public class StationWithRoutesVM implements Serializable {
 
     private Long id;
     private String name;
@@ -26,7 +30,7 @@ public class StationWithRoutesDTO implements Serializable {
     private List<RouteDTO> routes;
     private Long routresCount;
     // Constructors
-    public StationWithRoutesDTO() {
+    public StationWithRoutesVM() {
     }
 
     // Getters and Setters
@@ -139,11 +143,11 @@ public class StationWithRoutesDTO implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof StationWithRoutesDTO)) {
+        if (!(o instanceof StationWithRoutesVM)) {
             return false;
         }
 
-        StationWithRoutesDTO stationWithRoutesDTO = (StationWithRoutesDTO) o;
+        StationWithRoutesVM stationWithRoutesDTO = (StationWithRoutesVM) o;
         if (this.id == null) {
             return false;
         }
