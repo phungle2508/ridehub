@@ -3,7 +3,6 @@ package com.ridehub.route.web.rest;
 import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.TripQueryService;
 import com.ridehub.route.service.TripService;
-import com.ridehub.route.service.criteria.RouteCriteria;
 import com.ridehub.route.service.criteria.TripCriteria;
 import com.ridehub.route.service.dto.TripDTO;
 import com.ridehub.route.service.vm.TripDetailVM;

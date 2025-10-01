@@ -76,7 +76,6 @@ class SeatLockCriteriaTest {
 
     private static void setAllFilters(SeatLockCriteria seatLockCriteria) {
         seatLockCriteria.id();
-        seatLockCriteria.tripId();
         seatLockCriteria.seatNo();
         seatLockCriteria.userId();
         seatLockCriteria.status();
@@ -87,6 +86,7 @@ class SeatLockCriteriaTest {
         seatLockCriteria.isDeleted();
         seatLockCriteria.deletedAt();
         seatLockCriteria.deletedBy();
+        seatLockCriteria.tripId();
         seatLockCriteria.distinct();
     }
 
@@ -94,7 +94,6 @@ class SeatLockCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId()) &&
-                condition.apply(criteria.getTripId()) &&
                 condition.apply(criteria.getSeatNo()) &&
                 condition.apply(criteria.getUserId()) &&
                 condition.apply(criteria.getStatus()) &&
@@ -105,6 +104,7 @@ class SeatLockCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
+                condition.apply(criteria.getTripId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -114,7 +114,6 @@ class SeatLockCriteriaTest {
         return new Condition<>(
             criteria ->
                 condition.apply(criteria.getId(), copy.getId()) &&
-                condition.apply(criteria.getTripId(), copy.getTripId()) &&
                 condition.apply(criteria.getSeatNo(), copy.getSeatNo()) &&
                 condition.apply(criteria.getUserId(), copy.getUserId()) &&
                 condition.apply(criteria.getStatus(), copy.getStatus()) &&
@@ -125,6 +124,7 @@ class SeatLockCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
+                condition.apply(criteria.getTripId(), copy.getTripId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

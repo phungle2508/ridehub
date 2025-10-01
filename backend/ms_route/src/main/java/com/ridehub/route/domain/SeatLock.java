@@ -1,5 +1,6 @@
 package com.ridehub.route.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ridehub.route.domain.enumeration.LockStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -26,11 +27,6 @@ public class SeatLock implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-
-    @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "trip_id", length = 36, nullable = false)
-    private UUID tripId;
 
     @NotNull
     @Size(max = 16)
@@ -71,6 +67,11 @@ public class SeatLock implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
+    @ManyToOne(optional = false)
+    @NotNull
+    @JsonIgnoreProperties(value = { "route", "vehicle", "driver", "attendant" }, allowSetters = true)
+    private Trip trip;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -84,19 +85,6 @@ public class SeatLock implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public UUID getTripId() {
-        return this.tripId;
-    }
-
-    public SeatLock tripId(UUID tripId) {
-        this.setTripId(tripId);
-        return this;
-    }
-
-    public void setTripId(UUID tripId) {
-        this.tripId = tripId;
     }
 
     public String getSeatNo() {
@@ -229,6 +217,19 @@ public class SeatLock implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public Trip getTrip() {
+        return this.trip;
+    }
+
+    public void setTrip(Trip trip) {
+        this.trip = trip;
+    }
+
+    public SeatLock trip(Trip trip) {
+        this.setTrip(trip);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -253,7 +254,6 @@ public class SeatLock implements Serializable {
     public String toString() {
         return "SeatLock{" +
             "id=" + getId() +
-            ", tripId='" + getTripId() + "'" +
             ", seatNo='" + getSeatNo() + "'" +
             ", userId='" + getUserId() + "'" +
             ", status='" + getStatus() + "'" +

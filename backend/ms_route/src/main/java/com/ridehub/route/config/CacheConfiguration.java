@@ -18,7 +18,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.info.GitProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.context.annotation.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tech.jhipster.config.JHipsterProperties;
@@ -92,7 +91,6 @@ public class CacheConfiguration {
             createCache(cm, com.ridehub.route.domain.Floor.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.route.domain.Seat.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.route.domain.Trip.class.getName(), jcacheConfiguration);
-            createCache(cm, com.ridehub.route.domain.TripSeat.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.route.domain.Staff.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.route.domain.Driver.class.getName(), jcacheConfiguration);
             createCache(cm, com.ridehub.route.domain.Attendant.class.getName(), jcacheConfiguration);

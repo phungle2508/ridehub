@@ -47,7 +47,6 @@ public class SeatLockAsserts {
     public static void assertSeatLockUpdatableFieldsEquals(SeatLock expected, SeatLock actual) {
         assertThat(actual)
             .as("Verify SeatLock relevant properties")
-            .satisfies(a -> assertThat(a.getTripId()).as("check tripId").isEqualTo(expected.getTripId()))
             .satisfies(a -> assertThat(a.getSeatNo()).as("check seatNo").isEqualTo(expected.getSeatNo()))
             .satisfies(a -> assertThat(a.getUserId()).as("check userId").isEqualTo(expected.getUserId()))
             .satisfies(a -> assertThat(a.getStatus()).as("check status").isEqualTo(expected.getStatus()))
@@ -67,6 +66,8 @@ public class SeatLockAsserts {
      * @param actual the actual entity
      */
     public static void assertSeatLockUpdatableRelationshipsEquals(SeatLock expected, SeatLock actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify SeatLock relationships")
+            .satisfies(a -> assertThat(a.getTrip()).as("check trip").isEqualTo(expected.getTrip()));
     }
 }

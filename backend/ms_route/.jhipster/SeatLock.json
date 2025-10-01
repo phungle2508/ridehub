@@ -1,17 +1,12 @@
 {
   "annotations": {
-    "changelogDate": "20250929071006"
+    "changelogDate": "20251001065745"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
   "databaseType": "sql",
   "dto": "mapstruct",
   "fields": [
-    {
-      "fieldName": "tripId",
-      "fieldType": "UUID",
-      "fieldValidateRules": ["required"]
-    },
     {
       "fieldName": "seatNo",
       "fieldType": "String",
@@ -64,7 +59,15 @@
   "jpaMetamodelFiltering": true,
   "microserviceName": "ms_route",
   "name": "SeatLock",
-  "relationships": [],
+  "relationships": [
+    {
+      "otherEntityName": "trip",
+      "relationshipName": "trip",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
   "searchEngine": "no",
   "service": "serviceImpl"
 }

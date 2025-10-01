@@ -12,7 +12,6 @@ public class SeatLockTestSamples {
     public static SeatLock getSeatLockSample1() {
         return new SeatLock()
             .id(1L)
-            .tripId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
             .seatNo("seatNo1")
             .userId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
             .idempotencyKey("idempotencyKey1")
@@ -22,7 +21,6 @@ public class SeatLockTestSamples {
     public static SeatLock getSeatLockSample2() {
         return new SeatLock()
             .id(2L)
-            .tripId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
             .seatNo("seatNo2")
             .userId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
             .idempotencyKey("idempotencyKey2")
@@ -32,7 +30,6 @@ public class SeatLockTestSamples {
     public static SeatLock getSeatLockRandomSampleGenerator() {
         return new SeatLock()
             .id(longCount.incrementAndGet())
-            .tripId(UUID.randomUUID())
             .seatNo(UUID.randomUUID().toString())
             .userId(UUID.randomUUID())
             .idempotencyKey(UUID.randomUUID().toString())

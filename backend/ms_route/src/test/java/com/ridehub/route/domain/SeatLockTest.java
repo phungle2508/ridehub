@@ -1,6 +1,7 @@
 package com.ridehub.route.domain;
 
 import static com.ridehub.route.domain.SeatLockTestSamples.*;
+import static com.ridehub.route.domain.TripTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ridehub.route.web.rest.TestUtil;
@@ -20,5 +21,17 @@ class SeatLockTest {
 
         seatLock2 = getSeatLockSample2();
         assertThat(seatLock1).isNotEqualTo(seatLock2);
+    }
+
+    @Test
+    void tripTest() {
+        SeatLock seatLock = getSeatLockRandomSampleGenerator();
+        Trip tripBack = getTripRandomSampleGenerator();
+
+        seatLock.setTrip(tripBack);
+        assertThat(seatLock.getTrip()).isEqualTo(tripBack);
+
+        seatLock.trip(null);
+        assertThat(seatLock.getTrip()).isNull();
     }
 }

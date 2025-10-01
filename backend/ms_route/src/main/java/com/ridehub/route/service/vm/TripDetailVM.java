@@ -3,19 +3,19 @@ package com.ridehub.route.service.vm;
 import java.util.List;
 
 import com.ridehub.route.service.dto.TripDTO;
-import com.ridehub.route.service.dto.TripSeatDTO;
+import com.ridehub.route.service.dto.SeatLockDTO;
 
 public class TripDetailVM {
 
     private TripDTO tripDTO;
     private VehicleDetailVM detailVM;
-    private List<TripSeatDTO> tripSeatDTOs;
+    private List<SeatLockDTO> SeatLockDTOs;
 
     public TripDetailVM(TripDTO trip, VehicleDetailVM detailVM,
-            List<TripSeatDTO> tripSeatDTOs) {
+            List<SeatLockDTO> SeatLockDTOs) {
         this.tripDTO = trip;
         this.detailVM = detailVM;
-        this.tripSeatDTOs = tripSeatDTOs;
+        this.SeatLockDTOs = SeatLockDTOs;
     }
 
     public TripDTO getTripDTO() {
@@ -34,12 +34,12 @@ public class TripDetailVM {
         this.detailVM = detailVM;
     }
 
-    public List<TripSeatDTO> getTripSeatDTOs() {
-        return tripSeatDTOs;
+    public List<SeatLockDTO> getSeatLockDTOs() {
+        return SeatLockDTOs;
     }
 
-    public void setTripSeatDTOs(List<TripSeatDTO> tripSeatDTOs) {
-        this.tripSeatDTOs = tripSeatDTOs;
+    public void setSeatLockDTOs(List<SeatLockDTO> SeatLockDTOs) {
+        this.SeatLockDTOs = SeatLockDTOs;
     }
 
 }

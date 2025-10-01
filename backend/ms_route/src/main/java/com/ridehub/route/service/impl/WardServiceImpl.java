@@ -5,11 +5,7 @@ import com.ridehub.route.repository.WardRepository;
 import com.ridehub.route.service.WardService;
 import com.ridehub.route.service.dto.WardDTO;
 import com.ridehub.route.service.mapper.WardMapper;
-import com.ridehub.route.service.vm.WardSimpleVM;
-
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -75,15 +71,5 @@ public class WardServiceImpl implements WardService {
     public void delete(Long id) {
         LOG.debug("Request to delete Ward : {}", id);
         wardRepository.deleteById(id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<WardSimpleVM> findAllSimple() {
-        LOG.debug("Request to get all Wards with ID and name only");
-        return wardRepository.findAll().stream()
-            .filter(ward -> ward.getIsDeleted() == null || !ward.getIsDeleted())
-            .map(ward -> new WardSimpleVM(ward.getId(), ward.getName()))
-            .collect(Collectors.toList());
     }
 }

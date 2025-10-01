@@ -6,6 +6,7 @@ import com.ridehub.route.repository.SeatLockRepository;
 import com.ridehub.route.service.criteria.SeatLockCriteria;
 import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.mapper.SeatLockMapper;
+import jakarta.persistence.criteria.JoinType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,6 @@ public class SeatLockQueryService extends QueryService<SeatLock> {
             specification = Specification.allOf(
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), SeatLock_.id),
-                buildSpecification(criteria.getTripId(), SeatLock_.tripId),
                 buildStringSpecification(criteria.getSeatNo(), SeatLock_.seatNo),
                 buildSpecification(criteria.getUserId(), SeatLock_.userId),
                 buildSpecification(criteria.getStatus(), SeatLock_.status),
@@ -81,7 +81,8 @@ public class SeatLockQueryService extends QueryService<SeatLock> {
                 buildRangeSpecification(criteria.getUpdatedAt(), SeatLock_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), SeatLock_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), SeatLock_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), SeatLock_.deletedBy)
+                buildSpecification(criteria.getDeletedBy(), SeatLock_.deletedBy),
+                buildSpecification(criteria.getTripId(), root -> root.join(SeatLock_.trip, JoinType.LEFT).get(Trip_.id))
             );
         }
         return specification;

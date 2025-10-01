@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.route.IntegrationTest;
 import com.ridehub.route.domain.SeatLock;
+import com.ridehub.route.domain.Trip;
 import com.ridehub.route.domain.enumeration.LockStatus;
 import com.ridehub.route.repository.SeatLockRepository;
 import com.ridehub.route.service.dto.SeatLockDTO;
@@ -38,9 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @WithMockUser
 class SeatLockResourceIT {
-
-    private static final UUID DEFAULT_TRIP_ID = UUID.randomUUID();
-    private static final UUID UPDATED_TRIP_ID = UUID.randomUUID();
 
     private static final String DEFAULT_SEAT_NO = "AAAAAAAAAA";
     private static final String UPDATED_SEAT_NO = "BBBBBBBBBB";
@@ -103,9 +101,8 @@ class SeatLockResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static SeatLock createEntity() {
-        return new SeatLock()
-            .tripId(DEFAULT_TRIP_ID)
+    public static SeatLock createEntity(EntityManager em) {
+        SeatLock seatLock = new SeatLock()
             .seatNo(DEFAULT_SEAT_NO)
             .userId(DEFAULT_USER_ID)
             .status(DEFAULT_STATUS)
@@ -116,6 +113,17 @@ class SeatLockResourceIT {
             .isDeleted(DEFAULT_IS_DELETED)
             .deletedAt(DEFAULT_DELETED_AT)
             .deletedBy(DEFAULT_DELETED_BY);
+        // Add required entity
+        Trip trip;
+        if (TestUtil.findAll(em, Trip.class).isEmpty()) {
+            trip = TripResourceIT.createEntity(em);
+            em.persist(trip);
+            em.flush();
+        } else {
+            trip = TestUtil.findAll(em, Trip.class).get(0);
+        }
+        seatLock.setTrip(trip);
+        return seatLock;
     }
 
     /**
@@ -124,9 +132,8 @@ class SeatLockResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static SeatLock createUpdatedEntity() {
-        return new SeatLock()
-            .tripId(UPDATED_TRIP_ID)
+    public static SeatLock createUpdatedEntity(EntityManager em) {
+        SeatLock updatedSeatLock = new SeatLock()
             .seatNo(UPDATED_SEAT_NO)
             .userId(UPDATED_USER_ID)
             .status(UPDATED_STATUS)
@@ -137,11 +144,22 @@ class SeatLockResourceIT {
             .isDeleted(UPDATED_IS_DELETED)
             .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
+        // Add required entity
+        Trip trip;
+        if (TestUtil.findAll(em, Trip.class).isEmpty()) {
+            trip = TripResourceIT.createUpdatedEntity(em);
+            em.persist(trip);
+            em.flush();
+        } else {
+            trip = TestUtil.findAll(em, Trip.class).get(0);
+        }
+        updatedSeatLock.setTrip(trip);
+        return updatedSeatLock;
     }
 
     @BeforeEach
     void initTest() {
-        seatLock = createEntity();
+        seatLock = createEntity(em);
     }
 
     @AfterEach
@@ -194,23 +212,6 @@ class SeatLockResourceIT {
 
         // Validate the SeatLock in the database
         assertSameRepositoryCount(databaseSizeBeforeCreate);
-    }
-
-    @Test
-    @Transactional
-    void checkTripIdIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        // set the field null
-        seatLock.setTripId(null);
-
-        // Create the SeatLock, which fails.
-        SeatLockDTO seatLockDTO = seatLockMapper.toDto(seatLock);
-
-        restSeatLockMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(seatLockDTO)))
-            .andExpect(status().isBadRequest());
-
-        assertSameRepositoryCount(databaseSizeBeforeTest);
     }
 
     @Test
@@ -293,7 +294,6 @@ class SeatLockResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(seatLock.getId().intValue())))
-            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.toString())))
             .andExpect(jsonPath("$.[*].seatNo").value(hasItem(DEFAULT_SEAT_NO)))
             .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
@@ -318,7 +318,6 @@ class SeatLockResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(seatLock.getId().intValue()))
-            .andExpect(jsonPath("$.tripId").value(DEFAULT_TRIP_ID.toString()))
             .andExpect(jsonPath("$.seatNo").value(DEFAULT_SEAT_NO))
             .andExpect(jsonPath("$.userId").value(DEFAULT_USER_ID.toString()))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
@@ -344,36 +343,6 @@ class SeatLockResourceIT {
         defaultSeatLockFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
 
         defaultSeatLockFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
-    }
-
-    @Test
-    @Transactional
-    void getAllSeatLocksByTripIdIsEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
-
-        // Get all the seatLockList where tripId equals to
-        defaultSeatLockFiltering("tripId.equals=" + DEFAULT_TRIP_ID, "tripId.equals=" + UPDATED_TRIP_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllSeatLocksByTripIdIsInShouldWork() throws Exception {
-        // Initialize the database
-        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
-
-        // Get all the seatLockList where tripId in
-        defaultSeatLockFiltering("tripId.in=" + DEFAULT_TRIP_ID + "," + UPDATED_TRIP_ID, "tripId.in=" + UPDATED_TRIP_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllSeatLocksByTripIdIsNullOrNotNull() throws Exception {
-        // Initialize the database
-        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
-
-        // Get all the seatLockList where tripId is not null
-        defaultSeatLockFiltering("tripId.specified=true", "tripId.specified=false");
     }
 
     @Test
@@ -725,6 +694,28 @@ class SeatLockResourceIT {
         defaultSeatLockFiltering("deletedBy.specified=true", "deletedBy.specified=false");
     }
 
+    @Test
+    @Transactional
+    void getAllSeatLocksByTripIsEqualToSomething() throws Exception {
+        Trip trip;
+        if (TestUtil.findAll(em, Trip.class).isEmpty()) {
+            seatLockRepository.saveAndFlush(seatLock);
+            trip = TripResourceIT.createEntity(em);
+        } else {
+            trip = TestUtil.findAll(em, Trip.class).get(0);
+        }
+        em.persist(trip);
+        em.flush();
+        seatLock.setTrip(trip);
+        seatLockRepository.saveAndFlush(seatLock);
+        Long tripId = trip.getId();
+        // Get all the seatLockList where trip equals to tripId
+        defaultSeatLockShouldBeFound("tripId.equals=" + tripId);
+
+        // Get all the seatLockList where trip equals to (tripId + 1)
+        defaultSeatLockShouldNotBeFound("tripId.equals=" + (tripId + 1));
+    }
+
     private void defaultSeatLockFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
         defaultSeatLockShouldBeFound(shouldBeFound);
         defaultSeatLockShouldNotBeFound(shouldNotBeFound);
@@ -739,7 +730,6 @@ class SeatLockResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(seatLock.getId().intValue())))
-            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.toString())))
             .andExpect(jsonPath("$.[*].seatNo").value(hasItem(DEFAULT_SEAT_NO)))
             .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
@@ -798,7 +788,6 @@ class SeatLockResourceIT {
         // Disconnect from session so that the updates on updatedSeatLock are not directly saved in db
         em.detach(updatedSeatLock);
         updatedSeatLock
-            .tripId(UPDATED_TRIP_ID)
             .seatNo(UPDATED_SEAT_NO)
             .userId(UPDATED_USER_ID)
             .status(UPDATED_STATUS)
@@ -902,12 +891,11 @@ class SeatLockResourceIT {
         partialUpdatedSeatLock.setId(seatLock.getId());
 
         partialUpdatedSeatLock
-            .tripId(UPDATED_TRIP_ID)
-            .status(UPDATED_STATUS)
-            .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .seatNo(UPDATED_SEAT_NO)
+            .expiresAt(UPDATED_EXPIRES_AT)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
-            .deletedAt(UPDATED_DELETED_AT)
+            .isDeleted(UPDATED_IS_DELETED)
             .deletedBy(UPDATED_DELETED_BY);
 
         restSeatLockMockMvc
@@ -938,7 +926,6 @@ class SeatLockResourceIT {
         partialUpdatedSeatLock.setId(seatLock.getId());
 
         partialUpdatedSeatLock
-            .tripId(UPDATED_TRIP_ID)
             .seatNo(UPDATED_SEAT_NO)
             .userId(UPDATED_USER_ID)
             .status(UPDATED_STATUS)

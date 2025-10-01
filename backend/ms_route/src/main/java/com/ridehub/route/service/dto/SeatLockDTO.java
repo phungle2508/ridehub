@@ -16,9 +16,6 @@ public class SeatLockDTO implements Serializable {
     private Long id;
 
     @NotNull
-    private UUID tripId;
-
-    @NotNull
     @Size(max = 16)
     private String seatNo;
 
@@ -44,20 +41,15 @@ public class SeatLockDTO implements Serializable {
 
     private UUID deletedBy;
 
+    @NotNull
+    private TripDTO trip;
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public UUID getTripId() {
-        return tripId;
-    }
-
-    public void setTripId(UUID tripId) {
-        this.tripId = tripId;
     }
 
     public String getSeatNo() {
@@ -140,6 +132,14 @@ public class SeatLockDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public TripDTO getTrip() {
+        return trip;
+    }
+
+    public void setTrip(TripDTO trip) {
+        this.trip = trip;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -166,7 +166,6 @@ public class SeatLockDTO implements Serializable {
     public String toString() {
         return "SeatLockDTO{" +
             "id=" + getId() +
-            ", tripId='" + getTripId() + "'" +
             ", seatNo='" + getSeatNo() + "'" +
             ", userId='" + getUserId() + "'" +
             ", status='" + getStatus() + "'" +
@@ -177,6 +176,7 @@ public class SeatLockDTO implements Serializable {
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
+            ", trip=" + getTrip() +
             "}";
     }
 }

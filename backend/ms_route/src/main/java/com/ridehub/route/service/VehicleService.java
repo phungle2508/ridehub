@@ -1,10 +1,7 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.VehicleDTO;
-import com.ridehub.route.service.dto.VehicleListDTO;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ridehub.route.domain.Vehicle}.
@@ -48,5 +45,4 @@ public interface VehicleService {
      * @param id the id of the entity.
      */
     void delete(Long id);
-
 }

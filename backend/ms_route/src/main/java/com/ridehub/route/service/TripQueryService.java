@@ -2,10 +2,10 @@ package com.ridehub.route.service;
 
 import com.ridehub.route.domain.*; // for static metamodels
 import com.ridehub.route.repository.TripRepository;
+import com.ridehub.route.service.criteria.SeatLockCriteria;
 import com.ridehub.route.service.criteria.TripCriteria;
-import com.ridehub.route.service.criteria.TripSeatCriteria;
+import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.TripDTO;
-import com.ridehub.route.service.dto.TripSeatDTO;
 import com.ridehub.route.service.mapper.TripMapper;
 import com.ridehub.route.service.vm.TripDetailVM;
 import com.ridehub.route.service.vm.VehicleDetailVM;
@@ -40,176 +40,165 @@ import tech.jhipster.service.filter.LongFilter;
 @Transactional(readOnly = true)
 public class TripQueryService extends QueryService<Trip> {
 
-        private static final Logger LOG = LoggerFactory.getLogger(TripQueryService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TripQueryService.class);
 
-        private final TripRepository tripRepository;
+    private final TripRepository tripRepository;
 
-        private final TripMapper tripMapper;
-        private final VehicleQueryService vehicleQueryService;
-        private final TripSeatQueryService tripSeatQueryService;
+    private final TripMapper tripMapper;
+    private final VehicleQueryService vehicleQueryService;
+    private final SeatLockQueryService seatLockQueryService;
 
-        public TripQueryService(TripRepository tripRepository, TripMapper tripMapper,
-                        VehicleQueryService vehicleQueryService, TripSeatQueryService tripSeatQueryService) {
-                this.tripRepository = tripRepository;
-                this.tripMapper = tripMapper;
-                this.vehicleQueryService = vehicleQueryService;
-                this.tripSeatQueryService = tripSeatQueryService;
+    public TripQueryService(TripRepository tripRepository, TripMapper tripMapper,
+            VehicleQueryService vehicleQueryService, SeatLockQueryService seatLockQueryService) {
+        this.tripRepository = tripRepository;
+        this.tripMapper = tripMapper;
+        this.vehicleQueryService = vehicleQueryService;
+        this.seatLockQueryService = seatLockQueryService;
+    }
+
+    /**
+     * Return a {@link Page} of {@link TripDTO} which matches the criteria from the
+     * database.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
+     * @param page     The page, which should be returned.
+     * @return the matching entities.
+     */
+    @Transactional(readOnly = true)
+    public Page<TripDTO> findByCriteria(TripCriteria criteria, Pageable page) {
+        LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        final Specification<Trip> specification = createSpecification(criteria);
+        return tripRepository.findAll(specification, page).map(tripMapper::toDto);
+    }
+
+    /**
+     * Return the number of matching entities in the database.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
+     * @return the number of matching entities.
+     */
+    @Transactional(readOnly = true)
+    public long countByCriteria(TripCriteria criteria) {
+        LOG.debug("count by criteria : {}", criteria);
+        final Specification<Trip> specification = createSpecification(criteria);
+        return tripRepository.count(specification);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<TripDetailVM> findTripDetail(Long tripId) {
+        // 1) Get TripDTO via service (no repo; ensure your TripMapper maps full nested
+        // DTOs)
+        Optional<Trip> optTrip = tripRepository.findById(tripId);
+        if (optTrip.isEmpty())
+            return Optional.empty();
+
+        // 2️⃣ Convert entity -> DTO
+        TripDTO trip = tripMapper.toDto(optTrip.get());
+        // 2) Vehicle detail (null-safe)
+        VehicleDetailVM vehicleDetail = new VehicleDetailVM(null, List.of(), Map.of());
+        if (trip.getVehicle() != null && trip.getVehicle().getId() != null) {
+            vehicleDetail = vehicleQueryService
+                    .findDetail(trip.getVehicle().getId())
+                    .orElse(new VehicleDetailVM(trip.getVehicle(), List.of(), Map.of()));
         }
 
-        /**
-         * Return a {@link Page} of {@link TripDTO} which matches the criteria from the
-         * database.
-         * 
-         * @param criteria The object which holds all the filters, which the entities
-         *                 should match.
-         * @param page     The page, which should be returned.
-         * @return the matching entities.
-         */
-        @Transactional(readOnly = true)
-        public Page<TripDTO> findByCriteria(TripCriteria criteria, Pageable page) {
-                LOG.debug("find by criteria : {}, page: {}", criteria, page);
-                final Specification<Trip> specification = createSpecification(criteria);
-                return tripRepository.findAll(specification, page).map(tripMapper::toDto);
+        // 3) Trip seats via QueryService (no repo)
+        SeatLockCriteria criteria = new SeatLockCriteria();
+        LongFilter tripIdFilter = new LongFilter();
+        tripIdFilter.setEquals(tripId);
+        criteria.setTripId(tripIdFilter);
+
+        List<SeatLockDTO> tripSeats = seatLockQueryService.findByCriteria(criteria);
+
+        // 4) Compose VM
+        return Optional.of(new TripDetailVM(trip, vehicleDetail, tripSeats));
+    }
+
+    /**
+     * Function to convert {@link TripCriteria} to a {@link Specification}
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
+     * @return the matching {@link Specification} of the entity.
+     */
+    protected Specification<Trip> createSpecification(TripCriteria criteria) {
+        Specification<Trip> specification = Specification.where(null);
+        if (criteria != null) {
+            // This has to be called first, because the distinct method returns null
+            specification = Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct())
+                            : null,
+                    buildRangeSpecification(criteria.getId(), Trip_.id),
+                    buildStringSpecification(criteria.getTripCode(), Trip_.tripCode),
+                    buildRangeSpecification(criteria.getDepartureTime(), Trip_.departureTime),
+                    buildRangeSpecification(criteria.getArrivalTime(), Trip_.arrivalTime),
+                    buildRangeSpecification(criteria.getBaseFare(), Trip_.baseFare),
+                    buildRangeSpecification(criteria.getCreatedAt(), Trip_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), Trip_.updatedAt),
+                    buildSpecification(criteria.getIsDeleted(), Trip_.isDeleted),
+                    buildRangeSpecification(criteria.getDeletedAt(), Trip_.deletedAt),
+                    buildSpecification(criteria.getDeletedBy(), Trip_.deletedBy),
+                    buildSpecification(criteria.getRouteId(),
+                            root -> root.join(Trip_.route, JoinType.LEFT).get(Route_.id)),
+                    buildSpecification(criteria.getVehicleId(),
+                            root -> root.join(Trip_.vehicle, JoinType.LEFT)
+                                    .get(Vehicle_.id)),
+                    buildSpecification(criteria.getDriverId(),
+                            root -> root.join(Trip_.driver, JoinType.LEFT).get(Driver_.id)),
+                    buildSpecification(criteria.getAttendantId(),
+                            root -> root.join(Trip_.attendant, JoinType.LEFT)
+                                    .get(Attendant_.id)));
+
+            if (criteria.getOriginDistrictCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getOriginDistrictCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.origin, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .get(District_.districtCode)));
+            }
+
+            if (criteria.getOriginProvinceCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getOriginProvinceCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.origin, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .join(District_.province, JoinType.LEFT)
+                                        .get(Province_.provinceCode)));
+            }
+
+            // === NEW: Filter by destination district / province ===
+            if (criteria.getDestinationDistrictCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getDestinationDistrictCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.destination, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .get(District_.districtCode)));
+            }
+
+            if (criteria.getDestinationProvinceCode() != null) {
+                specification = specification.and(
+                        buildSpecification(criteria.getDestinationProvinceCode(),
+                                root -> root.join(Trip_.route, JoinType.LEFT)
+                                        .join(Route_.destination, JoinType.LEFT)
+                                        .join(Station_.address, JoinType.LEFT)
+                                        .join(Address_.ward, JoinType.LEFT)
+                                        .join(Ward_.district, JoinType.LEFT)
+                                        .join(District_.province, JoinType.LEFT)
+                                        .get(Province_.provinceCode)));
+            }
         }
-
-        /**
-         * Return the number of matching entities in the database.
-         * 
-         * @param criteria The object which holds all the filters, which the entities
-         *                 should match.
-         * @return the number of matching entities.
-         */
-        @Transactional(readOnly = true)
-        public long countByCriteria(TripCriteria criteria) {
-                LOG.debug("count by criteria : {}", criteria);
-                final Specification<Trip> specification = createSpecification(criteria);
-                return tripRepository.count(specification);
-        }
-
-        @Transactional(readOnly = true)
-        public Optional<TripDetailVM> findTripDetail(Long tripId) {
-                // 1) Get TripDTO via service (no repo; ensure your TripMapper maps full nested
-                // DTOs)
-                Optional<Trip> optTrip = tripRepository.findById(tripId);
-                if (optTrip.isEmpty())
-                        return Optional.empty();
-
-                // 2️⃣ Convert entity -> DTO
-                TripDTO trip = tripMapper.toDto(optTrip.get());
-                // 2) Vehicle detail (null-safe)
-                VehicleDetailVM vehicleDetail = new VehicleDetailVM(null, List.of(), Map.of());
-                if (trip.getVehicle() != null && trip.getVehicle().getId() != null) {
-                        vehicleDetail = vehicleQueryService
-                                        .findDetail(trip.getVehicle().getId())
-                                        .orElse(new VehicleDetailVM(trip.getVehicle(), List.of(), Map.of()));
-                }
-
-                // 3) Trip seats via QueryService (no repo)
-                TripSeatCriteria criteria = new TripSeatCriteria();
-                LongFilter tripIdFilter = new LongFilter();
-                tripIdFilter.setEquals(tripId);
-                criteria.setTripId(tripIdFilter);
-
-                List<TripSeatDTO> tripSeats = tripSeatQueryService.findByCriteria(criteria)
-                                .stream()
-                                // active only
-                                .filter(ts -> ts.getIsDeleted() == null || !ts.getIsDeleted())
-                                // sort: floorNo asc, seatNo asc (null-safe)
-                                .sorted(
-                                                Comparator.comparing(TripSeatDTO::getFloorNo,
-                                                                Comparator.nullsLast(Integer::compareTo))
-                                                                .thenComparing(TripSeatDTO::getSeatNo,
-                                                                                Comparator.nullsLast(
-                                                                                                String::compareTo)))
-                                .collect(Collectors.toList());
-
-                // 4) Compose VM
-                return Optional.of(new TripDetailVM(trip, vehicleDetail, tripSeats));
-        }
-
-        /**
-         * Function to convert {@link TripCriteria} to a {@link Specification}
-         * 
-         * @param criteria The object which holds all the filters, which the entities
-         *                 should match.
-         * @return the matching {@link Specification} of the entity.
-         */
-        protected Specification<Trip> createSpecification(TripCriteria criteria) {
-                Specification<Trip> specification = Specification.where(null);
-                if (criteria != null) {
-                        // This has to be called first, because the distinct method returns null
-                        specification = Specification.allOf(
-                                        Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct())
-                                                        : null,
-                                        buildRangeSpecification(criteria.getId(), Trip_.id),
-                                        buildStringSpecification(criteria.getTripCode(), Trip_.tripCode),
-                                        buildRangeSpecification(criteria.getDepartureTime(), Trip_.departureTime),
-                                        buildRangeSpecification(criteria.getArrivalTime(), Trip_.arrivalTime),
-                                        buildRangeSpecification(criteria.getBaseFare(), Trip_.baseFare),
-                                        buildRangeSpecification(criteria.getCreatedAt(), Trip_.createdAt),
-                                        buildRangeSpecification(criteria.getUpdatedAt(), Trip_.updatedAt),
-                                        buildSpecification(criteria.getIsDeleted(), Trip_.isDeleted),
-                                        buildRangeSpecification(criteria.getDeletedAt(), Trip_.deletedAt),
-                                        buildSpecification(criteria.getDeletedBy(), Trip_.deletedBy),
-                                        buildSpecification(criteria.getRouteId(),
-                                                        root -> root.join(Trip_.route, JoinType.LEFT).get(Route_.id)),
-                                        buildSpecification(criteria.getVehicleId(),
-                                                        root -> root.join(Trip_.vehicle, JoinType.LEFT)
-                                                                        .get(Vehicle_.id)),
-                                        buildSpecification(criteria.getDriverId(),
-                                                        root -> root.join(Trip_.driver, JoinType.LEFT).get(Driver_.id)),
-                                        buildSpecification(criteria.getAttendantId(),
-                                                        root -> root.join(Trip_.attendant, JoinType.LEFT)
-                                                                        .get(Attendant_.id)));
-
-                        if (criteria.getOriginDistrictCode() != null) {
-                                specification = specification.and(
-                                                buildSpecification(criteria.getOriginDistrictCode(),
-                                                                root -> root.join(Trip_.route, JoinType.LEFT)
-                                                                                .join(Route_.origin, JoinType.LEFT)
-                                                                                .join(Station_.address, JoinType.LEFT)
-                                                                                .join(Address_.ward, JoinType.LEFT)
-                                                                                .join(Ward_.district, JoinType.LEFT)
-                                                                                .get(District_.districtCode)));
-                        }
-
-                        if (criteria.getOriginProvinceCode() != null) {
-                                specification = specification.and(
-                                                buildSpecification(criteria.getOriginProvinceCode(),
-                                                                root -> root.join(Trip_.route, JoinType.LEFT)
-                                                                                .join(Route_.origin, JoinType.LEFT)
-                                                                                .join(Station_.address, JoinType.LEFT)
-                                                                                .join(Address_.ward, JoinType.LEFT)
-                                                                                .join(Ward_.district, JoinType.LEFT)
-                                                                                .join(District_.province, JoinType.LEFT)
-                                                                                .get(Province_.provinceCode)));
-                        }
-
-                        // === NEW: Filter by destination district / province ===
-                        if (criteria.getDestinationDistrictCode() != null) {
-                                specification = specification.and(
-                                                buildSpecification(criteria.getDestinationDistrictCode(),
-                                                                root -> root.join(Trip_.route, JoinType.LEFT)
-                                                                                .join(Route_.destination, JoinType.LEFT)
-                                                                                .join(Station_.address, JoinType.LEFT)
-                                                                                .join(Address_.ward, JoinType.LEFT)
-                                                                                .join(Ward_.district, JoinType.LEFT)
-                                                                                .get(District_.districtCode)));
-                        }
-
-                        if (criteria.getDestinationProvinceCode() != null) {
-                                specification = specification.and(
-                                                buildSpecification(criteria.getDestinationProvinceCode(),
-                                                                root -> root.join(Trip_.route, JoinType.LEFT)
-                                                                                .join(Route_.destination, JoinType.LEFT)
-                                                                                .join(Station_.address, JoinType.LEFT)
-                                                                                .join(Address_.ward, JoinType.LEFT)
-                                                                                .join(Ward_.district, JoinType.LEFT)
-                                                                                .join(District_.province, JoinType.LEFT)
-                                                                                .get(Province_.provinceCode)));
-                        }
-                }
-                return specification;
-        }
+        return specification;
+    }
 
 }

@@ -1,21 +1,13 @@
 package com.ridehub.route.service.impl;
 
 import com.ridehub.route.domain.Vehicle;
-import com.ridehub.route.domain.Trip;
 import com.ridehub.route.repository.VehicleRepository;
-import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.VehicleService;
 import com.ridehub.route.service.dto.VehicleDTO;
-import com.ridehub.route.service.dto.VehicleListDTO;
 import com.ridehub.route.service.mapper.VehicleMapper;
 import java.util.Optional;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +21,11 @@ public class VehicleServiceImpl implements VehicleService {
     private static final Logger LOG = LoggerFactory.getLogger(VehicleServiceImpl.class);
 
     private final VehicleRepository vehicleRepository;
-    private final TripRepository tripRepository;
+
     private final VehicleMapper vehicleMapper;
 
-    public VehicleServiceImpl(VehicleRepository vehicleRepository, TripRepository tripRepository,
-            VehicleMapper vehicleMapper) {
+    public VehicleServiceImpl(VehicleRepository vehicleRepository, VehicleMapper vehicleMapper) {
         this.vehicleRepository = vehicleRepository;
-        this.tripRepository = tripRepository;
         this.vehicleMapper = vehicleMapper;
     }
 
@@ -60,14 +50,14 @@ public class VehicleServiceImpl implements VehicleService {
         LOG.debug("Request to partially update Vehicle : {}", vehicleDTO);
 
         return vehicleRepository
-                .findById(vehicleDTO.getId())
-                .map(existingVehicle -> {
-                    vehicleMapper.partialUpdate(existingVehicle, vehicleDTO);
+            .findById(vehicleDTO.getId())
+            .map(existingVehicle -> {
+                vehicleMapper.partialUpdate(existingVehicle, vehicleDTO);
 
-                    return existingVehicle;
-                })
-                .map(vehicleRepository::save)
-                .map(vehicleMapper::toDto);
+                return existingVehicle;
+            })
+            .map(vehicleRepository::save)
+            .map(vehicleMapper::toDto);
     }
 
     @Override
@@ -82,5 +72,4 @@ public class VehicleServiceImpl implements VehicleService {
         LOG.debug("Request to delete Vehicle : {}", id);
         vehicleRepository.deleteById(id);
     }
-
 }
