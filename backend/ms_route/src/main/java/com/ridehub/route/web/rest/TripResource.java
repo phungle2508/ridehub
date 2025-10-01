@@ -196,23 +196,6 @@ public class TripResource {
     }
 
     /**
-     * {@code GET  /trips/:id} : get the "id" trip.
-     *
-     * @param id the id of the tripDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-     *         the tripDTO, or with status {@code 404 (Not Found)}.
-     */
-    @GetMapping("/detailList")
-    public ResponseEntity<List<TripDetailVM>> getRouteDetailList(TripCriteria criteria,
-            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get Trip : {}", criteria);
-        Page<TripDetailVM> page = tripQueryService.getRouteDetailList(criteria, pageable);
-        HttpHeaders headers = PaginationUtil
-                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    /**
      * {@code DELETE  /trips/:id} : delete the "id" trip.
      *
      * @param id the id of the tripDTO to delete.
@@ -225,5 +208,12 @@ public class TripResource {
         return ResponseEntity.noContent()
                 .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
                 .build();
+    }
+
+    @GetMapping(value = "/{id}/detail", produces = "application/json")
+    public ResponseEntity<TripDetailVM> getTripDetail(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get Trip Detail: {}", id);
+        Optional<TripDetailVM> vm = tripQueryService.findTripDetail(id);
+        return ResponseUtil.wrapOrNotFound(vm);
     }
 }

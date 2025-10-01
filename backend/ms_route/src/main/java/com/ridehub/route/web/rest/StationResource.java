@@ -251,7 +251,7 @@ public class StationResource {
     public ResponseEntity<List<StationWithRoutesVM>> getStationsWithRoutes(
             @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get all stations with routes");
-        Page<StationWithRoutesVM> page = stationQueryService.getStationsWithRoutes(pageable);
+        Page<StationWithRoutesVM> page = stationService.getStationsWithRoutes(pageable);
         HttpHeaders headers = PaginationUtil
                 .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -275,7 +275,7 @@ public class StationResource {
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
                 pageable.getSort());
-        Optional<StationWithRoutesVM> stationDTO = stationQueryService.getStationsWithRoutesAndId(id, pageable);
+        Optional<StationWithRoutesVM> stationDTO = stationService.getStationsWithRoutesAndId(id, pageable);
         return ResponseUtil.wrapOrNotFound(stationDTO);
     }
 }

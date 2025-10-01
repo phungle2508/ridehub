@@ -1,9 +1,9 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.domain.*; // for static metamodels
-import com.ridehub.route.domain.Floor;
 import com.ridehub.route.repository.FloorRepository;
 import com.ridehub.route.service.criteria.FloorCriteria;
+import com.ridehub.route.service.criteria.SeatCriteria;
 import com.ridehub.route.service.dto.FloorDTO;
 import com.ridehub.route.service.mapper.FloorMapper;
 import jakarta.persistence.criteria.JoinType;
@@ -14,10 +14,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
+import tech.jhipster.service.filter.LongFilter;
 
 /**
- * Service for executing complex queries for {@link Floor} entities in the database.
- * The main input is a {@link FloorCriteria} which gets converted to {@link Specification},
+ * Service for executing complex queries for {@link Floor} entities in the
+ * database.
+ * The main input is a {@link FloorCriteria} which gets converted to
+ * {@link Specification},
  * in a way that all the filters must apply.
  * It returns a {@link List} of {@link FloorDTO} which fulfills the criteria.
  */
@@ -37,8 +40,11 @@ public class FloorQueryService extends QueryService<Floor> {
     }
 
     /**
-     * Return a {@link List} of {@link FloorDTO} which matches the criteria from the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
+     * Return a {@link List} of {@link FloorDTO} which matches the criteria from the
+     * database.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
@@ -50,7 +56,9 @@ public class FloorQueryService extends QueryService<Floor> {
 
     /**
      * Return the number of matching entities in the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
      * @return the number of matching entities.
      */
     @Transactional(readOnly = true)
@@ -60,9 +68,24 @@ public class FloorQueryService extends QueryService<Floor> {
         return floorRepository.count(specification);
     }
 
+    @Transactional(readOnly = true)
+    public List<FloorDTO> findFloorsBySeatMapId(Long seatMapId) {
+        if (seatMapId == null)
+            return List.of();
+
+        FloorCriteria criteria = new FloorCriteria();
+        LongFilter seatMapIdFilter = new LongFilter();
+        seatMapIdFilter.setEquals(seatMapId); // single value, not .in(...)
+        criteria.setSeatMapId(seatMapIdFilter); // filter is on seatMapId, not floorId
+
+        return findByCriteria(criteria); // your existing FloorQueryService.findByCriteria
+    }
+
     /**
      * Function to convert {@link FloorCriteria} to a {@link Specification}
-     * @param criteria The object which holds all the filters, which the entities should match.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
      * @return the matching {@link Specification} of the entity.
      */
     protected Specification<Floor> createSpecification(FloorCriteria criteria) {
@@ -70,17 +93,17 @@ public class FloorQueryService extends QueryService<Floor> {
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
             specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), Floor_.id),
-                buildRangeSpecification(criteria.getFloorNo(), Floor_.floorNo),
-                buildRangeSpecification(criteria.getPriceFactorFloor(), Floor_.priceFactorFloor),
-                buildRangeSpecification(criteria.getCreatedAt(), Floor_.createdAt),
-                buildRangeSpecification(criteria.getUpdatedAt(), Floor_.updatedAt),
-                buildSpecification(criteria.getIsDeleted(), Floor_.isDeleted),
-                buildRangeSpecification(criteria.getDeletedAt(), Floor_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), Floor_.deletedBy),
-                buildSpecification(criteria.getSeatMapId(), root -> root.join(Floor_.seatMap, JoinType.LEFT).get(SeatMap_.id))
-            );
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), Floor_.id),
+                    buildRangeSpecification(criteria.getFloorNo(), Floor_.floorNo),
+                    buildRangeSpecification(criteria.getPriceFactorFloor(), Floor_.priceFactorFloor),
+                    buildRangeSpecification(criteria.getCreatedAt(), Floor_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), Floor_.updatedAt),
+                    buildSpecification(criteria.getIsDeleted(), Floor_.isDeleted),
+                    buildRangeSpecification(criteria.getDeletedAt(), Floor_.deletedAt),
+                    buildSpecification(criteria.getDeletedBy(), Floor_.deletedBy),
+                    buildSpecification(criteria.getSeatMapId(),
+                            root -> root.join(Floor_.seatMap, JoinType.LEFT).get(SeatMap_.id)));
         }
         return specification;
     }

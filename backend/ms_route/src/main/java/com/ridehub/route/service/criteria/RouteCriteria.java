@@ -55,6 +55,8 @@ public class RouteCriteria implements Serializable, Criteria {
 
     private Boolean distinct;
 
+    private LongFilter stationId;
+
     public RouteCriteria() {
     }
 
@@ -73,12 +75,27 @@ public class RouteCriteria implements Serializable, Criteria {
         this.originProvinceCode = other.optionalOriginProvinceCode().map(StringFilter::copy).orElse(null);
         this.destinationDistrictCode = other.optionalDestinationDistrictCode().map(StringFilter::copy).orElse(null);
         this.destinationProvinceCode = other.optionalDestinationProvinceCode().map(StringFilter::copy).orElse(null);
+        this.stationId = other.optionalStationId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
     @Override
     public RouteCriteria copy() {
         return new RouteCriteria(this);
+    }
+
+    public Optional<LongFilter> optionalStationId() {
+        return Optional.ofNullable(stationId);
+    }
+
+    public LongFilter getStationId() {
+        if (stationId == null)
+            stationId = new LongFilter();
+        return stationId;
+    }
+
+    public void setStationId(LongFilter stationId) {
+        this.stationId = stationId;
     }
 
     public StringFilter getOriginDistrictCode() {

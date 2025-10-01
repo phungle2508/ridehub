@@ -34,5 +34,6 @@ public interface StationMapper extends EntityMapper<StationDTO, Station> {
      * Note: routes will be populated separately in the service layer
      */
     @Mapping(target = "routes", ignore = true)
+    @Mapping(target = "routresCount", ignore = true)
     StationWithRoutesVM toStationWithRoutesDto(Station station);
 }

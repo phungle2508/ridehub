@@ -10,7 +10,14 @@ import com.ridehub.route.service.vm.StationWithRoutesVM;
 import com.ridehub.route.repository.RouteRepository;
 import com.ridehub.route.service.mapper.RouteMapper;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,21 +54,14 @@ public class StationQueryService extends QueryService<Station> {
 
     private final StationSearchRepository stationSearchRepository;
 
-    private final RouteRepository routeRepository;
-
-    private final RouteMapper routeMapper;
-
     public StationQueryService(
             StationRepository stationRepository,
             StationMapper stationMapper,
             StationSearchRepository stationSearchRepository,
-            RouteRepository routeRepository,
-            RouteMapper routeMapper) {
+            RouteQueryService routeQueryService) {
         this.stationRepository = stationRepository;
         this.stationMapper = stationMapper;
         this.stationSearchRepository = stationSearchRepository;
-        this.routeRepository = routeRepository;
-        this.routeMapper = routeMapper;
     }
 
     /**
@@ -144,62 +145,6 @@ public class StationQueryService extends QueryService<Station> {
             }
         }
         return specification;
-    }
-
-    @Transactional(readOnly = true)
-    public Map<Long, Long> getRouteCountsByStationIds(List<Long> stationIds) {
-        List<Object[]> results = routeRepository.countRoutesByStationIds(stationIds);
-        return results.stream()
-                .collect(Collectors.toMap(
-                        row -> ((Number) row[0]).longValue(), // station_id
-                        row -> ((Number) row[1]).longValue() // route_count
-                ));
-    }
-
-    /**
-     * Get all stations with their associated routes
-     * 
-     * @param pageable pagination information
-     * @return Page of StationWithRoutesVM
-     */
-    @Transactional(readOnly = true)
-    public Page<StationWithRoutesVM> getStationsWithRoutes(Pageable pageable) {
-        LOG.debug("Request to get all stations with routes");
-
-        Page<Station> stations = stationRepository.findAll(pageable);
-        List<Long> stationIds = stations.stream().map(Station::getId).toList();
-        Map<Long, Long> counts = getRouteCountsByStationIds(stationIds);
-
-        // Map each station to DTO
-        List<StationWithRoutesVM> stationWithRoutesDTOs = stations.stream()
-                .map(s -> {
-                    StationWithRoutesVM dto = stationMapper.toStationWithRoutesDto(s);
-                    dto.setRoutresCount(counts.getOrDefault(s.getId(), 0L));
-                    return dto;
-                })
-                .toList();
-
-        return new PageImpl<>(stationWithRoutesDTOs, pageable, stations.getTotalElements());
-    }
-
-    /**
-     * Get a station by ID with all its associated routes.
-     *
-     * @param id the ID of the station to retrieve.
-     * @return an Optional containing the StationWithRoutesVM with its routes, or
-     *         empty if not found.
-     */
-    @Transactional(readOnly = true)
-    public Optional<StationWithRoutesVM> getStationsWithRoutesAndId(Long id, Pageable pageable) {
-        return stationRepository.findById(id).map(station -> {
-            StationWithRoutesVM dto = stationMapper.toStationWithRoutesDto(station);
-
-            Page<Route> routePage = routeRepository.findByOriginOrDestination(station, pageable);
-            dto.setRoutes(routePage.getContent().stream().map(routeMapper::toDto).toList());
-            // dto.setRoutesCount(routePage.getTotalElements()); // total across all pages
-
-            return dto;
-        });
     }
 
 }

@@ -1,6 +1,8 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.StationDTO;
+import com.ridehub.route.service.vm.StationWithRoutesVM;
+
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,4 +59,21 @@ public interface StationService {
      * @return the list of entities.
      */
     Page<StationDTO> search(String query, Pageable pageable);
+
+    /**
+     * Get a station by ID with all its associated routes.
+     *
+     * @param id the ID of the station to retrieve.
+     * @return an Optional containing the StationWithRoutesVM with its routes, or
+     *         empty if not found.
+     */
+    Optional<StationWithRoutesVM> getStationsWithRoutesAndId(Long id, Pageable pageable);
+
+    /**
+     * Get all stations with their associated routes
+     * 
+     * @param pageable pagination information
+     * @return Page of StationWithRoutesVM
+     */
+    Page<StationWithRoutesVM> getStationsWithRoutes(Pageable pageable);
 }

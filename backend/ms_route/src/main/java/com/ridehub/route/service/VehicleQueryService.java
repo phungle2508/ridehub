@@ -55,15 +55,20 @@ public class VehicleQueryService extends QueryService<Vehicle> {
     private final FloorRepository floorRepository;
     private final FloorMapper floorMapper;
     private final SeatMapper seatMapper;
+    private final SeatQueryService seatQueryService;
+    private final FloorQueryService floorQueryService;
 
     public VehicleQueryService(VehicleRepository vehicleRepository, VehicleMapper vehicleMapper,
-            SeatRepository seatRepository, FloorMapper floorMapper, FloorRepository floorRepository, SeatMapper seatMapper) {
+            SeatRepository seatRepository, FloorMapper floorMapper, FloorRepository floorRepository,
+            SeatMapper seatMapper, SeatQueryService seatQueryService, FloorQueryService floorQueryService) {
         this.vehicleRepository = vehicleRepository;
         this.vehicleMapper = vehicleMapper;
         this.seatRepository = seatRepository;
         this.floorRepository = floorRepository;
         this.floorMapper = floorMapper;
         this.seatMapper = seatMapper;
+        this.seatQueryService = seatQueryService;
+        this.floorQueryService = floorQueryService;
     }
 
     /**
@@ -110,8 +115,7 @@ public class VehicleQueryService extends QueryService<Vehicle> {
                 .filter(Objects::nonNull)
                 .toList();
 
-        Map<Long, Long> seatCounts = seatRepository.countSeatsByVehicleIds(vehicleIds).stream()
-                .collect(Collectors.toMap(VehicleSeatCount::getVehicleId, VehicleSeatCount::getSeatCount));
+        Map<Long, Long> seatCounts = seatQueryService.countSeatsByVehicleIds(vehicleIds);
 
         List<VehicleWithSeatCountVM> wrapped = vehicleDTOs.stream()
                 .map(v -> new VehicleWithSeatCountVM(seatCounts.getOrDefault(v.getId(), 0L), v))
@@ -155,7 +159,7 @@ public class VehicleQueryService extends QueryService<Vehicle> {
 
     @Transactional(readOnly = true)
     public Optional<VehicleDetailVM> findDetail(Long id) {
-        return vehicleRepository.findDetailById(id).map(vehicle -> {
+        return vehicleRepository.findById(id).map(vehicle -> {
             VehicleDTO vehicleDTO = vehicleMapper.toDto(vehicle);
 
             SeatMap seatMap = vehicle.getSeatMap();
@@ -163,19 +167,26 @@ public class VehicleQueryService extends QueryService<Vehicle> {
                 return new VehicleDetailVM(vehicleDTO, List.of(), Map.of());
             }
 
-            // floors
-            List<Floor> floors = floorRepository.findBySeatMapId(seatMap.getId());
-            List<FloorDTO> floorDTOs = floorMapper.toDto(floors);
+            // ✅ Use FloorQueryService instead of repository
+            List<FloorDTO> floorDTOs = floorQueryService.findFloorsBySeatMapId(seatMap.getId());
 
             // seats grouped by floorId
             Map<Long, List<SeatDTO>> seatsByFloorId = Map.of();
-            if (!floors.isEmpty()) {
-                List<Long> floorIds = floors.stream().map(Floor::getId).filter(Objects::nonNull).toList();
+            if (!floorDTOs.isEmpty()) {
+                List<Long> floorIds = floorDTOs.stream()
+                        .map(FloorDTO::getId)
+                        .filter(Objects::nonNull)
+                        .toList();
+
                 if (!floorIds.isEmpty()) {
-                    List<Seat> seats = seatRepository.findByFloorIds(floorIds);
-                    seatsByFloorId = seats.stream().collect(Collectors.groupingBy(
-                            s -> s.getFloor().getId(),
-                            Collectors.mapping(seatMapper::toDto, Collectors.toList())));
+                    // Inline Criteria query for seats
+                    List<SeatDTO> seatDTOs = seatQueryService.findByFloorIds(floorIds);
+
+                    seatsByFloorId = seatDTOs.stream()
+                            .filter(s -> s.getFloor() != null && s.getFloor().getId() != null)
+                            .collect(Collectors.groupingBy(
+                                    s -> s.getFloor().getId(),
+                                    Collectors.toList()));
                 }
             }
 

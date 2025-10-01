@@ -13,8 +13,4 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface FloorRepository extends JpaRepository<Floor, Long>, JpaSpecificationExecutor<Floor> {
-    // FloorRepository.java
-    @Query("select f from Floor f where f.seatMap.id = :seatMapId")
-    List<Floor> findBySeatMapId(@Param("seatMapId") Long seatMapId);
-}
+public interface FloorRepository extends JpaRepository<Floor, Long>, JpaSpecificationExecutor<Floor> {}
