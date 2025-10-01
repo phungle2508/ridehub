@@ -10,11 +10,7 @@ skinparam classAttributeIconSize 0
 ' =============================
 '              ENUMS
 ' =============================
-enum Role {
-  ADMIN
-  CUSTOMER
-}
-
+' (Removed Role enum)
 enum SeatType {
   SLEEPER
   NORMAL
@@ -96,7 +92,7 @@ package "ms-user\n(Identity & Auth)" as MS_USER {
     +email: String
     +phoneNumber: String
     +passwordHash: String
-    +role: Role
+    ' +role: Role            ' (Removed)
     +locked: boolean
   }
 
@@ -226,12 +222,7 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLoc
     +baseFare: Money
   }
 
-  class TripSeat extends BaseEntity {
-    +seatNo: String
-    +floorNo: int
-    +booked: boolean
-    +priceFactor: double
-  }
+  ' class TripSeat ... (Removed)
 
   ' ---- Staff (chỉ thuộc tính vận hành, PII chính ở ms-user) ----
   abstract class Staff extends BaseEntity {
@@ -289,12 +280,17 @@ Station "1" -- "0..*" Route : "destination"
 Route "1" o-- "0..*" Trip : "schedules"
 Trip "0..*" -- "1" Vehicle : "vehicle"
 
-Trip "1" o-- "1..*" TripSeat : "seat snapshot"
+' TripSeat relation removed
+' Trip "1" o-- "1..*" TripSeat : "seat snapshot"
+
 Trip "1" -- "0..1" Driver : "main driver"
 Trip "0..1" -- "0..1" Attendant : "attendant"
 Vehicle "1" o-- "1" SeatMap : "uses"
 SeatMap "1" o-- "1..2" Floor : "contains"
 Floor "1" o-- "1..18" Seat : "seats per floor ≤ 18"
+
+' Explicit relation: SeatLock to Trip
+SeatLock "0..*" -- "1" Trip : "for trip"
 
 ' =============================
 '          MS-BOOKING
@@ -383,7 +379,8 @@ package "ms-booking\n(Booking, Ticket, Payment, Invoice, Pricing + Snapshots)" a
 
 Customer "1" -- "0..*" Booking : "creates"
 Booking "1" o-- "1..*" Ticket : "contains"
-Ticket "1" -- "1" TripSeat : "seat"
+' Replace TripSeat with Seat
+Ticket "1" -- "1" Seat : "seat"
 Ticket "1" -- "1" Trip : "of trip"
 Ticket "1" -- "1" Route : "of route"
 Booking "1" o-- "0..1" Invoice : "issues"
@@ -544,3 +541,4 @@ note bottom of BaseEntity
 end note
 
 @enduml
+
