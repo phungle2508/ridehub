@@ -30,10 +30,8 @@ class FilePromotionTest {
 
         filePromotion.setPromotion(promotionBack);
         assertThat(filePromotion.getPromotion()).isEqualTo(promotionBack);
-        assertThat(promotionBack.getBannerImg()).isEqualTo(filePromotion);
 
         filePromotion.promotion(null);
         assertThat(filePromotion.getPromotion()).isNull();
-        assertThat(promotionBack.getBannerImg()).isNull();
     }
 }

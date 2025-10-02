@@ -66,10 +66,10 @@ public class Promotion implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "promotion")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "promotion" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
-    private FilePromotion bannerImg;
+    private Set<FilePromotion> files = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "promotion")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -254,16 +254,34 @@ public class Promotion implements Serializable {
         this.deletedBy = deletedBy;
     }
 
-    public FilePromotion getBannerImg() {
-        return this.bannerImg;
+    public Set<FilePromotion> getFiles() {
+        return this.files;
     }
 
-    public void setBannerImg(FilePromotion filePromotion) {
-        this.bannerImg = filePromotion;
+    public void setFiles(Set<FilePromotion> filePromotions) {
+        if (this.files != null) {
+            this.files.forEach(i -> i.setPromotion(null));
+        }
+        if (filePromotions != null) {
+            filePromotions.forEach(i -> i.setPromotion(this));
+        }
+        this.files = filePromotions;
     }
 
-    public Promotion bannerImg(FilePromotion filePromotion) {
-        this.setBannerImg(filePromotion);
+    public Promotion files(Set<FilePromotion> filePromotions) {
+        this.setFiles(filePromotions);
+        return this;
+    }
+
+    public Promotion addFiles(FilePromotion filePromotion) {
+        this.files.add(filePromotion);
+        filePromotion.setPromotion(this);
+        return this;
+    }
+
+    public Promotion removeFiles(FilePromotion filePromotion) {
+        this.files.remove(filePromotion);
+        filePromotion.setPromotion(null);
         return this;
     }
 

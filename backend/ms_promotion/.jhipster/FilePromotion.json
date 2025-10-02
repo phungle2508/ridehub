@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250927102304"
+    "changelogDate": "20251002121050"
   },
   "applications": ["ms_promotion"],
   "clientRootFolder": "ms_promotion",
@@ -24,6 +24,10 @@
     {
       "fieldName": "size",
       "fieldType": "Long"
+    },
+    {
+      "fieldName": "isBanner",
+      "fieldType": "Boolean"
     },
     {
       "fieldName": "createdAt",
@@ -53,10 +57,11 @@
   "relationships": [
     {
       "otherEntityName": "promotion",
-      "otherEntityRelationshipName": "bannerImg",
+      "otherEntityRelationshipName": "files",
       "relationshipName": "promotion",
       "relationshipSide": "right",
-      "relationshipType": "one-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "searchEngine": "no",

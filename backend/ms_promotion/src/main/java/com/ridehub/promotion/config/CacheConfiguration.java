@@ -79,6 +79,7 @@ public class CacheConfiguration {
     public JCacheManagerCustomizer cacheManagerCustomizer(javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration) {
         return cm -> {
             createCache(cm, com.ridehub.promotion.domain.Promotion.class.getName(), jcacheConfiguration);
+            createCache(cm, com.ridehub.promotion.domain.Promotion.class.getName() + ".files", jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.Promotion.class.getName() + ".buyNGetMS", jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.Promotion.class.getName() + ".percentOffs", jcacheConfiguration);
             createCache(cm, com.ridehub.promotion.domain.Promotion.class.getName() + ".conditionsRS", jcacheConfiguration);

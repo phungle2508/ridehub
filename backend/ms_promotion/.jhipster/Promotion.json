@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250927101404"
+    "changelogDate": "20251002120150"
   },
   "applications": ["ms_promotion"],
   "clientRootFolder": "ms_promotion",
@@ -62,9 +62,9 @@
     {
       "otherEntityName": "filePromotion",
       "otherEntityRelationshipName": "promotion",
-      "relationshipName": "bannerImg",
+      "relationshipName": "files",
       "relationshipSide": "left",
-      "relationshipType": "one-to-one"
+      "relationshipType": "one-to-many"
     },
     {
       "otherEntityName": "buyNGetMFree",

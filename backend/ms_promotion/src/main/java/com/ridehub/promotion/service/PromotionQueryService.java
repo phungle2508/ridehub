@@ -113,8 +113,6 @@ public class PromotionQueryService extends QueryService<Promotion> {
                     buildSpecification(criteria.getIsDeleted(), Promotion_.isDeleted),
                     buildRangeSpecification(criteria.getDeletedAt(), Promotion_.deletedAt),
                     buildSpecification(criteria.getDeletedBy(), Promotion_.deletedBy),
-                    buildSpecification(criteria.getBannerImgId(),
-                            root -> root.join(Promotion_.bannerImg, JoinType.LEFT).get(FilePromotion_.id)),
                     buildSpecification(criteria.getBuyNGetMId(),
                             root -> root.join(Promotion_.buyNGetMS, JoinType.LEFT).get(BuyNGetMFree_.id)),
                     buildSpecification(criteria.getPercentOffId(),
@@ -162,6 +160,14 @@ public class PromotionQueryService extends QueryService<Promotion> {
         return convertToPromotionDetailDTO(p);
     }
 
+    @Transactional(readOnly = true)
+    public PromotionDetailDTO getDetailByIdByCode(String code) {
+        Promotion p = promotionRepository.findDetailByCode(
+                code)
+                .orElseThrow(() -> new EntityNotFoundException("Promotion not found: " + code));
+        return convertToPromotionDetailDTO(p);
+    }
+
     /**
      * Convert a Promotion entity (with children preloaded by EntityGraph)
      * into a PromotionDetailDTO manually.
@@ -182,13 +188,6 @@ public class PromotionQueryService extends QueryService<Promotion> {
         dto.setIsDeleted(promotion.getIsDeleted());
         dto.setDeletedAt(promotion.getDeletedAt());
         dto.setDeletedBy(promotion.getDeletedBy());
-
-        // ===== Banner image =====
-        if (promotion.getBannerImg() != null) {
-            FilePromotionDTO bannerDto = new FilePromotionDTO();
-            bannerDto.setId(promotion.getBannerImg().getId());
-            dto.setBannerImg(bannerDto);
-        }
 
         // ===== Buy N Get M =====
         if (promotion.getBuyNGetMS() != null) {

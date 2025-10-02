@@ -347,7 +347,10 @@ class PercentOffTotalResourceIT {
         insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
 
         // Get all the percentOffTotalList where percent is greater than or equal to
-        defaultPercentOffTotalFiltering("percent.greaterThanOrEqual=" + DEFAULT_PERCENT, "percent.greaterThanOrEqual=" + UPDATED_PERCENT);
+        defaultPercentOffTotalFiltering(
+            "percent.greaterThanOrEqual=" + DEFAULT_PERCENT,
+            "percent.greaterThanOrEqual=" + (DEFAULT_PERCENT + 1)
+        );
     }
 
     @Test
@@ -367,7 +370,7 @@ class PercentOffTotalResourceIT {
         insertedPercentOffTotal = percentOffTotalRepository.saveAndFlush(percentOffTotal);
 
         // Get all the percentOffTotalList where percent is less than
-        defaultPercentOffTotalFiltering("percent.lessThan=" + UPDATED_PERCENT, "percent.lessThan=" + DEFAULT_PERCENT);
+        defaultPercentOffTotalFiltering("percent.lessThan=" + (DEFAULT_PERCENT + 1), "percent.lessThan=" + DEFAULT_PERCENT);
     }
 
     @Test

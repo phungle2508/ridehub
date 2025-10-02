@@ -80,6 +80,7 @@ class FilePromotionCriteriaTest {
         filePromotionCriteria.objectKey();
         filePromotionCriteria.contentType();
         filePromotionCriteria.size();
+        filePromotionCriteria.isBanner();
         filePromotionCriteria.createdAt();
         filePromotionCriteria.updatedAt();
         filePromotionCriteria.isDeleted();
@@ -97,6 +98,7 @@ class FilePromotionCriteriaTest {
                 condition.apply(criteria.getObjectKey()) &&
                 condition.apply(criteria.getContentType()) &&
                 condition.apply(criteria.getSize()) &&
+                condition.apply(criteria.getIsBanner()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
@@ -119,6 +121,7 @@ class FilePromotionCriteriaTest {
                 condition.apply(criteria.getObjectKey(), copy.getObjectKey()) &&
                 condition.apply(criteria.getContentType(), copy.getContentType()) &&
                 condition.apply(criteria.getSize(), copy.getSize()) &&
+                condition.apply(criteria.getIsBanner(), copy.getIsBanner()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&

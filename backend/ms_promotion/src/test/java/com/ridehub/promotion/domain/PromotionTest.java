@@ -31,15 +31,25 @@ class PromotionTest {
     }
 
     @Test
-    void bannerImgTest() {
+    void filesTest() {
         Promotion promotion = getPromotionRandomSampleGenerator();
         FilePromotion filePromotionBack = getFilePromotionRandomSampleGenerator();
 
-        promotion.setBannerImg(filePromotionBack);
-        assertThat(promotion.getBannerImg()).isEqualTo(filePromotionBack);
+        promotion.addFiles(filePromotionBack);
+        assertThat(promotion.getFiles()).containsOnly(filePromotionBack);
+        assertThat(filePromotionBack.getPromotion()).isEqualTo(promotion);
 
-        promotion.bannerImg(null);
-        assertThat(promotion.getBannerImg()).isNull();
+        promotion.removeFiles(filePromotionBack);
+        assertThat(promotion.getFiles()).doesNotContain(filePromotionBack);
+        assertThat(filePromotionBack.getPromotion()).isNull();
+
+        promotion.files(new HashSet<>(Set.of(filePromotionBack)));
+        assertThat(promotion.getFiles()).containsOnly(filePromotionBack);
+        assertThat(filePromotionBack.getPromotion()).isEqualTo(promotion);
+
+        promotion.setFiles(new HashSet<>());
+        assertThat(promotion.getFiles()).doesNotContain(filePromotionBack);
+        assertThat(filePromotionBack.getPromotion()).isNull();
     }
 
     @Test

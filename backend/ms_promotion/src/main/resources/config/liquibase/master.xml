@@ -12,26 +12,26 @@
     <property name="timeType" value="time(6)" dbms="mysql"/>
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101404_added_entity_Promotion.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101504_added_entity_BuyNGetMFree.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101604_added_entity_PercentOffTotal.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101704_added_entity_ConditionByRoute.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101804_added_entity_ConditionByDate.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101904_added_entity_ConditionByLocation.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927102004_added_entity_ConditionRouteItem.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927102104_added_entity_ConditionDateItem.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927102204_added_entity_ConditionLocationItem.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927102304_added_entity_FilePromotion.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120150_added_entity_Promotion.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120250_added_entity_BuyNGetMFree.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120350_added_entity_PercentOffTotal.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120450_added_entity_ConditionByRoute.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120550_added_entity_ConditionByDate.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120650_added_entity_ConditionByLocation.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120750_added_entity_ConditionRouteItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120850_added_entity_ConditionDateItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120950_added_entity_ConditionLocationItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002121050_added_entity_FilePromotion.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
-    <include file="config/liquibase/changelog/20250927101404_added_entity_constraints_Promotion.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101504_added_entity_constraints_BuyNGetMFree.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101604_added_entity_constraints_PercentOffTotal.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101704_added_entity_constraints_ConditionByRoute.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101804_added_entity_constraints_ConditionByDate.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927101904_added_entity_constraints_ConditionByLocation.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927102004_added_entity_constraints_ConditionRouteItem.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927102104_added_entity_constraints_ConditionDateItem.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250927102204_added_entity_constraints_ConditionLocationItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120250_added_entity_constraints_BuyNGetMFree.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120350_added_entity_constraints_PercentOffTotal.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120450_added_entity_constraints_ConditionByRoute.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120550_added_entity_constraints_ConditionByDate.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120650_added_entity_constraints_ConditionByLocation.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120750_added_entity_constraints_ConditionRouteItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120850_added_entity_constraints_ConditionDateItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002120950_added_entity_constraints_ConditionLocationItem.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251002121050_added_entity_constraints_FilePromotion.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

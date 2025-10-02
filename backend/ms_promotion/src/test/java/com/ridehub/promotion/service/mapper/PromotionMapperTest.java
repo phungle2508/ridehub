@@ -10,11 +10,6 @@ class PromotionMapperTest {
 
     private PromotionMapper promotionMapper;
 
-    @BeforeEach
-    void setUp() {
-        promotionMapper = new PromotionMapperImpl();
-    }
-
     @Test
     void shouldConvertToDtoAndBack() {
         var expected = getPromotionSample1();

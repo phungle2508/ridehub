@@ -51,6 +51,7 @@ public class FilePromotionAsserts {
             .satisfies(a -> assertThat(a.getObjectKey()).as("check objectKey").isEqualTo(expected.getObjectKey()))
             .satisfies(a -> assertThat(a.getContentType()).as("check contentType").isEqualTo(expected.getContentType()))
             .satisfies(a -> assertThat(a.getSize()).as("check size").isEqualTo(expected.getSize()))
+            .satisfies(a -> assertThat(a.getIsBanner()).as("check isBanner").isEqualTo(expected.getIsBanner()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))
@@ -65,6 +66,8 @@ public class FilePromotionAsserts {
      * @param actual the actual entity
      */
     public static void assertFilePromotionUpdatableRelationshipsEquals(FilePromotion expected, FilePromotion actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify FilePromotion relationships")
+            .satisfies(a -> assertThat(a.getPromotion()).as("check promotion").isEqualTo(expected.getPromotion()));
     }
 }

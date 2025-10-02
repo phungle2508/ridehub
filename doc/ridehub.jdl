@@ -636,6 +636,7 @@ entity FilePromotion {
   objectKey String required
   contentType String
   size Long
+  isBanner Boolean       // <— add this if you want to pick one as the banner
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
@@ -643,8 +644,8 @@ entity FilePromotion {
   deletedBy UUID
 }
 
-relationship OneToOne {
-  Promotion{bannerImg} to FilePromotion{promotion}
+relationship OneToMany {
+  Promotion{files} to FilePromotion{promotion required}
 }
 
 relationship OneToMany {

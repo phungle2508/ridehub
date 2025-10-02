@@ -39,8 +39,6 @@ public class PromotionDTO implements Serializable {
 
     private UUID deletedBy;
 
-    private FilePromotionDTO bannerImg;
-
     public Long getId() {
         return id;
     }
@@ -137,14 +135,6 @@ public class PromotionDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
-    public FilePromotionDTO getBannerImg() {
-        return bannerImg;
-    }
-
-    public void setBannerImg(FilePromotionDTO bannerImg) {
-        this.bannerImg = bannerImg;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -182,7 +172,6 @@ public class PromotionDTO implements Serializable {
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
-            ", bannerImg=" + getBannerImg() +
             "}";
     }
 }

@@ -16,6 +16,8 @@ public class PercentOffTotalDTO implements Serializable {
     private Long id;
 
     @NotNull
+    @Min(value = 1)
+    @Max(value = 100)
     private Integer percent;
 
     private BigDecimal maxOff;
@@ -58,6 +60,14 @@ public class PercentOffTotalDTO implements Serializable {
 
     public void setMaxOff(BigDecimal maxOff) {
         this.maxOff = maxOff;
+    }
+
+    public BigDecimal getMinPrice() {
+        return minPrice;
+    }
+
+    public void setMinPrice(BigDecimal minPrice) {
+        this.minPrice = minPrice;
     }
 
     public Instant getCreatedAt() {
@@ -108,14 +118,6 @@ public class PercentOffTotalDTO implements Serializable {
         this.promotion = promotion;
     }
 
-    public BigDecimal getMinPrice() {
-        return minPrice;
-    }
-
-    public void setMinPrice(BigDecimal minPrice) {
-        this.minPrice = minPrice;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -138,21 +140,19 @@ public class PercentOffTotalDTO implements Serializable {
     }
 
     // prettier-ignore
-
     @Override
     public String toString() {
-        return "{" +
-            " id='" + getId() + "'" +
-            ", percent='" + getPercent() + "'" +
-            ", maxOff='" + getMaxOff() + "'" +
-            ", minPrice='" + getMinPrice() + "'" +
+        return "PercentOffTotalDTO{" +
+            "id=" + getId() +
+            ", percent=" + getPercent() +
+            ", maxOff=" + getMaxOff() +
+            ", minPrice=" + getMinPrice() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
-            ", promotion='" + getPromotion() + "'" +
+            ", promotion=" + getPromotion() +
             "}";
     }
-
 }

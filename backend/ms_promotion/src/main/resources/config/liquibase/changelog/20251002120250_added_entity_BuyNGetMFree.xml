@@ -7,21 +7,18 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity PercentOffTotal.
+        Added the entity BuyNGetMFree.
     -->
-    <changeSet id="20250927101604-1" author="jhipster">
-        <createTable tableName="percent_off_total">
+    <changeSet id="20251002120250-1" author="jhipster">
+        <createTable tableName="buy_n_get_m_free">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="percent" type="integer">
+            <column name="buy_n" type="integer">
                 <constraints nullable="false" />
             </column>
-            <column name="max_off" type="decimal(21,2)">
-                <constraints nullable="true" />
-            </column>
-            <column name="min_price" type="decimal(21,2)">
-                <constraints nullable="true" />
+            <column name="get_m" type="integer">
+                <constraints nullable="false" />
             </column>
             <column name="created_at" type="${datetimeType}">
                 <constraints nullable="false" />
@@ -43,9 +40,9 @@
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="percent_off_total" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="percent_off_total" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="percent_off_total" columnName="deleted_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="buy_n_get_m_free" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="buy_n_get_m_free" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="buy_n_get_m_free" columnName="deleted_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -58,16 +55,15 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250927101604-1-data" author="jhipster" context="faker">
+    <changeSet id="20251002120250-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/percent_off_total.csv"
+                  file="config/liquibase/fake-data/buy_n_get_m_free.csv"
                   separator=";"
-                  tableName="percent_off_total"
+                  tableName="buy_n_get_m_free"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="percent" type="numeric"/>
-            <column name="max_off" type="numeric"/>
-            <column name="min_price" type="numeric"/>
+            <column name="buy_n" type="numeric"/>
+            <column name="get_m" type="numeric"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
             <column name="is_deleted" type="boolean"/>

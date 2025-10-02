@@ -32,6 +32,8 @@ public class FilePromotionCriteria implements Serializable, Criteria {
 
     private LongFilter size;
 
+    private BooleanFilter isBanner;
+
     private InstantFilter createdAt;
 
     private InstantFilter updatedAt;
@@ -54,6 +56,7 @@ public class FilePromotionCriteria implements Serializable, Criteria {
         this.objectKey = other.optionalObjectKey().map(StringFilter::copy).orElse(null);
         this.contentType = other.optionalContentType().map(StringFilter::copy).orElse(null);
         this.size = other.optionalSize().map(LongFilter::copy).orElse(null);
+        this.isBanner = other.optionalIsBanner().map(BooleanFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -161,6 +164,25 @@ public class FilePromotionCriteria implements Serializable, Criteria {
 
     public void setSize(LongFilter size) {
         this.size = size;
+    }
+
+    public BooleanFilter getIsBanner() {
+        return isBanner;
+    }
+
+    public Optional<BooleanFilter> optionalIsBanner() {
+        return Optional.ofNullable(isBanner);
+    }
+
+    public BooleanFilter isBanner() {
+        if (isBanner == null) {
+            setIsBanner(new BooleanFilter());
+        }
+        return isBanner;
+    }
+
+    public void setIsBanner(BooleanFilter isBanner) {
+        this.isBanner = isBanner;
     }
 
     public InstantFilter getCreatedAt() {
@@ -311,6 +333,7 @@ public class FilePromotionCriteria implements Serializable, Criteria {
             Objects.equals(objectKey, that.objectKey) &&
             Objects.equals(contentType, that.contentType) &&
             Objects.equals(size, that.size) &&
+            Objects.equals(isBanner, that.isBanner) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
@@ -329,6 +352,7 @@ public class FilePromotionCriteria implements Serializable, Criteria {
             objectKey,
             contentType,
             size,
+            isBanner,
             createdAt,
             updatedAt,
             isDeleted,
@@ -348,6 +372,7 @@ public class FilePromotionCriteria implements Serializable, Criteria {
             optionalObjectKey().map(f -> "objectKey=" + f + ", ").orElse("") +
             optionalContentType().map(f -> "contentType=" + f + ", ").orElse("") +
             optionalSize().map(f -> "size=" + f + ", ").orElse("") +
+            optionalIsBanner().map(f -> "isBanner=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +

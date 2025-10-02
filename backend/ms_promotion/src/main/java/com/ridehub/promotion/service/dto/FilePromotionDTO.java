@@ -24,6 +24,8 @@ public class FilePromotionDTO implements Serializable {
 
     private Long size;
 
+    private Boolean isBanner;
+
     @NotNull
     private Instant createdAt;
 
@@ -34,6 +36,9 @@ public class FilePromotionDTO implements Serializable {
     private Instant deletedAt;
 
     private UUID deletedBy;
+
+    @NotNull
+    private PromotionDTO promotion;
 
     public Long getId() {
         return id;
@@ -73,6 +78,14 @@ public class FilePromotionDTO implements Serializable {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public Boolean getIsBanner() {
+        return isBanner;
+    }
+
+    public void setIsBanner(Boolean isBanner) {
+        this.isBanner = isBanner;
     }
 
     public Instant getCreatedAt() {
@@ -115,6 +128,14 @@ public class FilePromotionDTO implements Serializable {
         this.deletedBy = deletedBy;
     }
 
+    public PromotionDTO getPromotion() {
+        return promotion;
+    }
+
+    public void setPromotion(PromotionDTO promotion) {
+        this.promotion = promotion;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -145,11 +166,13 @@ public class FilePromotionDTO implements Serializable {
             ", objectKey='" + getObjectKey() + "'" +
             ", contentType='" + getContentType() + "'" +
             ", size=" + getSize() +
+            ", isBanner='" + getIsBanner() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +
             ", deletedAt='" + getDeletedAt() + "'" +
             ", deletedBy='" + getDeletedBy() + "'" +
+            ", promotion=" + getPromotion() +
             "}";
     }
 }

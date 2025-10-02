@@ -54,7 +54,7 @@ public class ConditionByRoute implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(
-        value = { "bannerImg", "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" },
+        value = { "files", "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" },
         allowSetters = true
     )
     private Promotion promotion;

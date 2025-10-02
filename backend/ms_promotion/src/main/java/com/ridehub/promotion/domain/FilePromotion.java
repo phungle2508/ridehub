@@ -41,6 +41,9 @@ public class FilePromotion implements Serializable {
     @Column(name = "size")
     private Long size;
 
+    @Column(name = "is_banner")
+    private Boolean isBanner;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -58,11 +61,12 @@ public class FilePromotion implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
+    @ManyToOne(optional = false)
+    @NotNull
     @JsonIgnoreProperties(
-        value = { "bannerImg", "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" },
+        value = { "files", "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" },
         allowSetters = true
     )
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "bannerImg")
     private Promotion promotion;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
@@ -130,6 +134,19 @@ public class FilePromotion implements Serializable {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public Boolean getIsBanner() {
+        return this.isBanner;
+    }
+
+    public FilePromotion isBanner(Boolean isBanner) {
+        this.setIsBanner(isBanner);
+        return this;
+    }
+
+    public void setIsBanner(Boolean isBanner) {
+        this.isBanner = isBanner;
     }
 
     public Instant getCreatedAt() {
@@ -202,12 +219,6 @@ public class FilePromotion implements Serializable {
     }
 
     public void setPromotion(Promotion promotion) {
-        if (this.promotion != null) {
-            this.promotion.setBannerImg(null);
-        }
-        if (promotion != null) {
-            promotion.setBannerImg(this);
-        }
         this.promotion = promotion;
     }
 
@@ -244,6 +255,7 @@ public class FilePromotion implements Serializable {
             ", objectKey='" + getObjectKey() + "'" +
             ", contentType='" + getContentType() + "'" +
             ", size=" + getSize() +
+            ", isBanner='" + getIsBanner() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

@@ -76,6 +76,7 @@ public class FilePromotionQueryService extends QueryService<FilePromotion> {
                 buildStringSpecification(criteria.getObjectKey(), FilePromotion_.objectKey),
                 buildStringSpecification(criteria.getContentType(), FilePromotion_.contentType),
                 buildRangeSpecification(criteria.getSize(), FilePromotion_.size),
+                buildSpecification(criteria.getIsBanner(), FilePromotion_.isBanner),
                 buildRangeSpecification(criteria.getCreatedAt(), FilePromotion_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), FilePromotion_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), FilePromotion_.isDeleted),

@@ -87,7 +87,7 @@ class PromotionCriteriaTest {
         promotionCriteria.isDeleted();
         promotionCriteria.deletedAt();
         promotionCriteria.deletedBy();
-        promotionCriteria.bannerImgId();
+        promotionCriteria.filesId();
         promotionCriteria.buyNGetMId();
         promotionCriteria.percentOffId();
         promotionCriteria.conditionsRId();
@@ -111,7 +111,7 @@ class PromotionCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
-                condition.apply(criteria.getBannerImgId()) &&
+                condition.apply(criteria.getFilesId()) &&
                 condition.apply(criteria.getBuyNGetMId()) &&
                 condition.apply(criteria.getPercentOffId()) &&
                 condition.apply(criteria.getConditionsRId()) &&
@@ -137,7 +137,7 @@ class PromotionCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
-                condition.apply(criteria.getBannerImgId(), copy.getBannerImgId()) &&
+                condition.apply(criteria.getFilesId(), copy.getFilesId()) &&
                 condition.apply(criteria.getBuyNGetMId(), copy.getBuyNGetMId()) &&
                 condition.apply(criteria.getPercentOffId(), copy.getPercentOffId()) &&
                 condition.apply(criteria.getConditionsRId(), copy.getConditionsRId()) &&

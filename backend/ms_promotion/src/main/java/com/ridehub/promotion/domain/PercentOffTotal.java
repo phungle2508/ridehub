@@ -29,6 +29,8 @@ public class PercentOffTotal implements Serializable {
     private Long id;
 
     @NotNull
+    @Min(value = 1)
+    @Max(value = 100)
     @Column(name = "percent", nullable = false)
     private Integer percent;
 
@@ -58,7 +60,7 @@ public class PercentOffTotal implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(
-        value = { "bannerImg", "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" },
+        value = { "files", "buyNGetMS", "percentOffs", "conditionsRS", "conditionsDS", "conditionsLocs" },
         allowSetters = true
     )
     private Promotion promotion;

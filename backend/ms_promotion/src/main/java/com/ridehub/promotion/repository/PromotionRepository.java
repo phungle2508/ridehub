@@ -34,7 +34,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long>, Jpa
 
         // Step 2: fetch full graph for those IDs (NO pagination here)
         @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, attributePaths = {
-                        "bannerImg",
                         "buyNGetMS",
                         "percentOffs",
                         "conditionsRS", "conditionsRS.items",
@@ -45,7 +44,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long>, Jpa
         List<Promotion> findAllDetailByIdIn(@Param("ids") List<Long> ids);
 
         @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, attributePaths = {
-                        "bannerImg",
                         "buyNGetMS",
                         "percentOffs",
                         "conditionsRS", "conditionsRS.items",
@@ -53,4 +51,13 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long>, Jpa
                         "conditionsLocs", "conditionsLocs.items"
         })
         Optional<Promotion> findDetailById(Long id);
+
+        @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, attributePaths = {
+                        "buyNGetMS",
+                        "percentOffs",
+                        "conditionsRS", "conditionsRS.items",
+                        "conditionsDS", "conditionsDS.items",
+                        "conditionsLocs", "conditionsLocs.items"
+        })
+        Optional<Promotion> findDetailByCode(String code);
 }

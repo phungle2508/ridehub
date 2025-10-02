@@ -806,4 +806,17 @@ public class PromotionPolicyConditionResource {
                         return ResponseEntity.notFound().build();
                 }
         }
+        
+        @GetMapping("/detail-by-code")
+        public ResponseEntity<PromotionDetailDTO> getPromotionDetailByCode(@RequestParam String code) {
+                LOG.debug("REST request to get Promotion detail : {}", code);
+
+                // If your service throws EntityNotFoundException on missing ID:
+                try {
+                        PromotionDetailDTO dto = promotionQueryService.getDetailByIdByCode(code);
+                        return ResponseEntity.ok(dto);
+                } catch (EntityNotFoundException ex) {
+                        return ResponseEntity.notFound().build();
+                }
+        }
 }

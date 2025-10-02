@@ -11,7 +11,6 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface PromotionMapper extends EntityMapper<PromotionDTO, Promotion> {
-    @Mapping(target = "bannerImg", source = "bannerImg", qualifiedByName = "filePromotionId")
     PromotionDTO toDto(Promotion s);
 
     @Named("filePromotionId")

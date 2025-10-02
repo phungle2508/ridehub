@@ -6,13 +6,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
     <!--
-        Added the constraints for entity ConditionByLocation.
+        Added the constraints for entity ConditionByRoute.
     -->
-    <changeSet id="20250927101904-2" author="jhipster">
+    <changeSet id="20251002120450-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="promotion_id"
-                                 baseTableName="condition_by_location"
-                                 constraintName="fk_condition_by_location__promotion_id"
+                                 baseTableName="condition_by_route"
+                                 constraintName="fk_condition_by_route__promotion_id"
                                  referencedColumnNames="id"
                                  referencedTableName="promotion"
                                  />

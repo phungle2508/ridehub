@@ -21,9 +21,9 @@
       "FilePromotion"
     ],
     "jhipsterVersion": "8.11.0",
-    "jwtSecretKey": "N2IxOTZkOGQxOGI2ODRjYzU2Yjk1NWRiYTJkYzA1M2E0MDZlOTg4NzI4ZWVmMjM1NzUxZmZiZjczODBlMDY2N2JhMjAzODBmZGUxNGMxYTA1MzgyODA2NWJjZTZkMjllYjU4NzY3Nzk5YTY2YjY3YWJkZGI1ZTk3MWE4YTgwNDQ=",
+    "jwtSecretKey": "OTczNGQ1MWY4NjRhNGMyZjMwMDQxNjY4ZTUwMTdjM2IxMWY5NjdhYjZmMjc4M2JjY2Q4MDMwMjg3OWZiMWU2MjU0MjczNTQ0OGUwYTJjN2I4YWI3ZGExYmZiMzdhYjMxMTgyYzhkNzY2NzZiOGUxZjFkZWYyM2JhM2ZjMjYyNzI=",
     "languages": ["en"],
-    "lastLiquibaseTimestamp": 1758968584000,
+    "lastLiquibaseTimestamp": 1759407050000,
     "messageBroker": "kafka",
     "monorepository": true,
     "nativeLanguage": "en",

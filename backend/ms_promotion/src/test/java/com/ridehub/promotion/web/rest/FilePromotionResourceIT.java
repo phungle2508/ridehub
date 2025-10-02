@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.promotion.IntegrationTest;
 import com.ridehub.promotion.domain.FilePromotion;
+import com.ridehub.promotion.domain.Promotion;
 import com.ridehub.promotion.repository.FilePromotionRepository;
 import com.ridehub.promotion.service.dto.FilePromotionDTO;
 import com.ridehub.promotion.service.mapper.FilePromotionMapper;
@@ -50,6 +51,9 @@ class FilePromotionResourceIT {
     private static final Long DEFAULT_SIZE = 1L;
     private static final Long UPDATED_SIZE = 2L;
     private static final Long SMALLER_SIZE = 1L - 1L;
+
+    private static final Boolean DEFAULT_IS_BANNER = false;
+    private static final Boolean UPDATED_IS_BANNER = true;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -97,17 +101,29 @@ class FilePromotionResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static FilePromotion createEntity() {
-        return new FilePromotion()
+    public static FilePromotion createEntity(EntityManager em) {
+        FilePromotion filePromotion = new FilePromotion()
             .bucket(DEFAULT_BUCKET)
             .objectKey(DEFAULT_OBJECT_KEY)
             .contentType(DEFAULT_CONTENT_TYPE)
             .size(DEFAULT_SIZE)
+            .isBanner(DEFAULT_IS_BANNER)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
             .deletedAt(DEFAULT_DELETED_AT)
             .deletedBy(DEFAULT_DELETED_BY);
+        // Add required entity
+        Promotion promotion;
+        if (TestUtil.findAll(em, Promotion.class).isEmpty()) {
+            promotion = PromotionResourceIT.createEntity();
+            em.persist(promotion);
+            em.flush();
+        } else {
+            promotion = TestUtil.findAll(em, Promotion.class).get(0);
+        }
+        filePromotion.setPromotion(promotion);
+        return filePromotion;
     }
 
     /**
@@ -116,22 +132,34 @@ class FilePromotionResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static FilePromotion createUpdatedEntity() {
-        return new FilePromotion()
+    public static FilePromotion createUpdatedEntity(EntityManager em) {
+        FilePromotion updatedFilePromotion = new FilePromotion()
             .bucket(UPDATED_BUCKET)
             .objectKey(UPDATED_OBJECT_KEY)
             .contentType(UPDATED_CONTENT_TYPE)
             .size(UPDATED_SIZE)
+            .isBanner(UPDATED_IS_BANNER)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
             .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
+        // Add required entity
+        Promotion promotion;
+        if (TestUtil.findAll(em, Promotion.class).isEmpty()) {
+            promotion = PromotionResourceIT.createUpdatedEntity();
+            em.persist(promotion);
+            em.flush();
+        } else {
+            promotion = TestUtil.findAll(em, Promotion.class).get(0);
+        }
+        updatedFilePromotion.setPromotion(promotion);
+        return updatedFilePromotion;
     }
 
     @BeforeEach
     void initTest() {
-        filePromotion = createEntity();
+        filePromotion = createEntity(em);
     }
 
     @AfterEach
@@ -264,6 +292,7 @@ class FilePromotionResourceIT {
             .andExpect(jsonPath("$.[*].objectKey").value(hasItem(DEFAULT_OBJECT_KEY)))
             .andExpect(jsonPath("$.[*].contentType").value(hasItem(DEFAULT_CONTENT_TYPE)))
             .andExpect(jsonPath("$.[*].size").value(hasItem(DEFAULT_SIZE.intValue())))
+            .andExpect(jsonPath("$.[*].isBanner").value(hasItem(DEFAULT_IS_BANNER)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -287,6 +316,7 @@ class FilePromotionResourceIT {
             .andExpect(jsonPath("$.objectKey").value(DEFAULT_OBJECT_KEY))
             .andExpect(jsonPath("$.contentType").value(DEFAULT_CONTENT_TYPE))
             .andExpect(jsonPath("$.size").value(DEFAULT_SIZE.intValue()))
+            .andExpect(jsonPath("$.isBanner").value(DEFAULT_IS_BANNER))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -540,6 +570,36 @@ class FilePromotionResourceIT {
 
     @Test
     @Transactional
+    void getAllFilePromotionsByIsBannerIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedFilePromotion = filePromotionRepository.saveAndFlush(filePromotion);
+
+        // Get all the filePromotionList where isBanner equals to
+        defaultFilePromotionFiltering("isBanner.equals=" + DEFAULT_IS_BANNER, "isBanner.equals=" + UPDATED_IS_BANNER);
+    }
+
+    @Test
+    @Transactional
+    void getAllFilePromotionsByIsBannerIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedFilePromotion = filePromotionRepository.saveAndFlush(filePromotion);
+
+        // Get all the filePromotionList where isBanner in
+        defaultFilePromotionFiltering("isBanner.in=" + DEFAULT_IS_BANNER + "," + UPDATED_IS_BANNER, "isBanner.in=" + UPDATED_IS_BANNER);
+    }
+
+    @Test
+    @Transactional
+    void getAllFilePromotionsByIsBannerIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedFilePromotion = filePromotionRepository.saveAndFlush(filePromotion);
+
+        // Get all the filePromotionList where isBanner is not null
+        defaultFilePromotionFiltering("isBanner.specified=true", "isBanner.specified=false");
+    }
+
+    @Test
+    @Transactional
     void getAllFilePromotionsByCreatedAtIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedFilePromotion = filePromotionRepository.saveAndFlush(filePromotion);
@@ -703,6 +763,28 @@ class FilePromotionResourceIT {
         defaultFilePromotionFiltering("deletedBy.specified=true", "deletedBy.specified=false");
     }
 
+    @Test
+    @Transactional
+    void getAllFilePromotionsByPromotionIsEqualToSomething() throws Exception {
+        Promotion promotion;
+        if (TestUtil.findAll(em, Promotion.class).isEmpty()) {
+            filePromotionRepository.saveAndFlush(filePromotion);
+            promotion = PromotionResourceIT.createEntity();
+        } else {
+            promotion = TestUtil.findAll(em, Promotion.class).get(0);
+        }
+        em.persist(promotion);
+        em.flush();
+        filePromotion.setPromotion(promotion);
+        filePromotionRepository.saveAndFlush(filePromotion);
+        Long promotionId = promotion.getId();
+        // Get all the filePromotionList where promotion equals to promotionId
+        defaultFilePromotionShouldBeFound("promotionId.equals=" + promotionId);
+
+        // Get all the filePromotionList where promotion equals to (promotionId + 1)
+        defaultFilePromotionShouldNotBeFound("promotionId.equals=" + (promotionId + 1));
+    }
+
     private void defaultFilePromotionFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
         defaultFilePromotionShouldBeFound(shouldBeFound);
         defaultFilePromotionShouldNotBeFound(shouldNotBeFound);
@@ -721,6 +803,7 @@ class FilePromotionResourceIT {
             .andExpect(jsonPath("$.[*].objectKey").value(hasItem(DEFAULT_OBJECT_KEY)))
             .andExpect(jsonPath("$.[*].contentType").value(hasItem(DEFAULT_CONTENT_TYPE)))
             .andExpect(jsonPath("$.[*].size").value(hasItem(DEFAULT_SIZE.intValue())))
+            .andExpect(jsonPath("$.[*].isBanner").value(hasItem(DEFAULT_IS_BANNER)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -778,6 +861,7 @@ class FilePromotionResourceIT {
             .objectKey(UPDATED_OBJECT_KEY)
             .contentType(UPDATED_CONTENT_TYPE)
             .size(UPDATED_SIZE)
+            .isBanner(UPDATED_IS_BANNER)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -881,7 +965,8 @@ class FilePromotionResourceIT {
             .bucket(UPDATED_BUCKET)
             .objectKey(UPDATED_OBJECT_KEY)
             .contentType(UPDATED_CONTENT_TYPE)
-            .createdAt(UPDATED_CREATED_AT)
+            .isBanner(UPDATED_IS_BANNER)
+            .isDeleted(UPDATED_IS_DELETED)
             .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
 
@@ -920,6 +1005,7 @@ class FilePromotionResourceIT {
             .objectKey(UPDATED_OBJECT_KEY)
             .contentType(UPDATED_CONTENT_TYPE)
             .size(UPDATED_SIZE)
+            .isBanner(UPDATED_IS_BANNER)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
