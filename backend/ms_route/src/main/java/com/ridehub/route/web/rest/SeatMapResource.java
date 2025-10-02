@@ -5,6 +5,7 @@ import com.ridehub.route.service.SeatMapQueryService;
 import com.ridehub.route.service.SeatMapService;
 import com.ridehub.route.service.criteria.SeatMapCriteria;
 import com.ridehub.route.service.dto.SeatMapDTO;
+import com.ridehub.route.service.vm.SeatMapDetailVM;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -188,4 +189,20 @@ public class SeatMapResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    /**
+     * {@code GET  /seat-maps/:id/detail} : get the seat map detail with floors and seats.
+     *
+     * @param id the id of the seat map to retrieve detail for.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the SeatMapDetailVM, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<SeatMapDetailVM> getSeatMapDetail(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get SeatMap Detail : {}", id);
+        Optional<SeatMapDetailVM> seatMapDetailVM = seatMapQueryService.findDetail(id);
+        return ResponseUtil.wrapOrNotFound(seatMapDetailVM);
+    }
+
+
 }

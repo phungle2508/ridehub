@@ -4,10 +4,18 @@ import com.ridehub.route.domain.*; // for static metamodels
 import com.ridehub.route.domain.SeatMap;
 import com.ridehub.route.repository.SeatMapRepository;
 import com.ridehub.route.service.criteria.SeatMapCriteria;
+import com.ridehub.route.service.dto.FloorDTO;
+import com.ridehub.route.service.dto.SeatDTO;
 import com.ridehub.route.service.dto.SeatMapDTO;
 import com.ridehub.route.service.mapper.SeatMapMapper;
+import com.ridehub.route.service.vm.SeatMapDetailVM;
+
 import jakarta.persistence.criteria.JoinType;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,9 +39,16 @@ public class SeatMapQueryService extends QueryService<SeatMap> {
 
     private final SeatMapMapper seatMapMapper;
 
-    public SeatMapQueryService(SeatMapRepository seatMapRepository, SeatMapMapper seatMapMapper) {
+    private final FloorQueryService floorQueryService;
+
+    private final SeatQueryService seatQueryService;
+
+    public SeatMapQueryService(SeatMapRepository seatMapRepository, SeatMapMapper seatMapMapper,
+            FloorQueryService floorQueryService, SeatQueryService seatQueryService) {
         this.seatMapRepository = seatMapRepository;
         this.seatMapMapper = seatMapMapper;
+        this.floorQueryService = floorQueryService;
+        this.seatQueryService = seatQueryService;
     }
 
     /**
@@ -83,5 +98,35 @@ public class SeatMapQueryService extends QueryService<SeatMap> {
             );
         }
         return specification;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<SeatMapDetailVM> findDetail(Long id) {
+        return seatMapRepository.findById(id).map(seatMap -> {
+            // Get floors for this seat map
+            List<FloorDTO> floorDTOs = floorQueryService.findFloorsBySeatMapId(seatMap.getId());
+
+            // seats grouped by floorId
+            Map<Long, List<SeatDTO>> seatsByFloorId = Map.of();
+            if (!floorDTOs.isEmpty()) {
+                List<Long> floorIds = floorDTOs.stream()
+                        .map(FloorDTO::getId)
+                        .filter(Objects::nonNull)
+                        .toList();
+
+                if (!floorIds.isEmpty()) {
+                    // Get seats for all floors
+                    List<SeatDTO> seatDTOs = seatQueryService.findByFloorIds(floorIds);
+
+                    seatsByFloorId = seatDTOs.stream()
+                            .filter(s -> s.getFloor() != null && s.getFloor().getId() != null)
+                            .collect(Collectors.groupingBy(
+                                    s -> s.getFloor().getId(),
+                                    Collectors.toList()));
+                }
+            }
+
+            return new SeatMapDetailVM(floorDTOs, seatsByFloorId);
+        });
     }
 }
