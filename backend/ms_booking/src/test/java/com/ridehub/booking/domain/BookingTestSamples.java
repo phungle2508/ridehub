@@ -17,6 +17,7 @@ public class BookingTestSamples {
             .bookingCode("bookingCode1")
             .quantity(1)
             .customerId(1L)
+            .idempotencyKey("idempotencyKey1")
             .deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
     }
 
@@ -26,6 +27,7 @@ public class BookingTestSamples {
             .bookingCode("bookingCode2")
             .quantity(2)
             .customerId(2L)
+            .idempotencyKey("idempotencyKey2")
             .deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
     }
 
@@ -35,6 +37,7 @@ public class BookingTestSamples {
             .bookingCode(UUID.randomUUID().toString())
             .quantity(intCount.incrementAndGet())
             .customerId(longCount.incrementAndGet())
+            .idempotencyKey(UUID.randomUUID().toString())
             .deletedBy(UUID.randomUUID());
     }
 }

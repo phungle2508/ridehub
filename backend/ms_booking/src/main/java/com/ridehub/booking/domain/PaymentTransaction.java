@@ -37,6 +37,10 @@ public class PaymentTransaction implements Serializable {
     @Column(name = "transaction_id", length = 80, nullable = false, unique = true)
     private String transactionId;
 
+    @Size(max = 80)
+    @Column(name = "order_ref", length = 80)
+    private String orderRef;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "method")
     private PaymentMethod method;
@@ -107,6 +111,19 @@ public class PaymentTransaction implements Serializable {
 
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getOrderRef() {
+        return this.orderRef;
+    }
+
+    public PaymentTransaction orderRef(String orderRef) {
+        this.setOrderRef(orderRef);
+        return this;
+    }
+
+    public void setOrderRef(String orderRef) {
+        this.orderRef = orderRef;
     }
 
     public PaymentMethod getMethod() {
@@ -314,6 +331,7 @@ public class PaymentTransaction implements Serializable {
         return "PaymentTransaction{" +
             "id=" + getId() +
             ", transactionId='" + getTransactionId() + "'" +
+            ", orderRef='" + getOrderRef() + "'" +
             ", method='" + getMethod() + "'" +
             ", status='" + getStatus() + "'" +
             ", amount=" + getAmount() +

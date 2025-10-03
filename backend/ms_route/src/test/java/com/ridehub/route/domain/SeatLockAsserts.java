@@ -52,6 +52,7 @@ public class SeatLockAsserts {
             .satisfies(a -> assertThat(a.getStatus()).as("check status").isEqualTo(expected.getStatus()))
             .satisfies(a -> assertThat(a.getExpiresAt()).as("check expiresAt").isEqualTo(expected.getExpiresAt()))
             .satisfies(a -> assertThat(a.getIdempotencyKey()).as("check idempotencyKey").isEqualTo(expected.getIdempotencyKey()))
+            .satisfies(a -> assertThat(a.getBookingId()).as("check bookingId").isEqualTo(expected.getBookingId()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))

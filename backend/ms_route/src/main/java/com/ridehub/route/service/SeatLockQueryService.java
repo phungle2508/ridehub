@@ -77,6 +77,7 @@ public class SeatLockQueryService extends QueryService<SeatLock> {
                 buildSpecification(criteria.getStatus(), SeatLock_.status),
                 buildRangeSpecification(criteria.getExpiresAt(), SeatLock_.expiresAt),
                 buildStringSpecification(criteria.getIdempotencyKey(), SeatLock_.idempotencyKey),
+                buildRangeSpecification(criteria.getBookingId(), SeatLock_.bookingId),
                 buildRangeSpecification(criteria.getCreatedAt(), SeatLock_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), SeatLock_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), SeatLock_.isDeleted),

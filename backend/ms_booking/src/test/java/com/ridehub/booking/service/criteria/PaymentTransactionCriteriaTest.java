@@ -77,6 +77,7 @@ class PaymentTransactionCriteriaTest {
     private static void setAllFilters(PaymentTransactionCriteria paymentTransactionCriteria) {
         paymentTransactionCriteria.id();
         paymentTransactionCriteria.transactionId();
+        paymentTransactionCriteria.orderRef();
         paymentTransactionCriteria.method();
         paymentTransactionCriteria.status();
         paymentTransactionCriteria.amount();
@@ -97,6 +98,7 @@ class PaymentTransactionCriteriaTest {
             criteria ->
                 condition.apply(criteria.getId()) &&
                 condition.apply(criteria.getTransactionId()) &&
+                condition.apply(criteria.getOrderRef()) &&
                 condition.apply(criteria.getMethod()) &&
                 condition.apply(criteria.getStatus()) &&
                 condition.apply(criteria.getAmount()) &&
@@ -122,6 +124,7 @@ class PaymentTransactionCriteriaTest {
             criteria ->
                 condition.apply(criteria.getId(), copy.getId()) &&
                 condition.apply(criteria.getTransactionId(), copy.getTransactionId()) &&
+                condition.apply(criteria.getOrderRef(), copy.getOrderRef()) &&
                 condition.apply(criteria.getMethod(), copy.getMethod()) &&
                 condition.apply(criteria.getStatus(), copy.getStatus()) &&
                 condition.apply(criteria.getAmount(), copy.getAmount()) &&

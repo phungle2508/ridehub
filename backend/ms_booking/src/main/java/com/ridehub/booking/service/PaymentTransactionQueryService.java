@@ -76,6 +76,7 @@ public class PaymentTransactionQueryService extends QueryService<PaymentTransact
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), PaymentTransaction_.id),
                 buildStringSpecification(criteria.getTransactionId(), PaymentTransaction_.transactionId),
+                buildStringSpecification(criteria.getOrderRef(), PaymentTransaction_.orderRef),
                 buildSpecification(criteria.getMethod(), PaymentTransaction_.method),
                 buildSpecification(criteria.getStatus(), PaymentTransaction_.status),
                 buildRangeSpecification(criteria.getAmount(), PaymentTransaction_.amount),

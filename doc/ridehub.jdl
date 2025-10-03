@@ -371,16 +371,18 @@ relationship ManyToOne {
 
 entity SeatLock {
   seatNo String required maxlength(16)
-  userId Long             // was UUID
+  userId Long
   status LockStatus required
   expiresAt Instant required
   idempotencyKey String unique maxlength(80)
+  bookingId Long // NEW: makes dedupe & audits much easier
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
   deletedAt Instant
   deletedBy UUID
 }
+
 
 // ---- File storage (ms_route)
 entity FileRoute {
@@ -432,13 +434,15 @@ entity Booking {
   quantity Integer
   totalAmount BigDecimal required
   bookedAt Instant required
-  customerId Long required    // was UUID
+  customerId Long required
+  idempotencyKey String maxlength(80) // NEW
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
   deletedAt Instant
   deletedBy UUID
 }
+
 
 
 entity Invoice {
@@ -455,7 +459,8 @@ entity Invoice {
 }
 
 entity PaymentTransaction {
-  transactionId String required unique maxlength(80)
+  transactionId String required unique maxlength(80) // provider TXN id (webhook)
+  orderRef String maxlength(80) // NEW: what you send to gateway (use bookingCode)
   method PaymentMethod
   status PaymentStatus
   amount BigDecimal

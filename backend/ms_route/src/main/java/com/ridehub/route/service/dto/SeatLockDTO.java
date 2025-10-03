@@ -30,6 +30,8 @@ public class SeatLockDTO implements Serializable {
     @Size(max = 80)
     private String idempotencyKey;
 
+    private Long bookingId;
+
     @NotNull
     private Instant createdAt;
 
@@ -90,6 +92,14 @@ public class SeatLockDTO implements Serializable {
 
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
+    }
+
+    public Long getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(Long bookingId) {
+        this.bookingId = bookingId;
     }
 
     public Instant getCreatedAt() {
@@ -171,6 +181,7 @@ public class SeatLockDTO implements Serializable {
             ", status='" + getStatus() + "'" +
             ", expiresAt='" + getExpiresAt() + "'" +
             ", idempotencyKey='" + getIdempotencyKey() + "'" +
+            ", bookingId=" + getBookingId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

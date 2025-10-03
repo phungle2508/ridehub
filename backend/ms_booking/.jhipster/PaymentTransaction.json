@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251003111722"
+    "changelogDate": "20251003132010"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -11,6 +11,12 @@
       "fieldName": "transactionId",
       "fieldType": "String",
       "fieldValidateRules": ["required", "unique", "maxlength"],
+      "fieldValidateRulesMaxlength": "80"
+    },
+    {
+      "fieldName": "orderRef",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "80"
     },
     {

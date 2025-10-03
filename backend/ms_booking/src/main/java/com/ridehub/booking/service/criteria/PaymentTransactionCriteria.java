@@ -62,6 +62,8 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
 
     private StringFilter transactionId;
 
+    private StringFilter orderRef;
+
     private PaymentMethodFilter method;
 
     private PaymentStatusFilter status;
@@ -93,6 +95,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
     public PaymentTransactionCriteria(PaymentTransactionCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.transactionId = other.optionalTransactionId().map(StringFilter::copy).orElse(null);
+        this.orderRef = other.optionalOrderRef().map(StringFilter::copy).orElse(null);
         this.method = other.optionalMethod().map(PaymentMethodFilter::copy).orElse(null);
         this.status = other.optionalStatus().map(PaymentStatusFilter::copy).orElse(null);
         this.amount = other.optionalAmount().map(BigDecimalFilter::copy).orElse(null);
@@ -149,6 +152,25 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
 
     public void setTransactionId(StringFilter transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public StringFilter getOrderRef() {
+        return orderRef;
+    }
+
+    public Optional<StringFilter> optionalOrderRef() {
+        return Optional.ofNullable(orderRef);
+    }
+
+    public StringFilter orderRef() {
+        if (orderRef == null) {
+            setOrderRef(new StringFilter());
+        }
+        return orderRef;
+    }
+
+    public void setOrderRef(StringFilter orderRef) {
+        this.orderRef = orderRef;
     }
 
     public PaymentMethodFilter getMethod() {
@@ -410,6 +432,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
         return (
             Objects.equals(id, that.id) &&
             Objects.equals(transactionId, that.transactionId) &&
+            Objects.equals(orderRef, that.orderRef) &&
             Objects.equals(method, that.method) &&
             Objects.equals(status, that.status) &&
             Objects.equals(amount, that.amount) &&
@@ -431,6 +454,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
         return Objects.hash(
             id,
             transactionId,
+            orderRef,
             method,
             status,
             amount,
@@ -453,6 +477,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
         return "PaymentTransactionCriteria{" +
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalTransactionId().map(f -> "transactionId=" + f + ", ").orElse("") +
+            optionalOrderRef().map(f -> "orderRef=" + f + ", ").orElse("") +
             optionalMethod().map(f -> "method=" + f + ", ").orElse("") +
             optionalStatus().map(f -> "status=" + f + ", ").orElse("") +
             optionalAmount().map(f -> "amount=" + f + ", ").orElse("") +

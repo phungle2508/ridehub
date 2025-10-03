@@ -45,6 +45,9 @@ class PaymentTransactionResourceIT {
     private static final String DEFAULT_TRANSACTION_ID = "AAAAAAAAAA";
     private static final String UPDATED_TRANSACTION_ID = "BBBBBBBBBB";
 
+    private static final String DEFAULT_ORDER_REF = "AAAAAAAAAA";
+    private static final String UPDATED_ORDER_REF = "BBBBBBBBBB";
+
     private static final PaymentMethod DEFAULT_METHOD = PaymentMethod.VNPAY;
     private static final PaymentMethod UPDATED_METHOD = PaymentMethod.MOMO;
 
@@ -110,6 +113,7 @@ class PaymentTransactionResourceIT {
     public static PaymentTransaction createEntity() {
         return new PaymentTransaction()
             .transactionId(DEFAULT_TRANSACTION_ID)
+            .orderRef(DEFAULT_ORDER_REF)
             .method(DEFAULT_METHOD)
             .status(DEFAULT_STATUS)
             .amount(DEFAULT_AMOUNT)
@@ -131,6 +135,7 @@ class PaymentTransactionResourceIT {
     public static PaymentTransaction createUpdatedEntity() {
         return new PaymentTransaction()
             .transactionId(UPDATED_TRANSACTION_ID)
+            .orderRef(UPDATED_ORDER_REF)
             .method(UPDATED_METHOD)
             .status(UPDATED_STATUS)
             .amount(UPDATED_AMOUNT)
@@ -268,6 +273,7 @@ class PaymentTransactionResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(paymentTransaction.getId().intValue())))
             .andExpect(jsonPath("$.[*].transactionId").value(hasItem(DEFAULT_TRANSACTION_ID)))
+            .andExpect(jsonPath("$.[*].orderRef").value(hasItem(DEFAULT_ORDER_REF)))
             .andExpect(jsonPath("$.[*].method").value(hasItem(DEFAULT_METHOD.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].amount").value(hasItem(sameNumber(DEFAULT_AMOUNT))))
@@ -293,6 +299,7 @@ class PaymentTransactionResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(paymentTransaction.getId().intValue()))
             .andExpect(jsonPath("$.transactionId").value(DEFAULT_TRANSACTION_ID))
+            .andExpect(jsonPath("$.orderRef").value(DEFAULT_ORDER_REF))
             .andExpect(jsonPath("$.method").value(DEFAULT_METHOD.toString()))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
             .andExpect(jsonPath("$.amount").value(sameNumber(DEFAULT_AMOUNT)))
@@ -380,6 +387,59 @@ class PaymentTransactionResourceIT {
             "transactionId.doesNotContain=" + UPDATED_TRANSACTION_ID,
             "transactionId.doesNotContain=" + DEFAULT_TRANSACTION_ID
         );
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByOrderRefIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where orderRef equals to
+        defaultPaymentTransactionFiltering("orderRef.equals=" + DEFAULT_ORDER_REF, "orderRef.equals=" + UPDATED_ORDER_REF);
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByOrderRefIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where orderRef in
+        defaultPaymentTransactionFiltering(
+            "orderRef.in=" + DEFAULT_ORDER_REF + "," + UPDATED_ORDER_REF,
+            "orderRef.in=" + UPDATED_ORDER_REF
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByOrderRefIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where orderRef is not null
+        defaultPaymentTransactionFiltering("orderRef.specified=true", "orderRef.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByOrderRefContainsSomething() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where orderRef contains
+        defaultPaymentTransactionFiltering("orderRef.contains=" + DEFAULT_ORDER_REF, "orderRef.contains=" + UPDATED_ORDER_REF);
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByOrderRefNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where orderRef does not contain
+        defaultPaymentTransactionFiltering("orderRef.doesNotContain=" + UPDATED_ORDER_REF, "orderRef.doesNotContain=" + DEFAULT_ORDER_REF);
     }
 
     @Test
@@ -778,6 +838,7 @@ class PaymentTransactionResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(paymentTransaction.getId().intValue())))
             .andExpect(jsonPath("$.[*].transactionId").value(hasItem(DEFAULT_TRANSACTION_ID)))
+            .andExpect(jsonPath("$.[*].orderRef").value(hasItem(DEFAULT_ORDER_REF)))
             .andExpect(jsonPath("$.[*].method").value(hasItem(DEFAULT_METHOD.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].amount").value(hasItem(sameNumber(DEFAULT_AMOUNT))))
@@ -837,6 +898,7 @@ class PaymentTransactionResourceIT {
         em.detach(updatedPaymentTransaction);
         updatedPaymentTransaction
             .transactionId(UPDATED_TRANSACTION_ID)
+            .orderRef(UPDATED_ORDER_REF)
             .method(UPDATED_METHOD)
             .status(UPDATED_STATUS)
             .amount(UPDATED_AMOUNT)
@@ -944,7 +1006,11 @@ class PaymentTransactionResourceIT {
         PaymentTransaction partialUpdatedPaymentTransaction = new PaymentTransaction();
         partialUpdatedPaymentTransaction.setId(paymentTransaction.getId());
 
-        partialUpdatedPaymentTransaction.status(UPDATED_STATUS).amount(UPDATED_AMOUNT).isDeleted(UPDATED_IS_DELETED);
+        partialUpdatedPaymentTransaction
+            .method(UPDATED_METHOD)
+            .status(UPDATED_STATUS)
+            .updatedAt(UPDATED_UPDATED_AT)
+            .deletedBy(UPDATED_DELETED_BY);
 
         restPaymentTransactionMockMvc
             .perform(
@@ -978,6 +1044,7 @@ class PaymentTransactionResourceIT {
 
         partialUpdatedPaymentTransaction
             .transactionId(UPDATED_TRANSACTION_ID)
+            .orderRef(UPDATED_ORDER_REF)
             .method(UPDATED_METHOD)
             .status(UPDATED_STATUS)
             .amount(UPDATED_AMOUNT)

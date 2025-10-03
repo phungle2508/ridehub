@@ -21,6 +21,9 @@ public class PaymentTransactionDTO implements Serializable {
     @Size(max = 80)
     private String transactionId;
 
+    @Size(max = 80)
+    private String orderRef;
+
     private PaymentMethod method;
 
     private PaymentStatus status;
@@ -57,6 +60,14 @@ public class PaymentTransactionDTO implements Serializable {
 
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getOrderRef() {
+        return orderRef;
+    }
+
+    public void setOrderRef(String orderRef) {
+        this.orderRef = orderRef;
     }
 
     public PaymentMethod getMethod() {
@@ -166,6 +177,7 @@ public class PaymentTransactionDTO implements Serializable {
         return "PaymentTransactionDTO{" +
             "id=" + getId() +
             ", transactionId='" + getTransactionId() + "'" +
+            ", orderRef='" + getOrderRef() + "'" +
             ", method='" + getMethod() + "'" +
             ", status='" + getStatus() + "'" +
             ", amount=" + getAmount() +

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251003102629"
+    "changelogDate": "20251003133111"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -33,6 +33,10 @@
       "fieldType": "String",
       "fieldValidateRules": ["unique", "maxlength"],
       "fieldValidateRulesMaxlength": "80"
+    },
+    {
+      "fieldName": "bookingId",
+      "fieldType": "Long"
     },
     {
       "fieldName": "createdAt",

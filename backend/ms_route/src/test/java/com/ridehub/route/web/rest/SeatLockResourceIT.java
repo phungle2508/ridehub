@@ -56,6 +56,10 @@ class SeatLockResourceIT {
     private static final String DEFAULT_IDEMPOTENCY_KEY = "AAAAAAAAAA";
     private static final String UPDATED_IDEMPOTENCY_KEY = "BBBBBBBBBB";
 
+    private static final Long DEFAULT_BOOKING_ID = 1L;
+    private static final Long UPDATED_BOOKING_ID = 2L;
+    private static final Long SMALLER_BOOKING_ID = 1L - 1L;
+
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
@@ -109,6 +113,7 @@ class SeatLockResourceIT {
             .status(DEFAULT_STATUS)
             .expiresAt(DEFAULT_EXPIRES_AT)
             .idempotencyKey(DEFAULT_IDEMPOTENCY_KEY)
+            .bookingId(DEFAULT_BOOKING_ID)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -140,6 +145,7 @@ class SeatLockResourceIT {
             .status(UPDATED_STATUS)
             .expiresAt(UPDATED_EXPIRES_AT)
             .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .bookingId(UPDATED_BOOKING_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -300,6 +306,7 @@ class SeatLockResourceIT {
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].expiresAt").value(hasItem(DEFAULT_EXPIRES_AT.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
+            .andExpect(jsonPath("$.[*].bookingId").value(hasItem(DEFAULT_BOOKING_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -324,6 +331,7 @@ class SeatLockResourceIT {
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
             .andExpect(jsonPath("$.expiresAt").value(DEFAULT_EXPIRES_AT.toString()))
             .andExpect(jsonPath("$.idempotencyKey").value(DEFAULT_IDEMPOTENCY_KEY))
+            .andExpect(jsonPath("$.bookingId").value(DEFAULT_BOOKING_ID.intValue()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -587,6 +595,79 @@ class SeatLockResourceIT {
 
     @Test
     @Transactional
+    void getAllSeatLocksByBookingIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where bookingId equals to
+        defaultSeatLockFiltering("bookingId.equals=" + DEFAULT_BOOKING_ID, "bookingId.equals=" + UPDATED_BOOKING_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByBookingIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where bookingId in
+        defaultSeatLockFiltering("bookingId.in=" + DEFAULT_BOOKING_ID + "," + UPDATED_BOOKING_ID, "bookingId.in=" + UPDATED_BOOKING_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByBookingIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where bookingId is not null
+        defaultSeatLockFiltering("bookingId.specified=true", "bookingId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByBookingIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where bookingId is greater than or equal to
+        defaultSeatLockFiltering(
+            "bookingId.greaterThanOrEqual=" + DEFAULT_BOOKING_ID,
+            "bookingId.greaterThanOrEqual=" + UPDATED_BOOKING_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByBookingIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where bookingId is less than or equal to
+        defaultSeatLockFiltering("bookingId.lessThanOrEqual=" + DEFAULT_BOOKING_ID, "bookingId.lessThanOrEqual=" + SMALLER_BOOKING_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByBookingIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where bookingId is less than
+        defaultSeatLockFiltering("bookingId.lessThan=" + UPDATED_BOOKING_ID, "bookingId.lessThan=" + DEFAULT_BOOKING_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByBookingIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where bookingId is greater than
+        defaultSeatLockFiltering("bookingId.greaterThan=" + SMALLER_BOOKING_ID, "bookingId.greaterThan=" + DEFAULT_BOOKING_ID);
+    }
+
+    @Test
+    @Transactional
     void getAllSeatLocksByCreatedAtIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
@@ -776,6 +857,7 @@ class SeatLockResourceIT {
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].expiresAt").value(hasItem(DEFAULT_EXPIRES_AT.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
+            .andExpect(jsonPath("$.[*].bookingId").value(hasItem(DEFAULT_BOOKING_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -834,6 +916,7 @@ class SeatLockResourceIT {
             .status(UPDATED_STATUS)
             .expiresAt(UPDATED_EXPIRES_AT)
             .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .bookingId(UPDATED_BOOKING_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -934,9 +1017,10 @@ class SeatLockResourceIT {
         partialUpdatedSeatLock
             .seatNo(UPDATED_SEAT_NO)
             .expiresAt(UPDATED_EXPIRES_AT)
+            .bookingId(UPDATED_BOOKING_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
-            .isDeleted(UPDATED_IS_DELETED)
+            .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
 
         restSeatLockMockMvc
@@ -972,6 +1056,7 @@ class SeatLockResourceIT {
             .status(UPDATED_STATUS)
             .expiresAt(UPDATED_EXPIRES_AT)
             .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .bookingId(UPDATED_BOOKING_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

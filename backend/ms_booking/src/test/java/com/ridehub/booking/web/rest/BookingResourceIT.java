@@ -64,6 +64,9 @@ class BookingResourceIT {
     private static final Long UPDATED_CUSTOMER_ID = 2L;
     private static final Long SMALLER_CUSTOMER_ID = 1L - 1L;
 
+    private static final String DEFAULT_IDEMPOTENCY_KEY = "AAAAAAAAAA";
+    private static final String UPDATED_IDEMPOTENCY_KEY = "BBBBBBBBBB";
+
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
@@ -118,6 +121,7 @@ class BookingResourceIT {
             .totalAmount(DEFAULT_TOTAL_AMOUNT)
             .bookedAt(DEFAULT_BOOKED_AT)
             .customerId(DEFAULT_CUSTOMER_ID)
+            .idempotencyKey(DEFAULT_IDEMPOTENCY_KEY)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -139,6 +143,7 @@ class BookingResourceIT {
             .totalAmount(UPDATED_TOTAL_AMOUNT)
             .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
+            .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -323,6 +328,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].totalAmount").value(hasItem(sameNumber(DEFAULT_TOTAL_AMOUNT))))
             .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
             .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.intValue())))
+            .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -348,6 +354,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.totalAmount").value(sameNumber(DEFAULT_TOTAL_AMOUNT)))
             .andExpect(jsonPath("$.bookedAt").value(DEFAULT_BOOKED_AT.toString()))
             .andExpect(jsonPath("$.customerId").value(DEFAULT_CUSTOMER_ID.intValue()))
+            .andExpect(jsonPath("$.idempotencyKey").value(DEFAULT_IDEMPOTENCY_KEY))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -707,6 +714,62 @@ class BookingResourceIT {
 
     @Test
     @Transactional
+    void getAllBookingsByIdempotencyKeyIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where idempotencyKey equals to
+        defaultBookingFiltering("idempotencyKey.equals=" + DEFAULT_IDEMPOTENCY_KEY, "idempotencyKey.equals=" + UPDATED_IDEMPOTENCY_KEY);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByIdempotencyKeyIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where idempotencyKey in
+        defaultBookingFiltering(
+            "idempotencyKey.in=" + DEFAULT_IDEMPOTENCY_KEY + "," + UPDATED_IDEMPOTENCY_KEY,
+            "idempotencyKey.in=" + UPDATED_IDEMPOTENCY_KEY
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByIdempotencyKeyIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where idempotencyKey is not null
+        defaultBookingFiltering("idempotencyKey.specified=true", "idempotencyKey.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByIdempotencyKeyContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where idempotencyKey contains
+        defaultBookingFiltering("idempotencyKey.contains=" + DEFAULT_IDEMPOTENCY_KEY, "idempotencyKey.contains=" + UPDATED_IDEMPOTENCY_KEY);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByIdempotencyKeyNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where idempotencyKey does not contain
+        defaultBookingFiltering(
+            "idempotencyKey.doesNotContain=" + UPDATED_IDEMPOTENCY_KEY,
+            "idempotencyKey.doesNotContain=" + DEFAULT_IDEMPOTENCY_KEY
+        );
+    }
+
+    @Test
+    @Transactional
     void getAllBookingsByCreatedAtIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedBooking = bookingRepository.saveAndFlush(booking);
@@ -919,6 +982,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].totalAmount").value(hasItem(sameNumber(DEFAULT_TOTAL_AMOUNT))))
             .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
             .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.intValue())))
+            .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -978,6 +1042,7 @@ class BookingResourceIT {
             .totalAmount(UPDATED_TOTAL_AMOUNT)
             .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
+            .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -1078,8 +1143,9 @@ class BookingResourceIT {
         partialUpdatedBooking
             .totalAmount(UPDATED_TOTAL_AMOUNT)
             .customerId(UPDATED_CUSTOMER_ID)
+            .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
             .createdAt(UPDATED_CREATED_AT)
-            .updatedAt(UPDATED_UPDATED_AT);
+            .deletedBy(UPDATED_DELETED_BY);
 
         restBookingMockMvc
             .perform(
@@ -1115,6 +1181,7 @@ class BookingResourceIT {
             .totalAmount(UPDATED_TOTAL_AMOUNT)
             .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
+            .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

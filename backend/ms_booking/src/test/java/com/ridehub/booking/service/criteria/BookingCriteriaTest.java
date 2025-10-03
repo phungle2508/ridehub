@@ -82,6 +82,7 @@ class BookingCriteriaTest {
         bookingCriteria.totalAmount();
         bookingCriteria.bookedAt();
         bookingCriteria.customerId();
+        bookingCriteria.idempotencyKey();
         bookingCriteria.createdAt();
         bookingCriteria.updatedAt();
         bookingCriteria.isDeleted();
@@ -105,6 +106,7 @@ class BookingCriteriaTest {
                 condition.apply(criteria.getTotalAmount()) &&
                 condition.apply(criteria.getBookedAt()) &&
                 condition.apply(criteria.getCustomerId()) &&
+                condition.apply(criteria.getIdempotencyKey()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
@@ -130,6 +132,7 @@ class BookingCriteriaTest {
                 condition.apply(criteria.getTotalAmount(), copy.getTotalAmount()) &&
                 condition.apply(criteria.getBookedAt(), copy.getBookedAt()) &&
                 condition.apply(criteria.getCustomerId(), copy.getCustomerId()) &&
+                condition.apply(criteria.getIdempotencyKey(), copy.getIdempotencyKey()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&

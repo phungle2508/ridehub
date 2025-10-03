@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251003111422"
+    "changelogDate": "20251003131710"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -36,6 +36,12 @@
       "fieldName": "customerId",
       "fieldType": "Long",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "idempotencyKey",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "80"
     },
     {
       "fieldName": "createdAt",

@@ -49,6 +49,9 @@ public class SeatLock implements Serializable {
     @Column(name = "idempotency_key", length = 80, unique = true)
     private String idempotencyKey;
 
+    @Column(name = "booking_id")
+    private Long bookingId;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -149,6 +152,19 @@ public class SeatLock implements Serializable {
 
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
+    }
+
+    public Long getBookingId() {
+        return this.bookingId;
+    }
+
+    public SeatLock bookingId(Long bookingId) {
+        this.setBookingId(bookingId);
+        return this;
+    }
+
+    public void setBookingId(Long bookingId) {
+        this.bookingId = bookingId;
     }
 
     public Instant getCreatedAt() {
@@ -258,6 +274,7 @@ public class SeatLock implements Serializable {
             ", status='" + getStatus() + "'" +
             ", expiresAt='" + getExpiresAt() + "'" +
             ", idempotencyKey='" + getIdempotencyKey() + "'" +
+            ", bookingId=" + getBookingId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

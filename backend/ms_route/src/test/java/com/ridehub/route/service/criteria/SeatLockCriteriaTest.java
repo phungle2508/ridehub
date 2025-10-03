@@ -81,6 +81,7 @@ class SeatLockCriteriaTest {
         seatLockCriteria.status();
         seatLockCriteria.expiresAt();
         seatLockCriteria.idempotencyKey();
+        seatLockCriteria.bookingId();
         seatLockCriteria.createdAt();
         seatLockCriteria.updatedAt();
         seatLockCriteria.isDeleted();
@@ -99,6 +100,7 @@ class SeatLockCriteriaTest {
                 condition.apply(criteria.getStatus()) &&
                 condition.apply(criteria.getExpiresAt()) &&
                 condition.apply(criteria.getIdempotencyKey()) &&
+                condition.apply(criteria.getBookingId()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
@@ -119,6 +121,7 @@ class SeatLockCriteriaTest {
                 condition.apply(criteria.getStatus(), copy.getStatus()) &&
                 condition.apply(criteria.getExpiresAt(), copy.getExpiresAt()) &&
                 condition.apply(criteria.getIdempotencyKey(), copy.getIdempotencyKey()) &&
+                condition.apply(criteria.getBookingId(), copy.getBookingId()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&

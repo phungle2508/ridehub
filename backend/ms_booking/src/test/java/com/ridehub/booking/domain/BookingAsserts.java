@@ -59,6 +59,7 @@ public class BookingAsserts {
             )
             .satisfies(a -> assertThat(a.getBookedAt()).as("check bookedAt").isEqualTo(expected.getBookedAt()))
             .satisfies(a -> assertThat(a.getCustomerId()).as("check customerId").isEqualTo(expected.getCustomerId()))
+            .satisfies(a -> assertThat(a.getIdempotencyKey()).as("check idempotencyKey").isEqualTo(expected.getIdempotencyKey()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))

@@ -52,6 +52,8 @@ public class SeatLockCriteria implements Serializable, Criteria {
 
     private StringFilter idempotencyKey;
 
+    private LongFilter bookingId;
+
     private InstantFilter createdAt;
 
     private InstantFilter updatedAt;
@@ -75,6 +77,7 @@ public class SeatLockCriteria implements Serializable, Criteria {
         this.status = other.optionalStatus().map(LockStatusFilter::copy).orElse(null);
         this.expiresAt = other.optionalExpiresAt().map(InstantFilter::copy).orElse(null);
         this.idempotencyKey = other.optionalIdempotencyKey().map(StringFilter::copy).orElse(null);
+        this.bookingId = other.optionalBookingId().map(LongFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -201,6 +204,25 @@ public class SeatLockCriteria implements Serializable, Criteria {
 
     public void setIdempotencyKey(StringFilter idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
+    }
+
+    public LongFilter getBookingId() {
+        return bookingId;
+    }
+
+    public Optional<LongFilter> optionalBookingId() {
+        return Optional.ofNullable(bookingId);
+    }
+
+    public LongFilter bookingId() {
+        if (bookingId == null) {
+            setBookingId(new LongFilter());
+        }
+        return bookingId;
+    }
+
+    public void setBookingId(LongFilter bookingId) {
+        this.bookingId = bookingId;
     }
 
     public InstantFilter getCreatedAt() {
@@ -352,6 +374,7 @@ public class SeatLockCriteria implements Serializable, Criteria {
             Objects.equals(status, that.status) &&
             Objects.equals(expiresAt, that.expiresAt) &&
             Objects.equals(idempotencyKey, that.idempotencyKey) &&
+            Objects.equals(bookingId, that.bookingId) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
@@ -371,6 +394,7 @@ public class SeatLockCriteria implements Serializable, Criteria {
             status,
             expiresAt,
             idempotencyKey,
+            bookingId,
             createdAt,
             updatedAt,
             isDeleted,
@@ -391,6 +415,7 @@ public class SeatLockCriteria implements Serializable, Criteria {
             optionalStatus().map(f -> "status=" + f + ", ").orElse("") +
             optionalExpiresAt().map(f -> "expiresAt=" + f + ", ").orElse("") +
             optionalIdempotencyKey().map(f -> "idempotencyKey=" + f + ", ").orElse("") +
+            optionalBookingId().map(f -> "bookingId=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +

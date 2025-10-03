@@ -55,6 +55,10 @@ public class Booking implements Serializable {
     @Column(name = "customer_id", nullable = false)
     private Long customerId;
 
+    @Size(max = 80)
+    @Column(name = "idempotency_key", length = 80)
+    private String idempotencyKey;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -188,6 +192,19 @@ public class Booking implements Serializable {
 
     public void setCustomerId(Long customerId) {
         this.customerId = customerId;
+    }
+
+    public String getIdempotencyKey() {
+        return this.idempotencyKey;
+    }
+
+    public Booking idempotencyKey(String idempotencyKey) {
+        this.setIdempotencyKey(idempotencyKey);
+        return this;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 
     public Instant getCreatedAt() {
@@ -404,6 +421,7 @@ public class Booking implements Serializable {
             ", totalAmount=" + getTotalAmount() +
             ", bookedAt='" + getBookedAt() + "'" +
             ", customerId=" + getCustomerId() +
+            ", idempotencyKey='" + getIdempotencyKey() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

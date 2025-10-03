@@ -49,6 +49,7 @@ public class PaymentTransactionAsserts {
         assertThat(actual)
             .as("Verify PaymentTransaction relevant properties")
             .satisfies(a -> assertThat(a.getTransactionId()).as("check transactionId").isEqualTo(expected.getTransactionId()))
+            .satisfies(a -> assertThat(a.getOrderRef()).as("check orderRef").isEqualTo(expected.getOrderRef()))
             .satisfies(a -> assertThat(a.getMethod()).as("check method").isEqualTo(expected.getMethod()))
             .satisfies(a -> assertThat(a.getStatus()).as("check status").isEqualTo(expected.getStatus()))
             .satisfies(a ->

@@ -15,6 +15,7 @@ public class SeatLockTestSamples {
             .seatNo("seatNo1")
             .userId(1L)
             .idempotencyKey("idempotencyKey1")
+            .bookingId(1L)
             .deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
     }
 
@@ -24,6 +25,7 @@ public class SeatLockTestSamples {
             .seatNo("seatNo2")
             .userId(2L)
             .idempotencyKey("idempotencyKey2")
+            .bookingId(2L)
             .deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
     }
 
@@ -33,6 +35,7 @@ public class SeatLockTestSamples {
             .seatNo(UUID.randomUUID().toString())
             .userId(longCount.incrementAndGet())
             .idempotencyKey(UUID.randomUUID().toString())
+            .bookingId(longCount.incrementAndGet())
             .deletedBy(UUID.randomUUID());
     }
 }
