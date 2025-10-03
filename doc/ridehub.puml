@@ -1,5 +1,5 @@
 @startuml
-title RideHub – 4 Microservices\n(DB per service, Central Redis, Single Kafka, Vehicle-type Pricing + Locks/Saga/Snapshots)
+title RideHub – 4 Microservices\n(Updated from JDL - DB per service, Central Redis, Single Kafka, OAuth2 via Keycloak)
 
 left to right direction
 hide methods
@@ -10,11 +10,6 @@ skinparam classAttributeIconSize 0
 ' =============================
 '              ENUMS
 ' =============================
-' (Removed Role enum)
-enum SeatType {
-  SLEEPER
-  NORMAL
-}
 enum BookingStatus {
   DRAFT
   AWAITING_PAYMENT
@@ -51,34 +46,47 @@ enum Gender {
   OTHER
 }
 
+enum VehicleStatus {
+  ACTIVE
+  MAINTENANCE
+  RETIRED
+}
+
 enum VehicleType {
   STANDARD_BUS_VIP
   STANDARD_BUS_NORMAL
   LIMOUSINE
 }
+
 enum LockStatus {
   HELD
   EXPIRED
   COMMITTED
 }
 
+enum SeatType {
+  SLEEPER
+  NORMAL
+}
+
 ' =============================
 '      EXTERNAL COMPONENTS
 ' =============================
 class "API Gateway" as GATEWAY
-class "Keycloak"   as KEYCLOAK
-class "Kafka"      as KAFKA
-class "Redis"      as REDIS
-class "MinIO"      as MINIO
+class "Keycloak (OAuth2)" as KEYCLOAK
+class "Kafka" as KAFKA
+class "Redis" as REDIS
+class "MinIO (S3)" as MINIO
+class "Elasticsearch" as ELASTIC
 
 ' =============================
 '        BASE ENTITY
 ' =============================
 abstract class BaseEntity {
-  +id: UUID
+  +id: Long
   +createdAt: Instant
   +updatedAt: Instant
-  +isDeleted: boolean
+  +isDeleted: Boolean
   +deletedAt: Instant
   +deletedBy: UUID
 }
@@ -86,23 +94,18 @@ abstract class BaseEntity {
 ' =============================
 '          MS-USER
 ' =============================
-package "ms-user\n(Identity & Auth)" as MS_USER {
+package "ms-user\n(Identity & Profile)" as MS_USER {
 
-  abstract class User extends BaseEntity {
-    +email: String
+  class AppUser extends BaseEntity {
+    +keycloakId: UUID {unique}
+    +email: String {unique}
     +phoneNumber: String
-    +passwordHash: String
-    ' +role: Role            ' (Removed)
-    +locked: boolean
-  }
-
-  class Customer extends User {
-    +fullName: String
-    +birthDate: LocalDate
-  }
-
-  class Admin extends User {
-    +level: int
+    +firstName: String
+    +lastName: String
+    +dateOfBirth: LocalDate
+    +isVerified: Boolean
+    +isActive: Boolean
+    +lastLoginAt: Instant
   }
 
   class Profile extends BaseEntity {
@@ -110,68 +113,62 @@ package "ms-user\n(Identity & Auth)" as MS_USER {
     +birthDate: LocalDate
   }
 
-  class AuthService
-
-  class "UserDB" as USERDB
-  ' ---- File storage metadata (replicated per service) ----
-  class File extends BaseEntity {
+  class FileUser extends BaseEntity {
     +bucket: String
     +objectKey: String
     +contentType: String
-    +size: long
+    +size: Long
   }
 
-  ' Image association
-  Profile "1" o-- "0..1" File : "avatar"
-
-  ' Storage link
-  File ..> MINIO : "stored in"
+  class "UserDB" as USERDB
 
 }
 
-User "1" o-- "1" Profile : "owns"
+AppUser "1" -- "1" Profile : "has"
+Profile "1" o-- "0..1" FileUser : "avatar"
+FileUser ..> MINIO : "stored in"
 
 ' =============================
 '          MS-ROUTE
 ' =============================
-package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLock)" as MS_ROUTE {
+package "ms-route\n(Geography, Routes, Vehicles, Trips, Staff, SeatLock)" as MS_ROUTE {
 
   ' ----- Vietnam Address Hierarchy -----
   class Province extends BaseEntity {
-    +provinceCode: String
+    +provinceCode: String {unique}
     +name: String
     +nameEn: String
     +fullName: String
     +fullNameEn: String
     +codeName: String
-    +administrativeUnitId: int
-    +administrativeRegionId: int
+    +administrativeUnitId: Integer
+    +administrativeRegionId: Integer
   }
 
   class District extends BaseEntity {
-    +districtCode: String
+    +districtCode: String {unique}
     +name: String
     +nameEn: String
     +fullName: String
     +fullNameEn: String
     +codeName: String
-    +administrativeUnitId: int
+    +administrativeUnitId: Integer
   }
 
   class Ward extends BaseEntity {
-    +wardCode: String
+    +wardCode: String {unique}
     +name: String
     +nameEn: String
     +fullName: String
     +fullNameEn: String
     +codeName: String
-    +administrativeUnitId: int
+    +administrativeUnitId: Integer
   }
 
   class Address extends BaseEntity {
     +streetAddress: String
-    +latitude: double
-    +longitude: double
+    +latitude: BigDecimal
+    +longitude: BigDecimal
   }
 
   ' ----- Station / Route / Fleet / Trips -----
@@ -179,217 +176,217 @@ package "ms-route\n(Address, Station, Route, Vehicle, Trip, Seat, Staff, SeatLoc
     +name: String
     +phoneNumber: String
     +description: String
-    +active: boolean
+    +active: Boolean
   }
 
   class Route extends BaseEntity {
-    +routeCode: String
-    +distanceKm: double
+    +routeCode: String {unique}
+    +distanceKm: BigDecimal
   }
 
-  abstract class Vehicle extends BaseEntity {
+  class Vehicle extends BaseEntity {
     +type: VehicleType
-    +typeFactor: double
-    +plateNumber: String
+    +typeFactor: BigDecimal
+    +plateNumber: String {unique}
     +brand: String
     +description: String
+    +status: VehicleStatus
   }
-  class VipBus extends Vehicle
-  class NormalBus extends Vehicle
-  class Limousine   extends Vehicle
 
   class SeatMap extends BaseEntity {
     +name: String
   }
 
   class Floor extends BaseEntity {
-    +floorNo: int
-    +priceFactorFloor: double
+    +floorNo: Integer
+    +priceFactorFloor: BigDecimal
   }
 
   class Seat extends BaseEntity {
     +seatNo: String
-    +rowNo: int
-    +colNo: int
-    +priceFactor: double
+    +rowNo: Integer
+    +colNo: Integer
+    +priceFactor: BigDecimal
     +type: SeatType
   }
 
   class Trip extends BaseEntity {
-    +tripCode: String
+    +tripCode: String {unique}
     +departureTime: Instant
     +arrivalTime: Instant
-    +baseFare: Money
+    +baseFare: BigDecimal
   }
 
-  ' class TripSeat ... (Removed)
-
-  ' ---- Staff (chỉ thuộc tính vận hành, PII chính ở ms-user) ----
-  abstract class Staff extends BaseEntity {
-    +userId: UUID
+  ' ---- Staff ----
+  class Staff extends BaseEntity {
+    +name: String
+    +age: Integer
+    +gender: Gender
+    +phoneNumber: String
     +status: StaffStatus
   }
 
-  class Driver extends Staff {
+  class Driver extends BaseEntity {
     +licenseClass: String
-    +yearsExperience: int
+    +yearsExperience: Integer
   }
 
-  class Attendant extends Staff
+  class Attendant extends BaseEntity
 
-  ' ---- SeatLock: nguồn sự thật giữ chỗ ----
+  ' ---- SeatLock ----
   class SeatLock extends BaseEntity {
-    +tripId: UUID
     +seatNo: String
-    +userId: UUID
+    +userId: Long
     +status: LockStatus
     +expiresAt: Instant
-    +idempotencyKey: String
+    +idempotencyKey: String {unique}
+    +bookingId: Long
   }
 
-  class "RouteDB" as ROUTEDB
-  ' ---- File storage metadata (replicated per service) ----
-  class File extends BaseEntity {
+  class FileRoute extends BaseEntity {
     +bucket: String
     +objectKey: String
     +contentType: String
-    +size: long
+    +size: Long
   }
 
-  ' Image associations
-  Station "1" o-- "0..1" File : "stationImg"
-  Vehicle "1" o-- "0..1" File : "vehicleImg"
-  SeatMap "1" o-- "0..1" File : "seatMapImg"
-
-  ' Storage link
-  File ..> MINIO : "stored in"
+  class "RouteDB" as ROUTEDB
 
 }
 
-' Address relations (inside ms-route)
+' Address hierarchy
 Province "1" o-- "0..*" District : "contains"
 District "1" o-- "0..*" Ward : "contains"
 Ward "1" o-- "0..*" Address : "located in"
 
-' Station located at Address
-Station "1" o-- "1" Address : "located at"
+' Station & Route
+Station "1" -- "1" Address : "located at"
+Route "*" -- "1" Station : "origin"
+Route "*" -- "1" Station : "destination"
 
-' Route / Trip / Seats / Staff
-Station "1" -- "0..*" Route : "origin"
-Station "1" -- "0..*" Route : "destination"
-Route "1" o-- "0..*" Trip : "schedules"
-Trip "0..*" -- "1" Vehicle : "vehicle"
+' Vehicle & SeatMap
+Vehicle "1" -- "1" SeatMap : "uses"
+SeatMap "1" o-- "1..*" Floor : "has floors"
+Floor "1" o-- "1..*" Seat : "has seats"
 
-' TripSeat relation removed
-' Trip "1" o-- "1..*" TripSeat : "seat snapshot"
+' Trip
+Trip "*" -- "1" Route : "on route"
+Trip "*" -- "1" Vehicle : "uses vehicle"
+Trip "*" -- "1" Driver : "driven by"
+Trip "*" -- "0..1" Attendant : "attended by"
 
-Trip "1" -- "0..1" Driver : "main driver"
-Trip "0..1" -- "0..1" Attendant : "attendant"
-Vehicle "1" o-- "1" SeatMap : "uses"
-SeatMap "1" o-- "1..2" Floor : "contains"
-Floor "1" o-- "1..18" Seat : "seats per floor ≤ 18"
+' Staff relationships
+Driver "1" -- "1" Staff : "is"
+Attendant "1" -- "1" Staff : "is"
 
-' Explicit relation: SeatLock to Trip
-SeatLock "0..*" -- "1" Trip : "for trip"
+' SeatLock
+SeatLock "*" -- "1" Trip : "for trip"
+
+' File associations
+Station "1" o-- "0..1" FileRoute : "stationImg"
+Vehicle "1" o-- "0..1" FileRoute : "vehicleImg"
+SeatMap "1" o-- "0..1" FileRoute : "seatMapImg"
+FileRoute ..> MINIO : "stored in"
 
 ' =============================
 '          MS-BOOKING
 ' =============================
-package "ms-booking\n(Booking, Ticket, Payment, Invoice, Pricing + Snapshots)" as MS_BOOK {
-
-  class Ticket extends BaseEntity {
-    +ticketCode: String
-    +price: Money
-    +qrCode: String
-    +checkedIn: boolean
-    +timeFrom: Instant
-    +timeTo: Instant
-  }
+package "ms-booking\n(Bookings, Tickets, Payments, Invoices)" as MS_BOOK {
 
   class Booking extends BaseEntity {
-    +bookingCode: String
+    +bookingCode: String {unique}
     +status: BookingStatus
-    +quantity: int
-    +totalAmount: Money
-    +createdTime: Instant
+    +quantity: Integer
+    +totalAmount: BigDecimal
+    +bookedAt: Instant
+    +customerId: Long
+    +idempotencyKey: String
+  }
+
+  class Ticket extends BaseEntity {
+    +ticketCode: String {unique}
+    +price: BigDecimal
+    +qrCode: String
+    +timeFrom: Instant
+    +timeTo: Instant
+    +checkedIn: Boolean
+    +tripId: Long
+    +routeId: Long
+    +seatId: Long
   }
 
   class Invoice extends BaseEntity {
-    +invoiceNo: String
+    +invoiceNo: String {unique}
     +issuedAt: Instant
-    +grossAmount: Money
-    +vatAmount: Money
-    +netAmount: Money
+    +grossAmount: BigDecimal
+    +vatAmount: BigDecimal
+    +netAmount: BigDecimal
   }
 
   class PaymentTransaction extends BaseEntity {
-    +transactionId: String
+    +transactionId: String {unique}
+    +orderRef: String
     +method: PaymentMethod
     +status: PaymentStatus
-    +amount: Money
+    +amount: BigDecimal
     +time: Instant
     +gatewayNote: String
   }
 
-  ' ---- Snapshots để cố định giá & khuyến mãi theo thời điểm ----
   class PricingSnapshot extends BaseEntity {
-    +baseFare: Money
-    +vehicleFactor: double
-    +floorFactor: double
-    +seatFactor: double
-    +finalPrice: Money
+    +baseFare: BigDecimal
+    +vehicleFactor: BigDecimal
+    +floorFactor: BigDecimal
+    +seatFactor: BigDecimal
+    +finalPrice: BigDecimal
   }
 
-  class PromotionSnapshot extends BaseEntity {
-    +promoCode: String
+  class AppliedPromotion extends BaseEntity {
+    +promotionId: Long
+    +promotionCode: String
     +policyType: String
     +percent: Integer
-    +maxOff: Money
-    +appliedAmount: Money
+    +maxOff: BigDecimal
+    +discountAmount: BigDecimal
+    +appliedAt: Instant
   }
 
-  ' ---- Lưu webhook thanh toán (idempotency) ----
   class PaymentWebhookLog extends BaseEntity {
     +provider: String
-    +payloadHash: String
+    +payloadHash: String {unique}
     +receivedAt: Instant
     +processingStatus: String
   }
 
-  class PricingService
-  class PaymentService
-  class SearchService
-
-  class "BookingDB" as BOOKDB
-  ' ---- File storage metadata (replicated per service) ----
-  class File extends BaseEntity {
+  class FileBooking extends BaseEntity {
     +bucket: String
     +objectKey: String
     +contentType: String
-    +size: long
+    +size: Long
   }
 
-  ' Image association
-  Ticket "1" o-- "0..1" File : "qrCodeImg"
+  class PricingService
+  class PaymentService
 
-  ' Storage link
-  File ..> MINIO : "stored in"
+  class "BookingDB" as BOOKDB
 
 }
 
-Customer "1" -- "0..*" Booking : "creates"
 Booking "1" o-- "1..*" Ticket : "contains"
-' Replace TripSeat with Seat
-Ticket "1" -- "1" Seat : "seat"
-Ticket "1" -- "1" Trip : "of trip"
-Ticket "1" -- "1" Route : "of route"
-Booking "1" o-- "0..1" Invoice : "issues"
-Booking "1" o-- "0..1" PaymentTransaction : "payment"
-Booking "1" o-- "1..*" PricingSnapshot : "pricing at booking time"
-Booking "1" o-- "0..*" PromotionSnapshot : "applied promos"
+Booking "1" -- "0..1" Invoice : "has"
+Booking "1" -- "0..1" PaymentTransaction : "payment"
+Booking "1" o-- "1..*" PricingSnapshot : "pricing snapshots"
+Booking "1" o-- "0..*" AppliedPromotion : "applied promos"
 PaymentTransaction "1" o-- "0..*" PaymentWebhookLog : "webhooks"
+Ticket "1" o-- "0..1" FileBooking : "qrCodeImg"
+FileBooking ..> MINIO : "stored in"
 
-' Pricing dependency (reads vehicle & seat data from ms-route)
+' Cross-service references (Ticket stores IDs)
+Ticket ..> Trip : "references tripId"
+Ticket ..> Route : "references routeId"
+Ticket ..> Seat : "references seatId"
+
+' Pricing dependencies
 PricingService ..> Trip : "reads baseFare"
 PricingService ..> Vehicle : "reads typeFactor"
 PricingService ..> Floor : "reads priceFactorFloor"
@@ -401,144 +398,162 @@ PricingService ..> Seat : "reads priceFactor"
 package "ms-promotion\n(Promotions & Conditions)" as MS_PROMO {
 
   class Promotion extends BaseEntity {
-    +code: String
+    +code: String {unique}
     +description: String
     +startDate: LocalDate
     +endDate: LocalDate
-    +usageLimit: int
-    +usedCount: int
+    +usageLimit: Integer
+    +usedCount: Integer
   }
 
-  abstract class DiscountPolicy extends BaseEntity
-
-  class BuyNGetMFree extends DiscountPolicy {
-    +buyN: int
-    +getM: int
+  class BuyNGetMFree extends BaseEntity {
+    +buyN: Integer
+    +getM: Integer
   }
 
-  class PercentOffTotal extends DiscountPolicy {
-    +percent: int
-    +maxOff: Money
+  class PercentOffTotal extends BaseEntity {
+    +percent: Integer [1..100]
+    +maxOff: BigDecimal
+    +minPrice: BigDecimal
   }
 
-  abstract class PromoCondition extends BaseEntity
+  class ConditionByRoute extends BaseEntity
+  class ConditionByDate extends BaseEntity
+  class ConditionByLocation extends BaseEntity
 
-  class ConditionByRoute extends PromoCondition {
-    +routeIds: List<UUID>
+  class ConditionRouteItem extends BaseEntity {
+    +routeId: Long
   }
 
-  class ConditionByDate extends PromoCondition {
-    +specificDates: List<LocalDate>
-    +weekdays: List<Integer>
+  class ConditionDateItem extends BaseEntity {
+    +specificDate: LocalDate
+    +weekday: Integer
   }
 
-  class ConditionByLocation extends PromoCondition {
-    +provinces: List<UUID>
-    +districts: List<UUID>
-    +wards: List<UUID>
+  class ConditionLocationItem extends BaseEntity {
+    +provinceId: Long
+    +districtId: Long
+    +wardId: Long
   }
 
-  class "PromotionDB" as PROMODB
-  ' ---- File storage metadata (replicated per service) ----
-  class File extends BaseEntity {
+  class FilePromotion extends BaseEntity {
     +bucket: String
     +objectKey: String
     +contentType: String
-    +size: long
+    +size: Long
+    +isBanner: Boolean
   }
 
-  ' Image association
-  Promotion "1" o-- "0..1" File : "bannerImg"
-
-  ' Storage link
-  File ..> MINIO : "stored in"
+  class "PromotionDB" as PROMODB
 
 }
 
-Promotion "1" o-- "1..*" DiscountPolicy : "includes"
-Promotion "1" o-- "0..*" PromoCondition : "constraints"
-Promotion "0..*" -- "0..*" Booking : "applied"
+Promotion "1" o-- "0..*" BuyNGetMFree : "buyNGetM policies"
+Promotion "1" o-- "0..*" PercentOffTotal : "percent off policies"
+Promotion "1" o-- "0..*" ConditionByRoute : "route conditions"
+Promotion "1" o-- "0..*" ConditionByDate : "date conditions"
+Promotion "1" o-- "0..*" ConditionByLocation : "location conditions"
+Promotion "1" o-- "0..*" FilePromotion : "images"
+
+ConditionByRoute "1" o-- "0..*" ConditionRouteItem : "items"
+ConditionByDate "1" o-- "0..*" ConditionDateItem : "items"
+ConditionByLocation "1" o-- "0..*" ConditionLocationItem : "items"
+
+FilePromotion ..> MINIO : "stored in"
 
 ' =============================
 '     GATEWAY / AUTH / INFRA
 ' =============================
-GATEWAY --> KEYCLOAK : "OIDC / JWT"
-GATEWAY --> MS_USER  : "/users/*"
-GATEWAY --> MS_ROUTE : "/routes/*, /trips/*, /stations/*"
-GATEWAY --> MS_BOOK  : "/bookings/*"
-GATEWAY --> MS_PROMO : "/promotions/*"
+GATEWAY --> KEYCLOAK : "OAuth2/OIDC"
+GATEWAY --> MS_USER  : "/api/users/*"
+GATEWAY --> MS_ROUTE : "/api/routes/*, /api/trips/*"
+GATEWAY --> MS_BOOK  : "/api/bookings/*"
+GATEWAY --> MS_PROMO : "/api/promotions/*"
 
-' One central Redis (shared)
-MS_USER ..>  REDIS : "cache ns: user:*"
-MS_ROUTE ..> REDIS : "cache ns: route:*, seat:*"
-MS_BOOK  ..> REDIS : "cache ns: booking:*, lock:*"
-MS_PROMO ..> REDIS : "cache ns: promo:*"
+' Central Redis (namespaced per service)
+MS_USER ..>  REDIS : "cache: user:*"
+MS_ROUTE ..> REDIS : "cache: route:*, lock: seat:*"
+MS_BOOK  ..> REDIS : "cache: booking:*"
+MS_PROMO ..> REDIS : "cache: promo:*"
 
-' SeatLock dùng Redis lock + DB unique
-MS_BOOK ..> MS_ROUTE : "reserve/release via SeatLock"
-MS_ROUTE ..> KAFKA : "publish SeatsReserved/SeatsReleased"
-MS_BOOK  ..> KAFKA : "consume seat events"
+' Kafka event streaming
+MS_ROUTE ..> KAFKA : "publish: SeatsReserved, SeatsReleased"
+MS_BOOK  ..> KAFKA : "publish: BookingCreated, PaymentSucceeded"
+MS_BOOK  ..> KAFKA : "consume: seat events"
+MS_ROUTE ..> KAFKA : "consume: booking events"
+MS_PROMO ..> KAFKA : "publish: PromoUpdated"
+MS_USER  ..> KAFKA : "publish: UserUpdated"
 
-' Single Kafka (shared broker)
-MS_BOOK  ..> KAFKA : "produce BookingCreated / PaymentSucceeded / TicketIssued"
-MS_ROUTE ..> KAFKA : "consume SeatsReserve / SeatsRelease"
-MS_PROMO ..> KAFKA : "consume PromoUpdated"
-MS_USER  ..> KAFKA : "consume UserUpdated"
+' Elasticsearch for search
+MS_ROUTE ..> ELASTIC : "index: Route, Station"
 
 ' DB-per-service
-MS_USER ..>  USERDB  : "owns DB"
-MS_ROUTE ..> ROUTEDB : "owns DB"
-MS_BOOK  ..> BOOKDB  : "owns DB"
-MS_PROMO ..> PROMODB : "owns DB"
-
-' =============================
-'          VALUE OBJECTS
-' =============================
-class Money {
-  +amount: long
-  +currency: String
-}
+MS_USER ..>  USERDB  : "MySQL DB"
+MS_ROUTE ..> ROUTEDB : "MySQL DB"
+MS_BOOK  ..> BOOKDB  : "MySQL DB"
+MS_PROMO ..> PROMODB : "MySQL DB"
 
 ' =============================
 '            NOTES
 ' =============================
 note bottom of PricingService
-  Ticket price formula (example):
-
+  **Ticket Pricing Formula:**
+  
   price = Trip.baseFare
-  * Vehicle.typeFactor      ' Limo, VipBus, NormalBus
-  * Floor.priceFactorFloor  ' upper/lower floors
-  * Seat.priceFactor        ' position factor
-  * Seat.typeFactor         ' Sleeper vs Normal
-  Then apply promotions (ms-promotion).
-  Persist into PricingSnapshot to avoid drift.
+    × Vehicle.typeFactor
+    × Floor.priceFactorFloor
+    × Seat.priceFactor
+  
+  Then apply promotions from ms-promotion.
+  Store final calculation in PricingSnapshot
+  to prevent price drift.
 end note
 
-note bottom of MS_ROUTE
-  SeatLock rules:
-  - Unique (tripId, seatNo) when status in {HELD, COMMITTED}
-  - TTL via expiresAt; background job to release EXPIRED
-  - Idempotency by idempotencyKey
+note bottom of SeatLock
+  **SeatLock Rules:**
+  - Composite unique: (tripId, seatNo)
+    when status ∈ {HELD, COMMITTED}
+  - TTL via expiresAt
+  - Background job releases EXPIRED locks
+  - Idempotency via idempotencyKey
+  - bookingId for audit trail
 end note
 
 note bottom of MS_BOOK
-  Saga & Outbox:
-  - Use Outbox in each service; publish after DB commit
-  - BookingCreated -> ReserveSeats (ms-route)
-  - SeatsReserved -> proceed payment
-  - PaymentSucceeded -> ConfirmBooking + TicketIssued
-  - PaymentFailed/Timeout -> ReleaseSeats
-  - Webhooks are idempotent via PaymentWebhookLog.payloadHash
+  **Saga Pattern (Choreography):**
+  
+  1. User initiates booking
+  2. Booking service: create DRAFT booking
+  3. → Reserve seats (SeatLock in ms-route)
+  4. ← SeatsReserved event
+  5. Update status to AWAITING_PAYMENT
+  6. → Initiate payment
+  7. ← PaymentSucceeded webhook
+  8. Confirm booking, issue tickets
+  9. → Commit seat locks
+  
+  **Rollback scenarios:**
+  - Payment timeout/failure → Release seats
+  - Webhooks idempotent via payloadHash
 end note
 
 note bottom of BaseEntity
-  Soft delete for all entities:
-  - isDeleted
-  - deletedAt
-  - deletedBy
-  Default queries filter isDeleted = false.
-  Consider adding optimistic locking (version).
+  **Soft Delete Pattern:**
+  All entities support soft delete:
+  - isDeleted flag
+  - deletedAt timestamp
+  - deletedBy user reference
+  
+  Default queries filter isDeleted = false
+  Consider adding optimistic locking (version field)
+end note
+
+note top of KEYCLOAK
+  **Keycloak manages:**
+  - User authentication
+  - Role/permission management
+  - JWT token issuance
+  - Single Sign-On (SSO)
 end note
 
 @enduml
-
