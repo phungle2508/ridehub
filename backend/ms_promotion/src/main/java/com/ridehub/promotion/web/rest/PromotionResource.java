@@ -7,6 +7,8 @@ import com.ridehub.promotion.service.criteria.PromotionCriteria;
 import com.ridehub.promotion.service.dto.PromotionDTO;
 import com.ridehub.promotion.service.dto.PromotionDetailDTO;
 import com.ridehub.promotion.web.rest.errors.BadRequestAlertException;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -234,5 +236,18 @@ public class PromotionResource {
         HttpHeaders headers = PaginationUtil
                 .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/detail-by-code")
+    public ResponseEntity<PromotionDetailDTO> getPromotionDetailByCode(@RequestParam String code) {
+        LOG.debug("REST request to get Promotion detail : {}", code);
+
+        // If your service throws EntityNotFoundException on missing ID:
+        try {
+            PromotionDetailDTO dto = promotionQueryService.getDetailByIdByCode(code);
+            return ResponseEntity.ok(dto);
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
