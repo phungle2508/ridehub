@@ -56,7 +56,7 @@ public class TicketAsserts {
             .satisfies(a -> assertThat(a.getCheckedIn()).as("check checkedIn").isEqualTo(expected.getCheckedIn()))
             .satisfies(a -> assertThat(a.getTripId()).as("check tripId").isEqualTo(expected.getTripId()))
             .satisfies(a -> assertThat(a.getRouteId()).as("check routeId").isEqualTo(expected.getRouteId()))
-            .satisfies(a -> assertThat(a.getTripSeatId()).as("check tripSeatId").isEqualTo(expected.getTripSeatId()))
+            .satisfies(a -> assertThat(a.getSeatId()).as("check seatId").isEqualTo(expected.getSeatId()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
             .satisfies(a -> assertThat(a.getIsDeleted()).as("check isDeleted").isEqualTo(expected.getIsDeleted()))

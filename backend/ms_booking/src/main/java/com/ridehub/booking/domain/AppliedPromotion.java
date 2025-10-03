@@ -29,9 +29,8 @@ public class AppliedPromotion implements Serializable {
     private Long id;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "promotion_id", length = 36, nullable = false)
-    private UUID promotionId;
+    @Column(name = "promotion_id", nullable = false)
+    private Long promotionId;
 
     @Column(name = "promotion_code")
     private String promotionCode;
@@ -90,16 +89,16 @@ public class AppliedPromotion implements Serializable {
         this.id = id;
     }
 
-    public UUID getPromotionId() {
+    public Long getPromotionId() {
         return this.promotionId;
     }
 
-    public AppliedPromotion promotionId(UUID promotionId) {
+    public AppliedPromotion promotionId(Long promotionId) {
         this.setPromotionId(promotionId);
         return this;
     }
 
-    public void setPromotionId(UUID promotionId) {
+    public void setPromotionId(Long promotionId) {
         this.promotionId = promotionId;
     }
 
@@ -283,7 +282,7 @@ public class AppliedPromotion implements Serializable {
     public String toString() {
         return "AppliedPromotion{" +
             "id=" + getId() +
-            ", promotionId='" + getPromotionId() + "'" +
+            ", promotionId=" + getPromotionId() +
             ", promotionCode='" + getPromotionCode() + "'" +
             ", policyType='" + getPolicyType() + "'" +
             ", percent=" + getPercent() +

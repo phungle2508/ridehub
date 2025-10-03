@@ -31,7 +31,7 @@ public class BookingDTO implements Serializable {
     private Instant bookedAt;
 
     @NotNull
-    private UUID customerId;
+    private Long customerId;
 
     @NotNull
     private Instant createdAt;
@@ -96,11 +96,11 @@ public class BookingDTO implements Serializable {
         this.bookedAt = bookedAt;
     }
 
-    public UUID getCustomerId() {
+    public Long getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(UUID customerId) {
+    public void setCustomerId(Long customerId) {
         this.customerId = customerId;
     }
 
@@ -191,7 +191,7 @@ public class BookingDTO implements Serializable {
             ", quantity=" + getQuantity() +
             ", totalAmount=" + getTotalAmount() +
             ", bookedAt='" + getBookedAt() + "'" +
-            ", customerId='" + getCustomerId() + "'" +
+            ", customerId=" + getCustomerId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

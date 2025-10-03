@@ -7,32 +7,38 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity AppliedPromotion.
+        Added the entity Ticket.
     -->
-    <changeSet id="20250928081633-1" author="jhipster">
-        <createTable tableName="applied_promotion">
+    <changeSet id="20251003111522-1" author="jhipster">
+        <createTable tableName="ticket">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="promotion_id" type="${uuidType}">
+            <column name="ticket_code" type="varchar(40)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_ticket__ticket_code" />
+            </column>
+            <column name="price" type="decimal(21,2)">
                 <constraints nullable="false" />
             </column>
-            <column name="promotion_code" type="varchar(255)">
+            <column name="qr_code" type="varchar(256)">
                 <constraints nullable="true" />
             </column>
-            <column name="policy_type" type="varchar(255)">
+            <column name="time_from" type="${datetimeType}">
                 <constraints nullable="true" />
             </column>
-            <column name="percent" type="integer">
+            <column name="time_to" type="${datetimeType}">
                 <constraints nullable="true" />
             </column>
-            <column name="max_off" type="decimal(21,2)">
+            <column name="checked_in" type="boolean">
                 <constraints nullable="true" />
             </column>
-            <column name="discount_amount" type="decimal(21,2)">
+            <column name="trip_id" type="bigint">
                 <constraints nullable="false" />
             </column>
-            <column name="applied_at" type="${datetimeType}">
+            <column name="route_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="seat_id" type="bigint">
                 <constraints nullable="false" />
             </column>
             <column name="created_at" type="${datetimeType}">
@@ -50,15 +56,19 @@
             <column name="deleted_by" type="${uuidType}">
                 <constraints nullable="true" />
             </column>
+            <column name="qr_code_img_id" type="bigint">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_ticket__qr_code_img_id" />
+            </column>
             <column name="booking_id" type="bigint">
                 <constraints nullable="false" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="applied_promotion" columnName="applied_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="applied_promotion" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="applied_promotion" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="applied_promotion" columnName="deleted_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="ticket" columnName="time_from" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="ticket" columnName="time_to" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="ticket" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="ticket" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="ticket" columnName="deleted_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -71,20 +81,22 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250928081633-1-data" author="jhipster" context="faker">
+    <changeSet id="20251003111522-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/applied_promotion.csv"
+                  file="config/liquibase/fake-data/ticket.csv"
                   separator=";"
-                  tableName="applied_promotion"
+                  tableName="ticket"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="promotion_id" type="string"/>
-            <column name="promotion_code" type="string"/>
-            <column name="policy_type" type="string"/>
-            <column name="percent" type="numeric"/>
-            <column name="max_off" type="numeric"/>
-            <column name="discount_amount" type="numeric"/>
-            <column name="applied_at" type="date"/>
+            <column name="ticket_code" type="string"/>
+            <column name="price" type="numeric"/>
+            <column name="qr_code" type="string"/>
+            <column name="time_from" type="date"/>
+            <column name="time_to" type="date"/>
+            <column name="checked_in" type="boolean"/>
+            <column name="trip_id" type="numeric"/>
+            <column name="route_id" type="numeric"/>
+            <column name="seat_id" type="numeric"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
             <column name="is_deleted" type="boolean"/>

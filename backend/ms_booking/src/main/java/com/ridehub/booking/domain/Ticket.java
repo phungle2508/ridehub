@@ -51,19 +51,16 @@ public class Ticket implements Serializable {
     private Boolean checkedIn;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "trip_id", length = 36, nullable = false)
-    private UUID tripId;
+    @Column(name = "trip_id", nullable = false)
+    private Long tripId;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "route_id", length = 36, nullable = false)
-    private UUID routeId;
+    @Column(name = "route_id", nullable = false)
+    private Long routeId;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "trip_seat_id", length = 36, nullable = false)
-    private UUID tripSeatId;
+    @Column(name = "seat_id", nullable = false)
+    private Long seatId;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -185,43 +182,43 @@ public class Ticket implements Serializable {
         this.checkedIn = checkedIn;
     }
 
-    public UUID getTripId() {
+    public Long getTripId() {
         return this.tripId;
     }
 
-    public Ticket tripId(UUID tripId) {
+    public Ticket tripId(Long tripId) {
         this.setTripId(tripId);
         return this;
     }
 
-    public void setTripId(UUID tripId) {
+    public void setTripId(Long tripId) {
         this.tripId = tripId;
     }
 
-    public UUID getRouteId() {
+    public Long getRouteId() {
         return this.routeId;
     }
 
-    public Ticket routeId(UUID routeId) {
+    public Ticket routeId(Long routeId) {
         this.setRouteId(routeId);
         return this;
     }
 
-    public void setRouteId(UUID routeId) {
+    public void setRouteId(Long routeId) {
         this.routeId = routeId;
     }
 
-    public UUID getTripSeatId() {
-        return this.tripSeatId;
+    public Long getSeatId() {
+        return this.seatId;
     }
 
-    public Ticket tripSeatId(UUID tripSeatId) {
-        this.setTripSeatId(tripSeatId);
+    public Ticket seatId(Long seatId) {
+        this.setSeatId(seatId);
         return this;
     }
 
-    public void setTripSeatId(UUID tripSeatId) {
-        this.tripSeatId = tripSeatId;
+    public void setSeatId(Long seatId) {
+        this.seatId = seatId;
     }
 
     public Instant getCreatedAt() {
@@ -345,9 +342,9 @@ public class Ticket implements Serializable {
             ", timeFrom='" + getTimeFrom() + "'" +
             ", timeTo='" + getTimeTo() + "'" +
             ", checkedIn='" + getCheckedIn() + "'" +
-            ", tripId='" + getTripId() + "'" +
-            ", routeId='" + getRouteId() + "'" +
-            ", tripSeatId='" + getTripSeatId() + "'" +
+            ", tripId=" + getTripId() +
+            ", routeId=" + getRouteId() +
+            ", seatId=" + getSeatId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

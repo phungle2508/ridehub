@@ -24,7 +24,7 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
 
     private LongFilter id;
 
-    private UUIDFilter promotionId;
+    private LongFilter promotionId;
 
     private StringFilter promotionCode;
 
@@ -56,7 +56,7 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
 
     public AppliedPromotionCriteria(AppliedPromotionCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.promotionId = other.optionalPromotionId().map(UUIDFilter::copy).orElse(null);
+        this.promotionId = other.optionalPromotionId().map(LongFilter::copy).orElse(null);
         this.promotionCode = other.optionalPromotionCode().map(StringFilter::copy).orElse(null);
         this.policyType = other.optionalPolicyType().map(StringFilter::copy).orElse(null);
         this.percent = other.optionalPercent().map(IntegerFilter::copy).orElse(null);
@@ -96,22 +96,22 @@ public class AppliedPromotionCriteria implements Serializable, Criteria {
         this.id = id;
     }
 
-    public UUIDFilter getPromotionId() {
+    public LongFilter getPromotionId() {
         return promotionId;
     }
 
-    public Optional<UUIDFilter> optionalPromotionId() {
+    public Optional<LongFilter> optionalPromotionId() {
         return Optional.ofNullable(promotionId);
     }
 
-    public UUIDFilter promotionId() {
+    public LongFilter promotionId() {
         if (promotionId == null) {
-            setPromotionId(new UUIDFilter());
+            setPromotionId(new LongFilter());
         }
         return promotionId;
     }
 
-    public void setPromotionId(UUIDFilter promotionId) {
+    public void setPromotionId(LongFilter promotionId) {
         this.promotionId = promotionId;
     }
 

@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity PricingSnapshot.
     -->
-    <changeSet id="20250928081733-2" author="jhipster">
+    <changeSet id="20251003111922-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="booking_id"
                                  baseTableName="pricing_snapshot"

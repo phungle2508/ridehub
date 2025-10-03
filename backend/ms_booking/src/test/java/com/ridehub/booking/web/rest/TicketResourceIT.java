@@ -61,14 +61,17 @@ class TicketResourceIT {
     private static final Boolean DEFAULT_CHECKED_IN = false;
     private static final Boolean UPDATED_CHECKED_IN = true;
 
-    private static final UUID DEFAULT_TRIP_ID = UUID.randomUUID();
-    private static final UUID UPDATED_TRIP_ID = UUID.randomUUID();
+    private static final Long DEFAULT_TRIP_ID = 1L;
+    private static final Long UPDATED_TRIP_ID = 2L;
+    private static final Long SMALLER_TRIP_ID = 1L - 1L;
 
-    private static final UUID DEFAULT_ROUTE_ID = UUID.randomUUID();
-    private static final UUID UPDATED_ROUTE_ID = UUID.randomUUID();
+    private static final Long DEFAULT_ROUTE_ID = 1L;
+    private static final Long UPDATED_ROUTE_ID = 2L;
+    private static final Long SMALLER_ROUTE_ID = 1L - 1L;
 
-    private static final UUID DEFAULT_TRIP_SEAT_ID = UUID.randomUUID();
-    private static final UUID UPDATED_TRIP_SEAT_ID = UUID.randomUUID();
+    private static final Long DEFAULT_SEAT_ID = 1L;
+    private static final Long UPDATED_SEAT_ID = 2L;
+    private static final Long SMALLER_SEAT_ID = 1L - 1L;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -126,7 +129,7 @@ class TicketResourceIT {
             .checkedIn(DEFAULT_CHECKED_IN)
             .tripId(DEFAULT_TRIP_ID)
             .routeId(DEFAULT_ROUTE_ID)
-            .tripSeatId(DEFAULT_TRIP_SEAT_ID)
+            .seatId(DEFAULT_SEAT_ID)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -161,7 +164,7 @@ class TicketResourceIT {
             .checkedIn(UPDATED_CHECKED_IN)
             .tripId(UPDATED_TRIP_ID)
             .routeId(UPDATED_ROUTE_ID)
-            .tripSeatId(UPDATED_TRIP_SEAT_ID)
+            .seatId(UPDATED_SEAT_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -305,10 +308,10 @@ class TicketResourceIT {
 
     @Test
     @Transactional
-    void checkTripSeatIdIsRequired() throws Exception {
+    void checkSeatIdIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null
-        ticket.setTripSeatId(null);
+        ticket.setSeatId(null);
 
         // Create the Ticket, which fails.
         TicketDTO ticketDTO = ticketMapper.toDto(ticket);
@@ -355,9 +358,9 @@ class TicketResourceIT {
             .andExpect(jsonPath("$.[*].timeFrom").value(hasItem(DEFAULT_TIME_FROM.toString())))
             .andExpect(jsonPath("$.[*].timeTo").value(hasItem(DEFAULT_TIME_TO.toString())))
             .andExpect(jsonPath("$.[*].checkedIn").value(hasItem(DEFAULT_CHECKED_IN)))
-            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.toString())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
-            .andExpect(jsonPath("$.[*].tripSeatId").value(hasItem(DEFAULT_TRIP_SEAT_ID.toString())))
+            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.intValue())))
+            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.intValue())))
+            .andExpect(jsonPath("$.[*].seatId").value(hasItem(DEFAULT_SEAT_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -383,9 +386,9 @@ class TicketResourceIT {
             .andExpect(jsonPath("$.timeFrom").value(DEFAULT_TIME_FROM.toString()))
             .andExpect(jsonPath("$.timeTo").value(DEFAULT_TIME_TO.toString()))
             .andExpect(jsonPath("$.checkedIn").value(DEFAULT_CHECKED_IN))
-            .andExpect(jsonPath("$.tripId").value(DEFAULT_TRIP_ID.toString()))
-            .andExpect(jsonPath("$.routeId").value(DEFAULT_ROUTE_ID.toString()))
-            .andExpect(jsonPath("$.tripSeatId").value(DEFAULT_TRIP_SEAT_ID.toString()))
+            .andExpect(jsonPath("$.tripId").value(DEFAULT_TRIP_ID.intValue()))
+            .andExpect(jsonPath("$.routeId").value(DEFAULT_ROUTE_ID.intValue()))
+            .andExpect(jsonPath("$.seatId").value(DEFAULT_SEAT_ID.intValue()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -700,6 +703,46 @@ class TicketResourceIT {
 
     @Test
     @Transactional
+    void getAllTicketsByTripIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where tripId is greater than or equal to
+        defaultTicketFiltering("tripId.greaterThanOrEqual=" + DEFAULT_TRIP_ID, "tripId.greaterThanOrEqual=" + UPDATED_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByTripIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where tripId is less than or equal to
+        defaultTicketFiltering("tripId.lessThanOrEqual=" + DEFAULT_TRIP_ID, "tripId.lessThanOrEqual=" + SMALLER_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByTripIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where tripId is less than
+        defaultTicketFiltering("tripId.lessThan=" + UPDATED_TRIP_ID, "tripId.lessThan=" + DEFAULT_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByTripIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where tripId is greater than
+        defaultTicketFiltering("tripId.greaterThan=" + SMALLER_TRIP_ID, "tripId.greaterThan=" + DEFAULT_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
     void getAllTicketsByRouteIdIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedTicket = ticketRepository.saveAndFlush(ticket);
@@ -730,35 +773,112 @@ class TicketResourceIT {
 
     @Test
     @Transactional
-    void getAllTicketsByTripSeatIdIsEqualToSomething() throws Exception {
+    void getAllTicketsByRouteIdIsGreaterThanOrEqualToSomething() throws Exception {
         // Initialize the database
         insertedTicket = ticketRepository.saveAndFlush(ticket);
 
-        // Get all the ticketList where tripSeatId equals to
-        defaultTicketFiltering("tripSeatId.equals=" + DEFAULT_TRIP_SEAT_ID, "tripSeatId.equals=" + UPDATED_TRIP_SEAT_ID);
+        // Get all the ticketList where routeId is greater than or equal to
+        defaultTicketFiltering("routeId.greaterThanOrEqual=" + DEFAULT_ROUTE_ID, "routeId.greaterThanOrEqual=" + UPDATED_ROUTE_ID);
     }
 
     @Test
     @Transactional
-    void getAllTicketsByTripSeatIdIsInShouldWork() throws Exception {
+    void getAllTicketsByRouteIdIsLessThanOrEqualToSomething() throws Exception {
         // Initialize the database
         insertedTicket = ticketRepository.saveAndFlush(ticket);
 
-        // Get all the ticketList where tripSeatId in
-        defaultTicketFiltering(
-            "tripSeatId.in=" + DEFAULT_TRIP_SEAT_ID + "," + UPDATED_TRIP_SEAT_ID,
-            "tripSeatId.in=" + UPDATED_TRIP_SEAT_ID
-        );
+        // Get all the ticketList where routeId is less than or equal to
+        defaultTicketFiltering("routeId.lessThanOrEqual=" + DEFAULT_ROUTE_ID, "routeId.lessThanOrEqual=" + SMALLER_ROUTE_ID);
     }
 
     @Test
     @Transactional
-    void getAllTicketsByTripSeatIdIsNullOrNotNull() throws Exception {
+    void getAllTicketsByRouteIdIsLessThanSomething() throws Exception {
         // Initialize the database
         insertedTicket = ticketRepository.saveAndFlush(ticket);
 
-        // Get all the ticketList where tripSeatId is not null
-        defaultTicketFiltering("tripSeatId.specified=true", "tripSeatId.specified=false");
+        // Get all the ticketList where routeId is less than
+        defaultTicketFiltering("routeId.lessThan=" + UPDATED_ROUTE_ID, "routeId.lessThan=" + DEFAULT_ROUTE_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsByRouteIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where routeId is greater than
+        defaultTicketFiltering("routeId.greaterThan=" + SMALLER_ROUTE_ID, "routeId.greaterThan=" + DEFAULT_ROUTE_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatId equals to
+        defaultTicketFiltering("seatId.equals=" + DEFAULT_SEAT_ID, "seatId.equals=" + UPDATED_SEAT_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatId in
+        defaultTicketFiltering("seatId.in=" + DEFAULT_SEAT_ID + "," + UPDATED_SEAT_ID, "seatId.in=" + UPDATED_SEAT_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatId is not null
+        defaultTicketFiltering("seatId.specified=true", "seatId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatId is greater than or equal to
+        defaultTicketFiltering("seatId.greaterThanOrEqual=" + DEFAULT_SEAT_ID, "seatId.greaterThanOrEqual=" + UPDATED_SEAT_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatId is less than or equal to
+        defaultTicketFiltering("seatId.lessThanOrEqual=" + DEFAULT_SEAT_ID, "seatId.lessThanOrEqual=" + SMALLER_SEAT_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatId is less than
+        defaultTicketFiltering("seatId.lessThan=" + UPDATED_SEAT_ID, "seatId.lessThan=" + DEFAULT_SEAT_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllTicketsBySeatIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedTicket = ticketRepository.saveAndFlush(ticket);
+
+        // Get all the ticketList where seatId is greater than
+        defaultTicketFiltering("seatId.greaterThan=" + SMALLER_SEAT_ID, "seatId.greaterThan=" + DEFAULT_SEAT_ID);
     }
 
     @Test
@@ -975,9 +1095,9 @@ class TicketResourceIT {
             .andExpect(jsonPath("$.[*].timeFrom").value(hasItem(DEFAULT_TIME_FROM.toString())))
             .andExpect(jsonPath("$.[*].timeTo").value(hasItem(DEFAULT_TIME_TO.toString())))
             .andExpect(jsonPath("$.[*].checkedIn").value(hasItem(DEFAULT_CHECKED_IN)))
-            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.toString())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
-            .andExpect(jsonPath("$.[*].tripSeatId").value(hasItem(DEFAULT_TRIP_SEAT_ID.toString())))
+            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.intValue())))
+            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.intValue())))
+            .andExpect(jsonPath("$.[*].seatId").value(hasItem(DEFAULT_SEAT_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -1039,7 +1159,7 @@ class TicketResourceIT {
             .checkedIn(UPDATED_CHECKED_IN)
             .tripId(UPDATED_TRIP_ID)
             .routeId(UPDATED_ROUTE_ID)
-            .tripSeatId(UPDATED_TRIP_SEAT_ID)
+            .seatId(UPDATED_SEAT_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -1141,7 +1261,7 @@ class TicketResourceIT {
             .ticketCode(UPDATED_TICKET_CODE)
             .qrCode(UPDATED_QR_CODE)
             .routeId(UPDATED_ROUTE_ID)
-            .tripSeatId(UPDATED_TRIP_SEAT_ID)
+            .seatId(UPDATED_SEAT_ID)
             .deletedAt(UPDATED_DELETED_AT);
 
         restTicketMockMvc
@@ -1180,7 +1300,7 @@ class TicketResourceIT {
             .checkedIn(UPDATED_CHECKED_IN)
             .tripId(UPDATED_TRIP_ID)
             .routeId(UPDATED_ROUTE_ID)
-            .tripSeatId(UPDATED_TRIP_SEAT_ID)
+            .seatId(UPDATED_SEAT_ID)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

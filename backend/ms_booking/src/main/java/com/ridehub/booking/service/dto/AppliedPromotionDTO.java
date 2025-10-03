@@ -16,7 +16,7 @@ public class AppliedPromotionDTO implements Serializable {
     private Long id;
 
     @NotNull
-    private UUID promotionId;
+    private Long promotionId;
 
     private String promotionCode;
 
@@ -54,11 +54,11 @@ public class AppliedPromotionDTO implements Serializable {
         this.id = id;
     }
 
-    public UUID getPromotionId() {
+    public Long getPromotionId() {
         return promotionId;
     }
 
-    public void setPromotionId(UUID promotionId) {
+    public void setPromotionId(Long promotionId) {
         this.promotionId = promotionId;
     }
 
@@ -184,7 +184,7 @@ public class AppliedPromotionDTO implements Serializable {
     public String toString() {
         return "AppliedPromotionDTO{" +
             "id=" + getId() +
-            ", promotionId='" + getPromotionId() + "'" +
+            ", promotionId=" + getPromotionId() +
             ", promotionCode='" + getPromotionCode() + "'" +
             ", policyType='" + getPolicyType() + "'" +
             ", percent=" + getPercent() +

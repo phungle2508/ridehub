@@ -79,7 +79,7 @@ public class BookingQueryService extends QueryService<Booking> {
                 buildRangeSpecification(criteria.getQuantity(), Booking_.quantity),
                 buildRangeSpecification(criteria.getTotalAmount(), Booking_.totalAmount),
                 buildRangeSpecification(criteria.getBookedAt(), Booking_.bookedAt),
-                buildSpecification(criteria.getCustomerId(), Booking_.customerId),
+                buildRangeSpecification(criteria.getCustomerId(), Booking_.customerId),
                 buildRangeSpecification(criteria.getCreatedAt(), Booking_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), Booking_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), Booking_.isDeleted),

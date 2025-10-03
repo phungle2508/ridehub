@@ -52,9 +52,8 @@ public class Booking implements Serializable {
     private Instant bookedAt;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "customer_id", length = 36, nullable = false)
-    private UUID customerId;
+    @Column(name = "customer_id", nullable = false)
+    private Long customerId;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -178,16 +177,16 @@ public class Booking implements Serializable {
         this.bookedAt = bookedAt;
     }
 
-    public UUID getCustomerId() {
+    public Long getCustomerId() {
         return this.customerId;
     }
 
-    public Booking customerId(UUID customerId) {
+    public Booking customerId(Long customerId) {
         this.setCustomerId(customerId);
         return this;
     }
 
-    public void setCustomerId(UUID customerId) {
+    public void setCustomerId(Long customerId) {
         this.customerId = customerId;
     }
 
@@ -404,7 +403,7 @@ public class Booking implements Serializable {
             ", quantity=" + getQuantity() +
             ", totalAmount=" + getTotalAmount() +
             ", bookedAt='" + getBookedAt() + "'" +
-            ", customerId='" + getCustomerId() + "'" +
+            ", customerId=" + getCustomerId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

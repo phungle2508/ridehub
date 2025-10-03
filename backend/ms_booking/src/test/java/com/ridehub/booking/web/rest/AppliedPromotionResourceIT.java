@@ -41,8 +41,9 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class AppliedPromotionResourceIT {
 
-    private static final UUID DEFAULT_PROMOTION_ID = UUID.randomUUID();
-    private static final UUID UPDATED_PROMOTION_ID = UUID.randomUUID();
+    private static final Long DEFAULT_PROMOTION_ID = 1L;
+    private static final Long UPDATED_PROMOTION_ID = 2L;
+    private static final Long SMALLER_PROMOTION_ID = 1L - 1L;
 
     private static final String DEFAULT_PROMOTION_CODE = "AAAAAAAAAA";
     private static final String UPDATED_PROMOTION_CODE = "BBBBBBBBBB";
@@ -321,7 +322,7 @@ class AppliedPromotionResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(appliedPromotion.getId().intValue())))
-            .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.toString())))
+            .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.intValue())))
             .andExpect(jsonPath("$.[*].promotionCode").value(hasItem(DEFAULT_PROMOTION_CODE)))
             .andExpect(jsonPath("$.[*].policyType").value(hasItem(DEFAULT_POLICY_TYPE)))
             .andExpect(jsonPath("$.[*].percent").value(hasItem(DEFAULT_PERCENT)))
@@ -347,7 +348,7 @@ class AppliedPromotionResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(appliedPromotion.getId().intValue()))
-            .andExpect(jsonPath("$.promotionId").value(DEFAULT_PROMOTION_ID.toString()))
+            .andExpect(jsonPath("$.promotionId").value(DEFAULT_PROMOTION_ID.intValue()))
             .andExpect(jsonPath("$.promotionCode").value(DEFAULT_PROMOTION_CODE))
             .andExpect(jsonPath("$.policyType").value(DEFAULT_POLICY_TYPE))
             .andExpect(jsonPath("$.percent").value(DEFAULT_PERCENT))
@@ -407,6 +408,55 @@ class AppliedPromotionResourceIT {
 
         // Get all the appliedPromotionList where promotionId is not null
         defaultAppliedPromotionFiltering("promotionId.specified=true", "promotionId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionId is greater than or equal to
+        defaultAppliedPromotionFiltering(
+            "promotionId.greaterThanOrEqual=" + DEFAULT_PROMOTION_ID,
+            "promotionId.greaterThanOrEqual=" + UPDATED_PROMOTION_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionId is less than or equal to
+        defaultAppliedPromotionFiltering(
+            "promotionId.lessThanOrEqual=" + DEFAULT_PROMOTION_ID,
+            "promotionId.lessThanOrEqual=" + SMALLER_PROMOTION_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionId is less than
+        defaultAppliedPromotionFiltering("promotionId.lessThan=" + UPDATED_PROMOTION_ID, "promotionId.lessThan=" + DEFAULT_PROMOTION_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllAppliedPromotionsByPromotionIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedAppliedPromotion = appliedPromotionRepository.saveAndFlush(appliedPromotion);
+
+        // Get all the appliedPromotionList where promotionId is greater than
+        defaultAppliedPromotionFiltering(
+            "promotionId.greaterThan=" + SMALLER_PROMOTION_ID,
+            "promotionId.greaterThan=" + DEFAULT_PROMOTION_ID
+        );
     }
 
     @Test
@@ -989,7 +1039,7 @@ class AppliedPromotionResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(appliedPromotion.getId().intValue())))
-            .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.toString())))
+            .andExpect(jsonPath("$.[*].promotionId").value(hasItem(DEFAULT_PROMOTION_ID.intValue())))
             .andExpect(jsonPath("$.[*].promotionCode").value(hasItem(DEFAULT_PROMOTION_CODE)))
             .andExpect(jsonPath("$.[*].policyType").value(hasItem(DEFAULT_POLICY_TYPE)))
             .andExpect(jsonPath("$.[*].percent").value(hasItem(DEFAULT_PERCENT)))

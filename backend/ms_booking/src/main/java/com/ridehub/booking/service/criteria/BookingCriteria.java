@@ -52,7 +52,7 @@ public class BookingCriteria implements Serializable, Criteria {
 
     private InstantFilter bookedAt;
 
-    private UUIDFilter customerId;
+    private LongFilter customerId;
 
     private InstantFilter createdAt;
 
@@ -85,7 +85,7 @@ public class BookingCriteria implements Serializable, Criteria {
         this.quantity = other.optionalQuantity().map(IntegerFilter::copy).orElse(null);
         this.totalAmount = other.optionalTotalAmount().map(BigDecimalFilter::copy).orElse(null);
         this.bookedAt = other.optionalBookedAt().map(InstantFilter::copy).orElse(null);
-        this.customerId = other.optionalCustomerId().map(UUIDFilter::copy).orElse(null);
+        this.customerId = other.optionalCustomerId().map(LongFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -218,22 +218,22 @@ public class BookingCriteria implements Serializable, Criteria {
         this.bookedAt = bookedAt;
     }
 
-    public UUIDFilter getCustomerId() {
+    public LongFilter getCustomerId() {
         return customerId;
     }
 
-    public Optional<UUIDFilter> optionalCustomerId() {
+    public Optional<LongFilter> optionalCustomerId() {
         return Optional.ofNullable(customerId);
     }
 
-    public UUIDFilter customerId() {
+    public LongFilter customerId() {
         if (customerId == null) {
-            setCustomerId(new UUIDFilter());
+            setCustomerId(new LongFilter());
         }
         return customerId;
     }
 
-    public void setCustomerId(UUIDFilter customerId) {
+    public void setCustomerId(LongFilter customerId) {
         this.customerId = customerId;
     }
 

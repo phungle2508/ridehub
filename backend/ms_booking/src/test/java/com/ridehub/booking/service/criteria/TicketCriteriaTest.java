@@ -84,7 +84,7 @@ class TicketCriteriaTest {
         ticketCriteria.checkedIn();
         ticketCriteria.tripId();
         ticketCriteria.routeId();
-        ticketCriteria.tripSeatId();
+        ticketCriteria.seatId();
         ticketCriteria.createdAt();
         ticketCriteria.updatedAt();
         ticketCriteria.isDeleted();
@@ -107,7 +107,7 @@ class TicketCriteriaTest {
                 condition.apply(criteria.getCheckedIn()) &&
                 condition.apply(criteria.getTripId()) &&
                 condition.apply(criteria.getRouteId()) &&
-                condition.apply(criteria.getTripSeatId()) &&
+                condition.apply(criteria.getSeatId()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted()) &&
@@ -132,7 +132,7 @@ class TicketCriteriaTest {
                 condition.apply(criteria.getCheckedIn(), copy.getCheckedIn()) &&
                 condition.apply(criteria.getTripId(), copy.getTripId()) &&
                 condition.apply(criteria.getRouteId(), copy.getRouteId()) &&
-                condition.apply(criteria.getTripSeatId(), copy.getTripSeatId()) &&
+                condition.apply(criteria.getSeatId(), copy.getSeatId()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&

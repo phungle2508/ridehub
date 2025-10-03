@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity Booking.
     -->
-    <changeSet id="20250928081233-2" author="jhipster">
+    <changeSet id="20251003111422-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="invoice_id"
                                  baseTableName="booking"

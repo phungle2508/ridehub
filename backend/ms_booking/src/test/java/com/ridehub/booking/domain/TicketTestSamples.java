@@ -14,9 +14,9 @@ public class TicketTestSamples {
             .id(1L)
             .ticketCode("ticketCode1")
             .qrCode("qrCode1")
-            .tripId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
-            .routeId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
-            .tripSeatId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
+            .tripId(1L)
+            .routeId(1L)
+            .seatId(1L)
             .deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
     }
 
@@ -25,9 +25,9 @@ public class TicketTestSamples {
             .id(2L)
             .ticketCode("ticketCode2")
             .qrCode("qrCode2")
-            .tripId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
-            .routeId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
-            .tripSeatId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
+            .tripId(2L)
+            .routeId(2L)
+            .seatId(2L)
             .deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
     }
 
@@ -36,9 +36,9 @@ public class TicketTestSamples {
             .id(longCount.incrementAndGet())
             .ticketCode(UUID.randomUUID().toString())
             .qrCode(UUID.randomUUID().toString())
-            .tripId(UUID.randomUUID())
-            .routeId(UUID.randomUUID())
-            .tripSeatId(UUID.randomUUID())
+            .tripId(longCount.incrementAndGet())
+            .routeId(longCount.incrementAndGet())
+            .seatId(longCount.incrementAndGet())
             .deletedBy(UUID.randomUUID());
     }
 }

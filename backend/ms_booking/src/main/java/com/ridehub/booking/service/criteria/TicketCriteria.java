@@ -36,11 +36,11 @@ public class TicketCriteria implements Serializable, Criteria {
 
     private BooleanFilter checkedIn;
 
-    private UUIDFilter tripId;
+    private LongFilter tripId;
 
-    private UUIDFilter routeId;
+    private LongFilter routeId;
 
-    private UUIDFilter tripSeatId;
+    private LongFilter seatId;
 
     private InstantFilter createdAt;
 
@@ -68,9 +68,9 @@ public class TicketCriteria implements Serializable, Criteria {
         this.timeFrom = other.optionalTimeFrom().map(InstantFilter::copy).orElse(null);
         this.timeTo = other.optionalTimeTo().map(InstantFilter::copy).orElse(null);
         this.checkedIn = other.optionalCheckedIn().map(BooleanFilter::copy).orElse(null);
-        this.tripId = other.optionalTripId().map(UUIDFilter::copy).orElse(null);
-        this.routeId = other.optionalRouteId().map(UUIDFilter::copy).orElse(null);
-        this.tripSeatId = other.optionalTripSeatId().map(UUIDFilter::copy).orElse(null);
+        this.tripId = other.optionalTripId().map(LongFilter::copy).orElse(null);
+        this.routeId = other.optionalRouteId().map(LongFilter::copy).orElse(null);
+        this.seatId = other.optionalSeatId().map(LongFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -219,61 +219,61 @@ public class TicketCriteria implements Serializable, Criteria {
         this.checkedIn = checkedIn;
     }
 
-    public UUIDFilter getTripId() {
+    public LongFilter getTripId() {
         return tripId;
     }
 
-    public Optional<UUIDFilter> optionalTripId() {
+    public Optional<LongFilter> optionalTripId() {
         return Optional.ofNullable(tripId);
     }
 
-    public UUIDFilter tripId() {
+    public LongFilter tripId() {
         if (tripId == null) {
-            setTripId(new UUIDFilter());
+            setTripId(new LongFilter());
         }
         return tripId;
     }
 
-    public void setTripId(UUIDFilter tripId) {
+    public void setTripId(LongFilter tripId) {
         this.tripId = tripId;
     }
 
-    public UUIDFilter getRouteId() {
+    public LongFilter getRouteId() {
         return routeId;
     }
 
-    public Optional<UUIDFilter> optionalRouteId() {
+    public Optional<LongFilter> optionalRouteId() {
         return Optional.ofNullable(routeId);
     }
 
-    public UUIDFilter routeId() {
+    public LongFilter routeId() {
         if (routeId == null) {
-            setRouteId(new UUIDFilter());
+            setRouteId(new LongFilter());
         }
         return routeId;
     }
 
-    public void setRouteId(UUIDFilter routeId) {
+    public void setRouteId(LongFilter routeId) {
         this.routeId = routeId;
     }
 
-    public UUIDFilter getTripSeatId() {
-        return tripSeatId;
+    public LongFilter getSeatId() {
+        return seatId;
     }
 
-    public Optional<UUIDFilter> optionalTripSeatId() {
-        return Optional.ofNullable(tripSeatId);
+    public Optional<LongFilter> optionalSeatId() {
+        return Optional.ofNullable(seatId);
     }
 
-    public UUIDFilter tripSeatId() {
-        if (tripSeatId == null) {
-            setTripSeatId(new UUIDFilter());
+    public LongFilter seatId() {
+        if (seatId == null) {
+            setSeatId(new LongFilter());
         }
-        return tripSeatId;
+        return seatId;
     }
 
-    public void setTripSeatId(UUIDFilter tripSeatId) {
-        this.tripSeatId = tripSeatId;
+    public void setSeatId(LongFilter seatId) {
+        this.seatId = seatId;
     }
 
     public InstantFilter getCreatedAt() {
@@ -447,7 +447,7 @@ public class TicketCriteria implements Serializable, Criteria {
             Objects.equals(checkedIn, that.checkedIn) &&
             Objects.equals(tripId, that.tripId) &&
             Objects.equals(routeId, that.routeId) &&
-            Objects.equals(tripSeatId, that.tripSeatId) &&
+            Objects.equals(seatId, that.seatId) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
@@ -471,7 +471,7 @@ public class TicketCriteria implements Serializable, Criteria {
             checkedIn,
             tripId,
             routeId,
-            tripSeatId,
+            seatId,
             createdAt,
             updatedAt,
             isDeleted,
@@ -496,7 +496,7 @@ public class TicketCriteria implements Serializable, Criteria {
             optionalCheckedIn().map(f -> "checkedIn=" + f + ", ").orElse("") +
             optionalTripId().map(f -> "tripId=" + f + ", ").orElse("") +
             optionalRouteId().map(f -> "routeId=" + f + ", ").orElse("") +
-            optionalTripSeatId().map(f -> "tripSeatId=" + f + ", ").orElse("") +
+            optionalSeatId().map(f -> "seatId=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +

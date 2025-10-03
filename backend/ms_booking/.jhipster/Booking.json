@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20250928081233"
+    "changelogDate": "20251003111422"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -34,7 +34,7 @@
     },
     {
       "fieldName": "customerId",
-      "fieldType": "UUID",
+      "fieldType": "Long",
       "fieldValidateRules": ["required"]
     },
     {

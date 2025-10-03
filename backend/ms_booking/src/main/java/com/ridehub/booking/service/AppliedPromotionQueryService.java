@@ -75,7 +75,7 @@ public class AppliedPromotionQueryService extends QueryService<AppliedPromotion>
             specification = Specification.allOf(
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), AppliedPromotion_.id),
-                buildSpecification(criteria.getPromotionId(), AppliedPromotion_.promotionId),
+                buildRangeSpecification(criteria.getPromotionId(), AppliedPromotion_.promotionId),
                 buildStringSpecification(criteria.getPromotionCode(), AppliedPromotion_.promotionCode),
                 buildStringSpecification(criteria.getPolicyType(), AppliedPromotion_.policyType),
                 buildRangeSpecification(criteria.getPercent(), AppliedPromotion_.percent),

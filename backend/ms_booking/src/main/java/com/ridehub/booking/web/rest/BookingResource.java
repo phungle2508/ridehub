@@ -5,6 +5,8 @@ import com.ridehub.booking.service.BookingQueryService;
 import com.ridehub.booking.service.BookingService;
 import com.ridehub.booking.service.criteria.BookingCriteria;
 import com.ridehub.booking.service.dto.BookingDTO;
+import com.ridehub.booking.service.vm.BookingDraftResultVM;
+import com.ridehub.booking.service.vm.CreateBookingDraftRequestVM;
 import com.ridehub.booking.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -46,7 +48,8 @@ public class BookingResource {
 
     private final BookingQueryService bookingQueryService;
 
-    public BookingResource(BookingService bookingService, BookingRepository bookingRepository, BookingQueryService bookingQueryService) {
+    public BookingResource(BookingService bookingService, BookingRepository bookingRepository,
+            BookingQueryService bookingQueryService) {
         this.bookingService = bookingService;
         this.bookingRepository = bookingRepository;
         this.bookingQueryService = bookingQueryService;
@@ -56,36 +59,42 @@ public class BookingResource {
      * {@code POST  /bookings} : Create a new booking.
      *
      * @param bookingDTO the bookingDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new bookingDTO, or with status {@code 400 (Bad Request)} if the booking has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
+     *         body the new bookingDTO, or with status {@code 400 (Bad Request)} if
+     *         the booking has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<BookingDTO> createBooking(@Valid @RequestBody BookingDTO bookingDTO) throws URISyntaxException {
+    public ResponseEntity<BookingDTO> createBooking(@Valid @RequestBody BookingDTO bookingDTO)
+            throws URISyntaxException {
         LOG.debug("REST request to save Booking : {}", bookingDTO);
         if (bookingDTO.getId() != null) {
             throw new BadRequestAlertException("A new booking cannot already have an ID", ENTITY_NAME, "idexists");
         }
         bookingDTO = bookingService.save(bookingDTO);
         return ResponseEntity.created(new URI("/api/bookings/" + bookingDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, bookingDTO.getId().toString()))
-            .body(bookingDTO);
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        bookingDTO.getId().toString()))
+                .body(bookingDTO);
     }
 
     /**
      * {@code PUT  /bookings/:id} : Updates an existing booking.
      *
-     * @param id the id of the bookingDTO to save.
+     * @param id         the id of the bookingDTO to save.
      * @param bookingDTO the bookingDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated bookingDTO,
-     * or with status {@code 400 (Bad Request)} if the bookingDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the bookingDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated bookingDTO,
+     *         or with status {@code 400 (Bad Request)} if the bookingDTO is not
+     *         valid,
+     *         or with status {@code 500 (Internal Server Error)} if the bookingDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
     public ResponseEntity<BookingDTO> updateBooking(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody BookingDTO bookingDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody BookingDTO bookingDTO) throws URISyntaxException {
         LOG.debug("REST request to update Booking : {}, {}", id, bookingDTO);
         if (bookingDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -100,26 +109,31 @@ public class BookingResource {
 
         bookingDTO = bookingService.update(bookingDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, bookingDTO.getId().toString()))
-            .body(bookingDTO);
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        bookingDTO.getId().toString()))
+                .body(bookingDTO);
     }
 
     /**
-     * {@code PATCH  /bookings/:id} : Partial updates given fields of an existing booking, field will ignore if it is null
+     * {@code PATCH  /bookings/:id} : Partial updates given fields of an existing
+     * booking, field will ignore if it is null
      *
-     * @param id the id of the bookingDTO to save.
+     * @param id         the id of the bookingDTO to save.
      * @param bookingDTO the bookingDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated bookingDTO,
-     * or with status {@code 400 (Bad Request)} if the bookingDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the bookingDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the bookingDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated bookingDTO,
+     *         or with status {@code 400 (Bad Request)} if the bookingDTO is not
+     *         valid,
+     *         or with status {@code 404 (Not Found)} if the bookingDTO is not
+     *         found,
+     *         or with status {@code 500 (Internal Server Error)} if the bookingDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<BookingDTO> partialUpdateBooking(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody BookingDTO bookingDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody BookingDTO bookingDTO) throws URISyntaxException {
         LOG.debug("REST request to partial update Booking partially : {}, {}", id, bookingDTO);
         if (bookingDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -135,9 +149,8 @@ public class BookingResource {
         Optional<BookingDTO> result = bookingService.partialUpdate(bookingDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, bookingDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, bookingDTO.getId().toString()));
     }
 
     /**
@@ -145,17 +158,18 @@ public class BookingResource {
      *
      * @param pageable the pagination information.
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of bookings in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of bookings in body.
      */
     @GetMapping("")
     public ResponseEntity<List<BookingDTO>> getAllBookings(
-        BookingCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
+            BookingCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get Bookings by criteria: {}", criteria);
 
         Page<BookingDTO> page = bookingQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -163,7 +177,8 @@ public class BookingResource {
      * {@code GET  /bookings/count} : count all the bookings.
      *
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
+     *         in body.
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countBookings(BookingCriteria criteria) {
@@ -175,7 +190,8 @@ public class BookingResource {
      * {@code GET  /bookings/:id} : get the "id" booking.
      *
      * @param id the id of the bookingDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the bookingDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the bookingDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<BookingDTO> getBooking(@PathVariable("id") Long id) {
@@ -195,7 +211,12 @@ public class BookingResource {
         LOG.debug("REST request to delete Booking : {}", id);
         bookingService.delete(id);
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
+    }
+
+    @PostMapping("/draft")
+    public ResponseEntity<BookingDraftResultVM> createDraft(@Valid @RequestBody CreateBookingDraftRequestVM req) {
+        return ResponseEntity.ok(bookingService.createDraft(req));
     }
 }

@@ -7,24 +7,30 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity FileBooking.
+        Added the entity Booking.
     -->
-    <changeSet id="20250928081933-1" author="jhipster">
-        <createTable tableName="file_booking">
+    <changeSet id="20251003111422-1" author="jhipster">
+        <createTable tableName="booking">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="bucket" type="varchar(255)">
+            <column name="booking_code" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_booking__booking_code" />
+            </column>
+            <column name="status" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="object_key" type="varchar(255)">
+            <column name="quantity" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="total_amount" type="decimal(21,2)">
                 <constraints nullable="false" />
             </column>
-            <column name="content_type" type="varchar(255)">
-                <constraints nullable="true" />
+            <column name="booked_at" type="${datetimeType}">
+                <constraints nullable="false" />
             </column>
-            <column name="size" type="bigint">
-                <constraints nullable="true" />
+            <column name="customer_id" type="bigint">
+                <constraints nullable="false" />
             </column>
             <column name="created_at" type="${datetimeType}">
                 <constraints nullable="false" />
@@ -41,11 +47,18 @@
             <column name="deleted_by" type="${uuidType}">
                 <constraints nullable="true" />
             </column>
+            <column name="invoice_id" type="bigint">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_booking__invoice_id" />
+            </column>
+            <column name="payment_transaction_id" type="bigint">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_booking__payment_transaction_id" />
+            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="file_booking" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="file_booking" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="file_booking" columnName="deleted_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="booking" columnName="booked_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="booking" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="booking" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="booking" columnName="deleted_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -58,17 +71,19 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20250928081933-1-data" author="jhipster" context="faker">
+    <changeSet id="20251003111422-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/file_booking.csv"
+                  file="config/liquibase/fake-data/booking.csv"
                   separator=";"
-                  tableName="file_booking"
+                  tableName="booking"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="bucket" type="string"/>
-            <column name="object_key" type="string"/>
-            <column name="content_type" type="string"/>
-            <column name="size" type="numeric"/>
+            <column name="booking_code" type="string"/>
+            <column name="status" type="string"/>
+            <column name="quantity" type="numeric"/>
+            <column name="total_amount" type="numeric"/>
+            <column name="booked_at" type="date"/>
+            <column name="customer_id" type="numeric"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
             <column name="is_deleted" type="boolean"/>

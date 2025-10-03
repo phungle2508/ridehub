@@ -32,13 +32,13 @@ public class TicketDTO implements Serializable {
     private Boolean checkedIn;
 
     @NotNull
-    private UUID tripId;
+    private Long tripId;
 
     @NotNull
-    private UUID routeId;
+    private Long routeId;
 
     @NotNull
-    private UUID tripSeatId;
+    private Long seatId;
 
     @NotNull
     private Instant createdAt;
@@ -112,28 +112,28 @@ public class TicketDTO implements Serializable {
         this.checkedIn = checkedIn;
     }
 
-    public UUID getTripId() {
+    public Long getTripId() {
         return tripId;
     }
 
-    public void setTripId(UUID tripId) {
+    public void setTripId(Long tripId) {
         this.tripId = tripId;
     }
 
-    public UUID getRouteId() {
+    public Long getRouteId() {
         return routeId;
     }
 
-    public void setRouteId(UUID routeId) {
+    public void setRouteId(Long routeId) {
         this.routeId = routeId;
     }
 
-    public UUID getTripSeatId() {
-        return tripSeatId;
+    public Long getSeatId() {
+        return seatId;
     }
 
-    public void setTripSeatId(UUID tripSeatId) {
-        this.tripSeatId = tripSeatId;
+    public void setSeatId(Long seatId) {
+        this.seatId = seatId;
     }
 
     public Instant getCreatedAt() {
@@ -224,9 +224,9 @@ public class TicketDTO implements Serializable {
             ", timeFrom='" + getTimeFrom() + "'" +
             ", timeTo='" + getTimeTo() + "'" +
             ", checkedIn='" + getCheckedIn() + "'" +
-            ", tripId='" + getTripId() + "'" +
-            ", routeId='" + getRouteId() + "'" +
-            ", tripSeatId='" + getTripSeatId() + "'" +
+            ", tripId=" + getTripId() +
+            ", routeId=" + getRouteId() +
+            ", seatId=" + getSeatId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +
