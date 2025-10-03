@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251001065745"
+    "changelogDate": "20251003102629"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -15,7 +15,7 @@
     },
     {
       "fieldName": "userId",
-      "fieldType": "UUID"
+      "fieldType": "Long"
     },
     {
       "fieldName": "status",

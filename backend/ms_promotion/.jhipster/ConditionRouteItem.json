@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251002120750"
+    "changelogDate": "20251003101829"
   },
   "applications": ["ms_promotion"],
   "clientRootFolder": "ms_promotion",
@@ -9,7 +9,7 @@
   "fields": [
     {
       "fieldName": "routeId",
-      "fieldType": "UUID",
+      "fieldType": "Long",
       "fieldValidateRules": ["required"]
     },
     {

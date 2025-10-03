@@ -24,11 +24,11 @@ public class ConditionLocationItemCriteria implements Serializable, Criteria {
 
     private LongFilter id;
 
-    private UUIDFilter provinceId;
+    private LongFilter provinceId;
 
-    private UUIDFilter districtId;
+    private LongFilter districtId;
 
-    private UUIDFilter wardId;
+    private LongFilter wardId;
 
     private InstantFilter createdAt;
 
@@ -48,9 +48,9 @@ public class ConditionLocationItemCriteria implements Serializable, Criteria {
 
     public ConditionLocationItemCriteria(ConditionLocationItemCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.provinceId = other.optionalProvinceId().map(UUIDFilter::copy).orElse(null);
-        this.districtId = other.optionalDistrictId().map(UUIDFilter::copy).orElse(null);
-        this.wardId = other.optionalWardId().map(UUIDFilter::copy).orElse(null);
+        this.provinceId = other.optionalProvinceId().map(LongFilter::copy).orElse(null);
+        this.districtId = other.optionalDistrictId().map(LongFilter::copy).orElse(null);
+        this.wardId = other.optionalWardId().map(LongFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -84,60 +84,60 @@ public class ConditionLocationItemCriteria implements Serializable, Criteria {
         this.id = id;
     }
 
-    public UUIDFilter getProvinceId() {
+    public LongFilter getProvinceId() {
         return provinceId;
     }
 
-    public Optional<UUIDFilter> optionalProvinceId() {
+    public Optional<LongFilter> optionalProvinceId() {
         return Optional.ofNullable(provinceId);
     }
 
-    public UUIDFilter provinceId() {
+    public LongFilter provinceId() {
         if (provinceId == null) {
-            setProvinceId(new UUIDFilter());
+            setProvinceId(new LongFilter());
         }
         return provinceId;
     }
 
-    public void setProvinceId(UUIDFilter provinceId) {
+    public void setProvinceId(LongFilter provinceId) {
         this.provinceId = provinceId;
     }
 
-    public UUIDFilter getDistrictId() {
+    public LongFilter getDistrictId() {
         return districtId;
     }
 
-    public Optional<UUIDFilter> optionalDistrictId() {
+    public Optional<LongFilter> optionalDistrictId() {
         return Optional.ofNullable(districtId);
     }
 
-    public UUIDFilter districtId() {
+    public LongFilter districtId() {
         if (districtId == null) {
-            setDistrictId(new UUIDFilter());
+            setDistrictId(new LongFilter());
         }
         return districtId;
     }
 
-    public void setDistrictId(UUIDFilter districtId) {
+    public void setDistrictId(LongFilter districtId) {
         this.districtId = districtId;
     }
 
-    public UUIDFilter getWardId() {
+    public LongFilter getWardId() {
         return wardId;
     }
 
-    public Optional<UUIDFilter> optionalWardId() {
+    public Optional<LongFilter> optionalWardId() {
         return Optional.ofNullable(wardId);
     }
 
-    public UUIDFilter wardId() {
+    public LongFilter wardId() {
         if (wardId == null) {
-            setWardId(new UUIDFilter());
+            setWardId(new LongFilter());
         }
         return wardId;
     }
 
-    public void setWardId(UUIDFilter wardId) {
+    public void setWardId(LongFilter wardId) {
         this.wardId = wardId;
     }
 

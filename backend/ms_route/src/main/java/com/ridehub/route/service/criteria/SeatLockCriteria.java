@@ -44,7 +44,7 @@ public class SeatLockCriteria implements Serializable, Criteria {
 
     private StringFilter seatNo;
 
-    private UUIDFilter userId;
+    private LongFilter userId;
 
     private LockStatusFilter status;
 
@@ -71,7 +71,7 @@ public class SeatLockCriteria implements Serializable, Criteria {
     public SeatLockCriteria(SeatLockCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.seatNo = other.optionalSeatNo().map(StringFilter::copy).orElse(null);
-        this.userId = other.optionalUserId().map(UUIDFilter::copy).orElse(null);
+        this.userId = other.optionalUserId().map(LongFilter::copy).orElse(null);
         this.status = other.optionalStatus().map(LockStatusFilter::copy).orElse(null);
         this.expiresAt = other.optionalExpiresAt().map(InstantFilter::copy).orElse(null);
         this.idempotencyKey = other.optionalIdempotencyKey().map(StringFilter::copy).orElse(null);
@@ -127,22 +127,22 @@ public class SeatLockCriteria implements Serializable, Criteria {
         this.seatNo = seatNo;
     }
 
-    public UUIDFilter getUserId() {
+    public LongFilter getUserId() {
         return userId;
     }
 
-    public Optional<UUIDFilter> optionalUserId() {
+    public Optional<LongFilter> optionalUserId() {
         return Optional.ofNullable(userId);
     }
 
-    public UUIDFilter userId() {
+    public LongFilter userId() {
         if (userId == null) {
-            setUserId(new UUIDFilter());
+            setUserId(new LongFilter());
         }
         return userId;
     }
 
-    public void setUserId(UUIDFilter userId) {
+    public void setUserId(LongFilter userId) {
         this.userId = userId;
     }
 

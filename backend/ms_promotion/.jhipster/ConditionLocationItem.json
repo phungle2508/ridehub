@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251002120950"
+    "changelogDate": "20251003102029"
   },
   "applications": ["ms_promotion"],
   "clientRootFolder": "ms_promotion",
@@ -9,15 +9,15 @@
   "fields": [
     {
       "fieldName": "provinceId",
-      "fieldType": "UUID"
+      "fieldType": "Long"
     },
     {
       "fieldName": "districtId",
-      "fieldType": "UUID"
+      "fieldType": "Long"
     },
     {
       "fieldName": "wardId",
-      "fieldType": "UUID"
+      "fieldType": "Long"
     },
     {
       "fieldName": "createdAt",

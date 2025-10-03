@@ -33,9 +33,8 @@ public class SeatLock implements Serializable {
     @Column(name = "seat_no", length = 16, nullable = false)
     private String seatNo;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "user_id", length = 36)
-    private UUID userId;
+    @Column(name = "user_id")
+    private Long userId;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -100,16 +99,16 @@ public class SeatLock implements Serializable {
         this.seatNo = seatNo;
     }
 
-    public UUID getUserId() {
+    public Long getUserId() {
         return this.userId;
     }
 
-    public SeatLock userId(UUID userId) {
+    public SeatLock userId(Long userId) {
         this.setUserId(userId);
         return this;
     }
 
-    public void setUserId(UUID userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -255,7 +254,7 @@ public class SeatLock implements Serializable {
         return "SeatLock{" +
             "id=" + getId() +
             ", seatNo='" + getSeatNo() + "'" +
-            ", userId='" + getUserId() + "'" +
+            ", userId=" + getUserId() +
             ", status='" + getStatus() + "'" +
             ", expiresAt='" + getExpiresAt() + "'" +
             ", idempotencyKey='" + getIdempotencyKey() + "'" +

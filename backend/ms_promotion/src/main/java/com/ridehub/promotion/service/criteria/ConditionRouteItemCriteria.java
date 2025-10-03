@@ -24,7 +24,7 @@ public class ConditionRouteItemCriteria implements Serializable, Criteria {
 
     private LongFilter id;
 
-    private UUIDFilter routeId;
+    private LongFilter routeId;
 
     private InstantFilter createdAt;
 
@@ -44,7 +44,7 @@ public class ConditionRouteItemCriteria implements Serializable, Criteria {
 
     public ConditionRouteItemCriteria(ConditionRouteItemCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.routeId = other.optionalRouteId().map(UUIDFilter::copy).orElse(null);
+        this.routeId = other.optionalRouteId().map(LongFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -78,22 +78,22 @@ public class ConditionRouteItemCriteria implements Serializable, Criteria {
         this.id = id;
     }
 
-    public UUIDFilter getRouteId() {
+    public LongFilter getRouteId() {
         return routeId;
     }
 
-    public Optional<UUIDFilter> optionalRouteId() {
+    public Optional<LongFilter> optionalRouteId() {
         return Optional.ofNullable(routeId);
     }
 
-    public UUIDFilter routeId() {
+    public LongFilter routeId() {
         if (routeId == null) {
-            setRouteId(new UUIDFilter());
+            setRouteId(new LongFilter());
         }
         return routeId;
     }
 
-    public void setRouteId(UUIDFilter routeId) {
+    public void setRouteId(LongFilter routeId) {
         this.routeId = routeId;
     }
 

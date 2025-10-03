@@ -73,7 +73,7 @@ public class SeatLockQueryService extends QueryService<SeatLock> {
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), SeatLock_.id),
                 buildStringSpecification(criteria.getSeatNo(), SeatLock_.seatNo),
-                buildSpecification(criteria.getUserId(), SeatLock_.userId),
+                buildRangeSpecification(criteria.getUserId(), SeatLock_.userId),
                 buildSpecification(criteria.getStatus(), SeatLock_.status),
                 buildRangeSpecification(criteria.getExpiresAt(), SeatLock_.expiresAt),
                 buildStringSpecification(criteria.getIdempotencyKey(), SeatLock_.idempotencyKey),

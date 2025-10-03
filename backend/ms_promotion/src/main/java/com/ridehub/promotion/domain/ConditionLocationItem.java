@@ -27,17 +27,14 @@ public class ConditionLocationItem implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "province_id", length = 36)
-    private UUID provinceId;
+    @Column(name = "province_id")
+    private Long provinceId;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "district_id", length = 36)
-    private UUID districtId;
+    @Column(name = "district_id")
+    private Long districtId;
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "ward_id", length = 36)
-    private UUID wardId;
+    @Column(name = "ward_id")
+    private Long wardId;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -76,42 +73,42 @@ public class ConditionLocationItem implements Serializable {
         this.id = id;
     }
 
-    public UUID getProvinceId() {
+    public Long getProvinceId() {
         return this.provinceId;
     }
 
-    public ConditionLocationItem provinceId(UUID provinceId) {
+    public ConditionLocationItem provinceId(Long provinceId) {
         this.setProvinceId(provinceId);
         return this;
     }
 
-    public void setProvinceId(UUID provinceId) {
+    public void setProvinceId(Long provinceId) {
         this.provinceId = provinceId;
     }
 
-    public UUID getDistrictId() {
+    public Long getDistrictId() {
         return this.districtId;
     }
 
-    public ConditionLocationItem districtId(UUID districtId) {
+    public ConditionLocationItem districtId(Long districtId) {
         this.setDistrictId(districtId);
         return this;
     }
 
-    public void setDistrictId(UUID districtId) {
+    public void setDistrictId(Long districtId) {
         this.districtId = districtId;
     }
 
-    public UUID getWardId() {
+    public Long getWardId() {
         return this.wardId;
     }
 
-    public ConditionLocationItem wardId(UUID wardId) {
+    public ConditionLocationItem wardId(Long wardId) {
         this.setWardId(wardId);
         return this;
     }
 
-    public void setWardId(UUID wardId) {
+    public void setWardId(Long wardId) {
         this.wardId = wardId;
     }
 
@@ -217,9 +214,9 @@ public class ConditionLocationItem implements Serializable {
     public String toString() {
         return "ConditionLocationItem{" +
             "id=" + getId() +
-            ", provinceId='" + getProvinceId() + "'" +
-            ", districtId='" + getDistrictId() + "'" +
-            ", wardId='" + getWardId() + "'" +
+            ", provinceId=" + getProvinceId() +
+            ", districtId=" + getDistrictId() +
+            ", wardId=" + getWardId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

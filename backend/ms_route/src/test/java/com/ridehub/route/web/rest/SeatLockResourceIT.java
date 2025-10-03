@@ -43,8 +43,9 @@ class SeatLockResourceIT {
     private static final String DEFAULT_SEAT_NO = "AAAAAAAAAA";
     private static final String UPDATED_SEAT_NO = "BBBBBBBBBB";
 
-    private static final UUID DEFAULT_USER_ID = UUID.randomUUID();
-    private static final UUID UPDATED_USER_ID = UUID.randomUUID();
+    private static final Long DEFAULT_USER_ID = 1L;
+    private static final Long UPDATED_USER_ID = 2L;
+    private static final Long SMALLER_USER_ID = 1L - 1L;
 
     private static final LockStatus DEFAULT_STATUS = LockStatus.HELD;
     private static final LockStatus UPDATED_STATUS = LockStatus.EXPIRED;
@@ -295,7 +296,7 @@ class SeatLockResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(seatLock.getId().intValue())))
             .andExpect(jsonPath("$.[*].seatNo").value(hasItem(DEFAULT_SEAT_NO)))
-            .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.toString())))
+            .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.intValue())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].expiresAt").value(hasItem(DEFAULT_EXPIRES_AT.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
@@ -319,7 +320,7 @@ class SeatLockResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(seatLock.getId().intValue()))
             .andExpect(jsonPath("$.seatNo").value(DEFAULT_SEAT_NO))
-            .andExpect(jsonPath("$.userId").value(DEFAULT_USER_ID.toString()))
+            .andExpect(jsonPath("$.userId").value(DEFAULT_USER_ID.intValue()))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
             .andExpect(jsonPath("$.expiresAt").value(DEFAULT_EXPIRES_AT.toString()))
             .andExpect(jsonPath("$.idempotencyKey").value(DEFAULT_IDEMPOTENCY_KEY))
@@ -423,6 +424,46 @@ class SeatLockResourceIT {
 
         // Get all the seatLockList where userId is not null
         defaultSeatLockFiltering("userId.specified=true", "userId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByUserIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where userId is greater than or equal to
+        defaultSeatLockFiltering("userId.greaterThanOrEqual=" + DEFAULT_USER_ID, "userId.greaterThanOrEqual=" + UPDATED_USER_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByUserIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where userId is less than or equal to
+        defaultSeatLockFiltering("userId.lessThanOrEqual=" + DEFAULT_USER_ID, "userId.lessThanOrEqual=" + SMALLER_USER_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByUserIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where userId is less than
+        defaultSeatLockFiltering("userId.lessThan=" + UPDATED_USER_ID, "userId.lessThan=" + DEFAULT_USER_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllSeatLocksByUserIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedSeatLock = seatLockRepository.saveAndFlush(seatLock);
+
+        // Get all the seatLockList where userId is greater than
+        defaultSeatLockFiltering("userId.greaterThan=" + SMALLER_USER_ID, "userId.greaterThan=" + DEFAULT_USER_ID);
     }
 
     @Test
@@ -731,7 +772,7 @@ class SeatLockResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(seatLock.getId().intValue())))
             .andExpect(jsonPath("$.[*].seatNo").value(hasItem(DEFAULT_SEAT_NO)))
-            .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.toString())))
+            .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.intValue())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].expiresAt").value(hasItem(DEFAULT_EXPIRES_AT.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))

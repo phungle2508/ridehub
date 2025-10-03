@@ -39,8 +39,9 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ConditionRouteItemResourceIT {
 
-    private static final UUID DEFAULT_ROUTE_ID = UUID.randomUUID();
-    private static final UUID UPDATED_ROUTE_ID = UUID.randomUUID();
+    private static final Long DEFAULT_ROUTE_ID = 1L;
+    private static final Long UPDATED_ROUTE_ID = 2L;
+    private static final Long SMALLER_ROUTE_ID = 1L - 1L;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -260,7 +261,7 @@ class ConditionRouteItemResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionRouteItem.getId().intValue())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
+            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -280,7 +281,7 @@ class ConditionRouteItemResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(conditionRouteItem.getId().intValue()))
-            .andExpect(jsonPath("$.routeId").value(DEFAULT_ROUTE_ID.toString()))
+            .andExpect(jsonPath("$.routeId").value(DEFAULT_ROUTE_ID.intValue()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -331,6 +332,49 @@ class ConditionRouteItemResourceIT {
 
         // Get all the conditionRouteItemList where routeId is not null
         defaultConditionRouteItemFiltering("routeId.specified=true", "routeId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionRouteItemsByRouteIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionRouteItem = conditionRouteItemRepository.saveAndFlush(conditionRouteItem);
+
+        // Get all the conditionRouteItemList where routeId is greater than or equal to
+        defaultConditionRouteItemFiltering(
+            "routeId.greaterThanOrEqual=" + DEFAULT_ROUTE_ID,
+            "routeId.greaterThanOrEqual=" + UPDATED_ROUTE_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionRouteItemsByRouteIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionRouteItem = conditionRouteItemRepository.saveAndFlush(conditionRouteItem);
+
+        // Get all the conditionRouteItemList where routeId is less than or equal to
+        defaultConditionRouteItemFiltering("routeId.lessThanOrEqual=" + DEFAULT_ROUTE_ID, "routeId.lessThanOrEqual=" + SMALLER_ROUTE_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionRouteItemsByRouteIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionRouteItem = conditionRouteItemRepository.saveAndFlush(conditionRouteItem);
+
+        // Get all the conditionRouteItemList where routeId is less than
+        defaultConditionRouteItemFiltering("routeId.lessThan=" + UPDATED_ROUTE_ID, "routeId.lessThan=" + DEFAULT_ROUTE_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionRouteItemsByRouteIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionRouteItem = conditionRouteItemRepository.saveAndFlush(conditionRouteItem);
+
+        // Get all the conditionRouteItemList where routeId is greater than
+        defaultConditionRouteItemFiltering("routeId.greaterThan=" + SMALLER_ROUTE_ID, "routeId.greaterThan=" + DEFAULT_ROUTE_ID);
     }
 
     @Test
@@ -534,7 +578,7 @@ class ConditionRouteItemResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionRouteItem.getId().intValue())))
-            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.toString())))
+            .andExpect(jsonPath("$.[*].routeId").value(hasItem(DEFAULT_ROUTE_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))

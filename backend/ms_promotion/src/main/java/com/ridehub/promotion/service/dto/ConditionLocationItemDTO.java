@@ -14,11 +14,11 @@ public class ConditionLocationItemDTO implements Serializable {
 
     private Long id;
 
-    private UUID provinceId;
+    private Long provinceId;
 
-    private UUID districtId;
+    private Long districtId;
 
-    private UUID wardId;
+    private Long wardId;
 
     @NotNull
     private Instant createdAt;
@@ -42,27 +42,27 @@ public class ConditionLocationItemDTO implements Serializable {
         this.id = id;
     }
 
-    public UUID getProvinceId() {
+    public Long getProvinceId() {
         return provinceId;
     }
 
-    public void setProvinceId(UUID provinceId) {
+    public void setProvinceId(Long provinceId) {
         this.provinceId = provinceId;
     }
 
-    public UUID getDistrictId() {
+    public Long getDistrictId() {
         return districtId;
     }
 
-    public void setDistrictId(UUID districtId) {
+    public void setDistrictId(Long districtId) {
         this.districtId = districtId;
     }
 
-    public UUID getWardId() {
+    public Long getWardId() {
         return wardId;
     }
 
-    public void setWardId(UUID wardId) {
+    public void setWardId(Long wardId) {
         this.wardId = wardId;
     }
 
@@ -140,9 +140,9 @@ public class ConditionLocationItemDTO implements Serializable {
     public String toString() {
         return "ConditionLocationItemDTO{" +
             "id=" + getId() +
-            ", provinceId='" + getProvinceId() + "'" +
-            ", districtId='" + getDistrictId() + "'" +
-            ", wardId='" + getWardId() + "'" +
+            ", provinceId=" + getProvinceId() +
+            ", districtId=" + getDistrictId() +
+            ", wardId=" + getWardId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

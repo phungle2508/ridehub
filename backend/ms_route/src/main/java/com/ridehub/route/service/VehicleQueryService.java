@@ -4,7 +4,6 @@ import com.ridehub.route.domain.*; // for static metamodels
 import com.ridehub.route.repository.FloorRepository;
 import com.ridehub.route.repository.SeatRepository;
 import com.ridehub.route.repository.VehicleRepository;
-import com.ridehub.route.repository.projection.VehicleSeatCount;
 import com.ridehub.route.service.criteria.VehicleCriteria;
 import com.ridehub.route.service.dto.FloorDTO;
 import com.ridehub.route.service.dto.SeatDTO;

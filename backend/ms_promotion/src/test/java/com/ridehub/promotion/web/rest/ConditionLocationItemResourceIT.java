@@ -39,14 +39,17 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ConditionLocationItemResourceIT {
 
-    private static final UUID DEFAULT_PROVINCE_ID = UUID.randomUUID();
-    private static final UUID UPDATED_PROVINCE_ID = UUID.randomUUID();
+    private static final Long DEFAULT_PROVINCE_ID = 1L;
+    private static final Long UPDATED_PROVINCE_ID = 2L;
+    private static final Long SMALLER_PROVINCE_ID = 1L - 1L;
 
-    private static final UUID DEFAULT_DISTRICT_ID = UUID.randomUUID();
-    private static final UUID UPDATED_DISTRICT_ID = UUID.randomUUID();
+    private static final Long DEFAULT_DISTRICT_ID = 1L;
+    private static final Long UPDATED_DISTRICT_ID = 2L;
+    private static final Long SMALLER_DISTRICT_ID = 1L - 1L;
 
-    private static final UUID DEFAULT_WARD_ID = UUID.randomUUID();
-    private static final UUID UPDATED_WARD_ID = UUID.randomUUID();
+    private static final Long DEFAULT_WARD_ID = 1L;
+    private static final Long UPDATED_WARD_ID = 2L;
+    private static final Long SMALLER_WARD_ID = 1L - 1L;
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -248,9 +251,9 @@ class ConditionLocationItemResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionLocationItem.getId().intValue())))
-            .andExpect(jsonPath("$.[*].provinceId").value(hasItem(DEFAULT_PROVINCE_ID.toString())))
-            .andExpect(jsonPath("$.[*].districtId").value(hasItem(DEFAULT_DISTRICT_ID.toString())))
-            .andExpect(jsonPath("$.[*].wardId").value(hasItem(DEFAULT_WARD_ID.toString())))
+            .andExpect(jsonPath("$.[*].provinceId").value(hasItem(DEFAULT_PROVINCE_ID.intValue())))
+            .andExpect(jsonPath("$.[*].districtId").value(hasItem(DEFAULT_DISTRICT_ID.intValue())))
+            .andExpect(jsonPath("$.[*].wardId").value(hasItem(DEFAULT_WARD_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -270,9 +273,9 @@ class ConditionLocationItemResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(conditionLocationItem.getId().intValue()))
-            .andExpect(jsonPath("$.provinceId").value(DEFAULT_PROVINCE_ID.toString()))
-            .andExpect(jsonPath("$.districtId").value(DEFAULT_DISTRICT_ID.toString()))
-            .andExpect(jsonPath("$.wardId").value(DEFAULT_WARD_ID.toString()))
+            .andExpect(jsonPath("$.provinceId").value(DEFAULT_PROVINCE_ID.intValue()))
+            .andExpect(jsonPath("$.districtId").value(DEFAULT_DISTRICT_ID.intValue()))
+            .andExpect(jsonPath("$.wardId").value(DEFAULT_WARD_ID.intValue()))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -330,6 +333,55 @@ class ConditionLocationItemResourceIT {
 
     @Test
     @Transactional
+    void getAllConditionLocationItemsByProvinceIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where provinceId is greater than or equal to
+        defaultConditionLocationItemFiltering(
+            "provinceId.greaterThanOrEqual=" + DEFAULT_PROVINCE_ID,
+            "provinceId.greaterThanOrEqual=" + UPDATED_PROVINCE_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByProvinceIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where provinceId is less than or equal to
+        defaultConditionLocationItemFiltering(
+            "provinceId.lessThanOrEqual=" + DEFAULT_PROVINCE_ID,
+            "provinceId.lessThanOrEqual=" + SMALLER_PROVINCE_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByProvinceIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where provinceId is less than
+        defaultConditionLocationItemFiltering("provinceId.lessThan=" + UPDATED_PROVINCE_ID, "provinceId.lessThan=" + DEFAULT_PROVINCE_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByProvinceIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where provinceId is greater than
+        defaultConditionLocationItemFiltering(
+            "provinceId.greaterThan=" + SMALLER_PROVINCE_ID,
+            "provinceId.greaterThan=" + DEFAULT_PROVINCE_ID
+        );
+    }
+
+    @Test
+    @Transactional
     void getAllConditionLocationItemsByDistrictIdIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
@@ -363,6 +415,55 @@ class ConditionLocationItemResourceIT {
 
     @Test
     @Transactional
+    void getAllConditionLocationItemsByDistrictIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where districtId is greater than or equal to
+        defaultConditionLocationItemFiltering(
+            "districtId.greaterThanOrEqual=" + DEFAULT_DISTRICT_ID,
+            "districtId.greaterThanOrEqual=" + UPDATED_DISTRICT_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByDistrictIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where districtId is less than or equal to
+        defaultConditionLocationItemFiltering(
+            "districtId.lessThanOrEqual=" + DEFAULT_DISTRICT_ID,
+            "districtId.lessThanOrEqual=" + SMALLER_DISTRICT_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByDistrictIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where districtId is less than
+        defaultConditionLocationItemFiltering("districtId.lessThan=" + UPDATED_DISTRICT_ID, "districtId.lessThan=" + DEFAULT_DISTRICT_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByDistrictIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where districtId is greater than
+        defaultConditionLocationItemFiltering(
+            "districtId.greaterThan=" + SMALLER_DISTRICT_ID,
+            "districtId.greaterThan=" + DEFAULT_DISTRICT_ID
+        );
+    }
+
+    @Test
+    @Transactional
     void getAllConditionLocationItemsByWardIdIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
@@ -389,6 +490,49 @@ class ConditionLocationItemResourceIT {
 
         // Get all the conditionLocationItemList where wardId is not null
         defaultConditionLocationItemFiltering("wardId.specified=true", "wardId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByWardIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where wardId is greater than or equal to
+        defaultConditionLocationItemFiltering(
+            "wardId.greaterThanOrEqual=" + DEFAULT_WARD_ID,
+            "wardId.greaterThanOrEqual=" + UPDATED_WARD_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByWardIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where wardId is less than or equal to
+        defaultConditionLocationItemFiltering("wardId.lessThanOrEqual=" + DEFAULT_WARD_ID, "wardId.lessThanOrEqual=" + SMALLER_WARD_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByWardIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where wardId is less than
+        defaultConditionLocationItemFiltering("wardId.lessThan=" + UPDATED_WARD_ID, "wardId.lessThan=" + DEFAULT_WARD_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllConditionLocationItemsByWardIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedConditionLocationItem = conditionLocationItemRepository.saveAndFlush(conditionLocationItem);
+
+        // Get all the conditionLocationItemList where wardId is greater than
+        defaultConditionLocationItemFiltering("wardId.greaterThan=" + SMALLER_WARD_ID, "wardId.greaterThan=" + DEFAULT_WARD_ID);
     }
 
     @Test
@@ -592,9 +736,9 @@ class ConditionLocationItemResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(conditionLocationItem.getId().intValue())))
-            .andExpect(jsonPath("$.[*].provinceId").value(hasItem(DEFAULT_PROVINCE_ID.toString())))
-            .andExpect(jsonPath("$.[*].districtId").value(hasItem(DEFAULT_DISTRICT_ID.toString())))
-            .andExpect(jsonPath("$.[*].wardId").value(hasItem(DEFAULT_WARD_ID.toString())))
+            .andExpect(jsonPath("$.[*].provinceId").value(hasItem(DEFAULT_PROVINCE_ID.intValue())))
+            .andExpect(jsonPath("$.[*].districtId").value(hasItem(DEFAULT_DISTRICT_ID.intValue())))
+            .andExpect(jsonPath("$.[*].wardId").value(hasItem(DEFAULT_WARD_ID.intValue())))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))

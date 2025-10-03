@@ -28,9 +28,8 @@ public class ConditionRouteItem implements Serializable {
     private Long id;
 
     @NotNull
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "route_id", length = 36, nullable = false)
-    private UUID routeId;
+    @Column(name = "route_id", nullable = false)
+    private Long routeId;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -69,16 +68,16 @@ public class ConditionRouteItem implements Serializable {
         this.id = id;
     }
 
-    public UUID getRouteId() {
+    public Long getRouteId() {
         return this.routeId;
     }
 
-    public ConditionRouteItem routeId(UUID routeId) {
+    public ConditionRouteItem routeId(Long routeId) {
         this.setRouteId(routeId);
         return this;
     }
 
-    public void setRouteId(UUID routeId) {
+    public void setRouteId(Long routeId) {
         this.routeId = routeId;
     }
 
@@ -184,7 +183,7 @@ public class ConditionRouteItem implements Serializable {
     public String toString() {
         return "ConditionRouteItem{" +
             "id=" + getId() +
-            ", routeId='" + getRouteId() + "'" +
+            ", routeId=" + getRouteId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

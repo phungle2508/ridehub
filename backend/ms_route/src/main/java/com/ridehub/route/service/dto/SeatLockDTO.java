@@ -19,7 +19,7 @@ public class SeatLockDTO implements Serializable {
     @Size(max = 16)
     private String seatNo;
 
-    private UUID userId;
+    private Long userId;
 
     @NotNull
     private LockStatus status;
@@ -60,11 +60,11 @@ public class SeatLockDTO implements Serializable {
         this.seatNo = seatNo;
     }
 
-    public UUID getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(UUID userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -167,7 +167,7 @@ public class SeatLockDTO implements Serializable {
         return "SeatLockDTO{" +
             "id=" + getId() +
             ", seatNo='" + getSeatNo() + "'" +
-            ", userId='" + getUserId() + "'" +
+            ", userId=" + getUserId() +
             ", status='" + getStatus() + "'" +
             ", expiresAt='" + getExpiresAt() + "'" +
             ", idempotencyKey='" + getIdempotencyKey() + "'" +

@@ -12,27 +12,27 @@ public class ConditionLocationItemTestSamples {
     public static ConditionLocationItem getConditionLocationItemSample1() {
         return new ConditionLocationItem()
             .id(1L)
-            .provinceId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
-            .districtId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
-            .wardId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
+            .provinceId(1L)
+            .districtId(1L)
+            .wardId(1L)
             .deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
     }
 
     public static ConditionLocationItem getConditionLocationItemSample2() {
         return new ConditionLocationItem()
             .id(2L)
-            .provinceId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
-            .districtId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
-            .wardId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
+            .provinceId(2L)
+            .districtId(2L)
+            .wardId(2L)
             .deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
     }
 
     public static ConditionLocationItem getConditionLocationItemRandomSampleGenerator() {
         return new ConditionLocationItem()
             .id(longCount.incrementAndGet())
-            .provinceId(UUID.randomUUID())
-            .districtId(UUID.randomUUID())
-            .wardId(UUID.randomUUID())
+            .provinceId(longCount.incrementAndGet())
+            .districtId(longCount.incrementAndGet())
+            .wardId(longCount.incrementAndGet())
             .deletedBy(UUID.randomUUID());
     }
 }

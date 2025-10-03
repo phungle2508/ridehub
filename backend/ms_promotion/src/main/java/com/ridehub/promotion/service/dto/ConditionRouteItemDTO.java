@@ -15,7 +15,7 @@ public class ConditionRouteItemDTO implements Serializable {
     private Long id;
 
     @NotNull
-    private UUID routeId;
+    private Long routeId;
 
     @NotNull
     private Instant createdAt;
@@ -39,11 +39,11 @@ public class ConditionRouteItemDTO implements Serializable {
         this.id = id;
     }
 
-    public UUID getRouteId() {
+    public Long getRouteId() {
         return routeId;
     }
 
-    public void setRouteId(UUID routeId) {
+    public void setRouteId(Long routeId) {
         this.routeId = routeId;
     }
 
@@ -121,7 +121,7 @@ public class ConditionRouteItemDTO implements Serializable {
     public String toString() {
         return "ConditionRouteItemDTO{" +
             "id=" + getId() +
-            ", routeId='" + getRouteId() + "'" +
+            ", routeId=" + getRouteId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

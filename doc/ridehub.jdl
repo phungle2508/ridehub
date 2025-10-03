@@ -371,10 +371,10 @@ relationship ManyToOne {
 
 entity SeatLock {
   seatNo String required maxlength(16)
-  userId UUID
+  userId Long             // was UUID
   status LockStatus required
   expiresAt Instant required
-  idempotencyKey String unique maxlength(80) // <--- unique
+  idempotencyKey String unique maxlength(80)
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
@@ -416,10 +416,9 @@ entity Ticket {
   timeFrom Instant
   timeTo Instant
   checkedIn Boolean
-  tripId UUID required
-  routeId UUID required
-  // Replaced tripSeatId with seatId to match UML (Ticket -> Seat)
-  seatId UUID required
+  tripId Long required        // was UUID
+  routeId Long required       // was UUID
+  seatId Long required        // was UUID
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
@@ -433,13 +432,14 @@ entity Booking {
   quantity Integer
   totalAmount BigDecimal required
   bookedAt Instant required
-  customerId UUID required
+  customerId Long required    // was UUID
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
   deletedAt Instant
   deletedBy UUID
 }
+
 
 entity Invoice {
   invoiceNo String required unique
@@ -482,7 +482,7 @@ entity PricingSnapshot {
 }
 
 entity AppliedPromotion {
-  promotionId UUID required
+  promotionId Long required   // was UUID
   promotionCode String
   policyType String
   percent Integer
@@ -601,7 +601,7 @@ entity ConditionByLocation {
 }
 
 entity ConditionRouteItem {
-  routeId UUID required
+  routeId Long required       // was UUID
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean
@@ -620,9 +620,9 @@ entity ConditionDateItem {
 }
 
 entity ConditionLocationItem {
-  provinceId UUID
-  districtId UUID
-  wardId UUID
+  provinceId Long             // was UUID
+  districtId Long             // was UUID
+  wardId Long                 // was UUID
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean

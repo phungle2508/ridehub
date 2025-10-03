@@ -75,9 +75,9 @@ public class ConditionLocationItemQueryService extends QueryService<ConditionLoc
             specification = Specification.allOf(
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), ConditionLocationItem_.id),
-                buildSpecification(criteria.getProvinceId(), ConditionLocationItem_.provinceId),
-                buildSpecification(criteria.getDistrictId(), ConditionLocationItem_.districtId),
-                buildSpecification(criteria.getWardId(), ConditionLocationItem_.wardId),
+                buildRangeSpecification(criteria.getProvinceId(), ConditionLocationItem_.provinceId),
+                buildRangeSpecification(criteria.getDistrictId(), ConditionLocationItem_.districtId),
+                buildRangeSpecification(criteria.getWardId(), ConditionLocationItem_.wardId),
                 buildRangeSpecification(criteria.getCreatedAt(), ConditionLocationItem_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), ConditionLocationItem_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), ConditionLocationItem_.isDeleted),
