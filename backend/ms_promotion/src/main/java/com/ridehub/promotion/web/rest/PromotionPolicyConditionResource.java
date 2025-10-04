@@ -156,16 +156,14 @@ public class PromotionPolicyConditionResource {
          */
         @PutMapping("/buy-n-get-m-free/{id}")
         @Operation(summary = "Update buyNGetMFree policy")
-        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = BuyNGetMFreeDTO.class), examples = @ExampleObject(name = "Update BuyNGetMFree Policy", description = "Example request body for updating a buyNGetMFree policy. Note: id must match the path parameter, promotion field should be empty object as it will be populated from the URL path parameter. System fields (createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are automatically managed.", value = """
-                                        {
-                                          "id": {id},
-                                          "buyN": 3,
-                                          "getM": 2,
-
-                                          "promotion": {},
-                        "createdAt": "2025-09-27T05:24:29.211Z"
-                                        }
-                                        """)))
+        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = BuyNGetMFreeDTO.class), examples = @ExampleObject(name = "Update BuyNGetMFree Policy", description = "id must match the path parameter. Leave promotion as an empty object; the server populates it from the URL path. System fields (createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are managed by the system and should not be sent.", value = """
+                        {
+                          "id": 28,
+                          "buyN": 3,
+                          "getM": 2,
+                          "promotion": {}
+                        }
+                        """)))
         public ResponseEntity<BuyNGetMFreeDTO> updateBuyNGetMFreePolicy(
                         @PathVariable Long promotionId,
                         @PathVariable Long id,
@@ -278,16 +276,15 @@ public class PromotionPolicyConditionResource {
          */
         @PutMapping("/percent-off-total/{id}")
         @Operation(summary = "Update percentOffTotal policy")
-        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = PercentOffTotalDTO.class), examples = @ExampleObject(name = "Update PercentOffTotal Policy", description = "Example request body for updating a percentOffTotal policy. Note: id must match the path parameter, promotion field should be empty object as it will be populated from the URL path parameter. System fields (createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are automatically managed.", value = """
-                                        {
-                                          "id": {id},
-                                          "percent": 20,
-                                          "maxOff": 100.00,
-                                          "minPrice": 10000,
-                                          "promotion": {},
-                        "createdAt": "2025-09-27T05:24:29.211Z"
-                                        }
-                                        """)))
+        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = PercentOffTotalDTO.class), examples = @ExampleObject(name = "Update PercentOffTotal Policy", description = "id phải trùng với path parameter. Trường promotion để object rỗng (server lấy từ path). Các system fields (createdAt, updatedAt, isDeleted, deletedAt, deletedBy) do hệ thống quản lý và không cần gửi.", value = """
+                        {
+                          "id": 28,
+                          "percent": 20,
+                          "maxOff": 100.00,
+                          "minPrice": 10000,
+                          "promotion": {}
+                        }
+                        """)))
         public ResponseEntity<PercentOffTotalDTO> updatePercentOffTotalPolicy(
                         @PathVariable Long promotionId,
                         @PathVariable Long id,
@@ -480,10 +477,10 @@ public class PromotionPolicyConditionResource {
                         "createdAt": "2025-09-27T05:24:29.211Z",
                                           "items": [
                                             {
-                                              "routeId": "550e8400-e29b-41d4-a716-446655440001"
+                                              "routeId": "1"
                                             },
                                             {
-                                              "routeId": "550e8400-e29b-41d4-a716-446655440002"
+                                              "routeId": "2"
                                             }
                                           ]
                                         }
@@ -549,11 +546,10 @@ public class PromotionPolicyConditionResource {
                         "createdAt": "2025-09-27T05:24:29.211Z",
                                           "items": [
                                             {
-                                              "id": 1,
-                                              "routeId": "550e8400-e29b-41d4-a716-446655440003"
+                                              "routeId": "1"
                                             },
                                             {
-                                              "routeId": "550e8400-e29b-41d4-a716-446655440004"
+                                              "routeId": "2"
                                             }
                                           ]
                                         }

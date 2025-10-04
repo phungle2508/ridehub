@@ -8,13 +8,13 @@ import com.ridehub.promotion.service.dto.ConditionDateItemDTO;
 import com.ridehub.promotion.service.dto.PromotionDTO;
 import org.mapstruct.*;
 
-/**
- * Mapper for the entity {@link ConditionByDate} and its DTO {@link ConditionByDateDTO}.
- */
+import java.util.Set;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ConditionByDateMapper extends EntityMapper<ConditionByDateDTO, ConditionByDate> {
+
     @Mapping(target = "promotion", source = "promotion", qualifiedByName = "promotionId")
-    @Mapping(target = "items", source = "items", qualifiedByName = "conditionDateItemsWithoutCondition")
+    @Mapping(target = "items", source = "items", qualifiedByName = "dateItems.shallowSet")
     ConditionByDateDTO toDto(ConditionByDate s);
 
     @Named("promotionId")
@@ -22,7 +22,8 @@ public interface ConditionByDateMapper extends EntityMapper<ConditionByDateDTO, 
     @Mapping(target = "id", source = "id")
     PromotionDTO toDtoPromotionId(Promotion promotion);
 
-    @Named("conditionDateItemsWithoutCondition")
+    // single item shallow
+    @Named("dateItems.shallow")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "specificDate", source = "specificDate")
@@ -32,8 +33,13 @@ public interface ConditionByDateMapper extends EntityMapper<ConditionByDateDTO, 
     @Mapping(target = "isDeleted", source = "isDeleted")
     @Mapping(target = "deletedAt", source = "deletedAt")
     @Mapping(target = "deletedBy", source = "deletedBy")
-    @Mapping(target = "condition", ignore = true)
-    ConditionDateItemDTO conditionDateItemToDtoWithoutCondition(ConditionDateItem conditionDateItem);
+    @Mapping(target = "condition", ignore = true) // break back-ref here
+    ConditionDateItemDTO toDtoDateItemShallow(ConditionDateItem item);
+
+    // collection shallow
+    @Named("dateItems.shallowSet")
+    @IterableMapping(qualifiedByName = "dateItems.shallow")
+    Set<ConditionDateItemDTO> toDtoDateItemShallowSet(Set<ConditionDateItem> items);
 
     @Named("conditionByDateId")
     @BeanMapping(ignoreByDefault = true)

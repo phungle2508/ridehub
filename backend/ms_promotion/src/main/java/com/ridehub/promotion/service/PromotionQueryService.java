@@ -162,9 +162,12 @@ public class PromotionQueryService extends QueryService<Promotion> {
 
     @Transactional(readOnly = true)
     public PromotionDetailDTO getDetailByIdByCode(String code) {
-        Promotion p = promotionRepository.findDetailByCode(
-                code)
+        Promotion p = promotionRepository.findDetailByCode(code)
                 .orElseThrow(() -> new EntityNotFoundException("Promotion not found: " + code));
+
+        // Filter out soft-deleted entities
+        filterSoftDeleted(p);
+
         return convertToPromotionDetailDTO(p);
     }
 
@@ -318,6 +321,47 @@ public class PromotionQueryService extends QueryService<Promotion> {
         }
 
         return dto;
+    }
+
+    private void filterSoftDeleted(Promotion promotion) {
+        // Filter parent collections
+        if (promotion.getBuyNGetMS() != null) {
+            promotion.getBuyNGetMS().removeIf(item -> item.getIsDeleted() != null && item.getIsDeleted());
+        }
+
+        if (promotion.getPercentOffs() != null) {
+            promotion.getPercentOffs().removeIf(item -> item.getIsDeleted() != null && item.getIsDeleted());
+        }
+
+        if (promotion.getConditionsRS() != null) {
+            promotion.getConditionsRS().removeIf(item -> item.getIsDeleted() != null && item.getIsDeleted());
+            // Filter child items
+            promotion.getConditionsRS().forEach(crs -> {
+                if (crs.getItems() != null) {
+                    crs.getItems().removeIf(child -> child.getIsDeleted() != null && child.getIsDeleted());
+                }
+            });
+        }
+
+        if (promotion.getConditionsDS() != null) {
+            promotion.getConditionsDS().removeIf(item -> item.getIsDeleted() != null && item.getIsDeleted());
+            // Filter child items
+            promotion.getConditionsDS().forEach(cds -> {
+                if (cds.getItems() != null) {
+                    cds.getItems().removeIf(child -> child.getIsDeleted() != null && child.getIsDeleted());
+                }
+            });
+        }
+
+        if (promotion.getConditionsLocs() != null) {
+            promotion.getConditionsLocs().removeIf(item -> item.getIsDeleted() != null && item.getIsDeleted());
+            // Filter child items
+            promotion.getConditionsLocs().forEach(cl -> {
+                if (cl.getItems() != null) {
+                    cl.getItems().removeIf(child -> child.getIsDeleted() != null && child.getIsDeleted());
+                }
+            });
+        }
     }
 
 }

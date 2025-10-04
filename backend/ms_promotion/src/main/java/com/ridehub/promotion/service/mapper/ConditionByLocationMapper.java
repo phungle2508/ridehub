@@ -8,13 +8,14 @@ import com.ridehub.promotion.service.dto.ConditionLocationItemDTO;
 import com.ridehub.promotion.service.dto.PromotionDTO;
 import org.mapstruct.*;
 
-/**
- * Mapper for the entity {@link ConditionByLocation} and its DTO {@link ConditionByLocationDTO}.
- */
+import java.util.Set;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ConditionByLocationMapper extends EntityMapper<ConditionByLocationDTO, ConditionByLocation> {
+
     @Mapping(target = "promotion", source = "promotion", qualifiedByName = "promotionId")
-    @Mapping(target = "items", source = "items", qualifiedByName = "conditionLocationItemsWithoutCondition")
+    // map items shallow (no back-ref)
+    @Mapping(target = "items", source = "items", qualifiedByName = "locItems.shallowSet")
     ConditionByLocationDTO toDto(ConditionByLocation s);
 
     @Named("promotionId")
@@ -22,7 +23,8 @@ public interface ConditionByLocationMapper extends EntityMapper<ConditionByLocat
     @Mapping(target = "id", source = "id")
     PromotionDTO toDtoPromotionId(Promotion promotion);
 
-    @Named("conditionLocationItemsWithoutCondition")
+    // single item shallow
+    @Named("locItems.shallow")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "provinceId", source = "provinceId")
@@ -33,9 +35,15 @@ public interface ConditionByLocationMapper extends EntityMapper<ConditionByLocat
     @Mapping(target = "isDeleted", source = "isDeleted")
     @Mapping(target = "deletedAt", source = "deletedAt")
     @Mapping(target = "deletedBy", source = "deletedBy")
-    @Mapping(target = "condition", ignore = true)
-    ConditionLocationItemDTO conditionLocationItemToDtoWithoutCondition(ConditionLocationItem conditionLocationItem);
+    @Mapping(target = "condition", ignore = true) // break back-ref here
+    ConditionLocationItemDTO toDtoLocationItemShallow(ConditionLocationItem item);
 
+    // collection shallow
+    @Named("locItems.shallowSet")
+    @IterableMapping(qualifiedByName = "locItems.shallow")
+    Set<ConditionLocationItemDTO> toDtoLocationItemShallowSet(Set<ConditionLocationItem> items);
+
+    // id-only helper (if you need it elsewhere)
     @Named("conditionByLocationId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
