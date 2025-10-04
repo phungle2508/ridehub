@@ -434,7 +434,7 @@ entity Booking {
   quantity Integer
   totalAmount BigDecimal required
   bookedAt Instant required
-  customerId Long required
+  customerId UUID required
   idempotencyKey String maxlength(80) // NEW
   createdAt Instant required
   updatedAt Instant

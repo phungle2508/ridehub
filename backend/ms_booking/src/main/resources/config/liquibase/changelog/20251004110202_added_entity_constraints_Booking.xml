@@ -6,13 +6,20 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
     <!--
-        Added the constraints for entity PaymentWebhookLog.
+        Added the constraints for entity Booking.
     -->
-    <changeSet id="20251003132310-2" author="jhipster">
+    <changeSet id="20251004110202-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="invoice_id"
+                                 baseTableName="booking"
+                                 constraintName="fk_booking__invoice_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="invoice"
+                                 />
 
         <addForeignKeyConstraint baseColumnNames="payment_transaction_id"
-                                 baseTableName="payment_webhook_log"
-                                 constraintName="fk_payment_webhook_log__payment_transaction_id"
+                                 baseTableName="booking"
+                                 constraintName="fk_booking__payment_transaction_id"
                                  referencedColumnNames="id"
                                  referencedTableName="payment_transaction"
                                  />

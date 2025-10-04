@@ -60,9 +60,8 @@ class BookingResourceIT {
     private static final Instant DEFAULT_BOOKED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_BOOKED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
-    private static final Long DEFAULT_CUSTOMER_ID = 1L;
-    private static final Long UPDATED_CUSTOMER_ID = 2L;
-    private static final Long SMALLER_CUSTOMER_ID = 1L - 1L;
+    private static final UUID DEFAULT_CUSTOMER_ID = UUID.randomUUID();
+    private static final UUID UPDATED_CUSTOMER_ID = UUID.randomUUID();
 
     private static final String DEFAULT_IDEMPOTENCY_KEY = "AAAAAAAAAA";
     private static final String UPDATED_IDEMPOTENCY_KEY = "BBBBBBBBBB";
@@ -327,7 +326,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].quantity").value(hasItem(DEFAULT_QUANTITY)))
             .andExpect(jsonPath("$.[*].totalAmount").value(hasItem(sameNumber(DEFAULT_TOTAL_AMOUNT))))
             .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
-            .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.intValue())))
+            .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
@@ -353,7 +352,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.quantity").value(DEFAULT_QUANTITY))
             .andExpect(jsonPath("$.totalAmount").value(sameNumber(DEFAULT_TOTAL_AMOUNT)))
             .andExpect(jsonPath("$.bookedAt").value(DEFAULT_BOOKED_AT.toString()))
-            .andExpect(jsonPath("$.customerId").value(DEFAULT_CUSTOMER_ID.intValue()))
+            .andExpect(jsonPath("$.customerId").value(DEFAULT_CUSTOMER_ID.toString()))
             .andExpect(jsonPath("$.idempotencyKey").value(DEFAULT_IDEMPOTENCY_KEY))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
@@ -671,49 +670,6 @@ class BookingResourceIT {
 
     @Test
     @Transactional
-    void getAllBookingsByCustomerIdIsGreaterThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedBooking = bookingRepository.saveAndFlush(booking);
-
-        // Get all the bookingList where customerId is greater than or equal to
-        defaultBookingFiltering(
-            "customerId.greaterThanOrEqual=" + DEFAULT_CUSTOMER_ID,
-            "customerId.greaterThanOrEqual=" + UPDATED_CUSTOMER_ID
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllBookingsByCustomerIdIsLessThanOrEqualToSomething() throws Exception {
-        // Initialize the database
-        insertedBooking = bookingRepository.saveAndFlush(booking);
-
-        // Get all the bookingList where customerId is less than or equal to
-        defaultBookingFiltering("customerId.lessThanOrEqual=" + DEFAULT_CUSTOMER_ID, "customerId.lessThanOrEqual=" + SMALLER_CUSTOMER_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllBookingsByCustomerIdIsLessThanSomething() throws Exception {
-        // Initialize the database
-        insertedBooking = bookingRepository.saveAndFlush(booking);
-
-        // Get all the bookingList where customerId is less than
-        defaultBookingFiltering("customerId.lessThan=" + UPDATED_CUSTOMER_ID, "customerId.lessThan=" + DEFAULT_CUSTOMER_ID);
-    }
-
-    @Test
-    @Transactional
-    void getAllBookingsByCustomerIdIsGreaterThanSomething() throws Exception {
-        // Initialize the database
-        insertedBooking = bookingRepository.saveAndFlush(booking);
-
-        // Get all the bookingList where customerId is greater than
-        defaultBookingFiltering("customerId.greaterThan=" + SMALLER_CUSTOMER_ID, "customerId.greaterThan=" + DEFAULT_CUSTOMER_ID);
-    }
-
-    @Test
-    @Transactional
     void getAllBookingsByIdempotencyKeyIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedBooking = bookingRepository.saveAndFlush(booking);
@@ -981,7 +937,7 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].quantity").value(hasItem(DEFAULT_QUANTITY)))
             .andExpect(jsonPath("$.[*].totalAmount").value(hasItem(sameNumber(DEFAULT_TOTAL_AMOUNT))))
             .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
-            .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.intValue())))
+            .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))

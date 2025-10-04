@@ -1,20 +1,33 @@
 package com.ridehub.promotion.service.mapper;
 
+import com.ridehub.promotion.domain.ConditionByDate;
 import com.ridehub.promotion.domain.ConditionDateItem;
+import com.ridehub.promotion.service.dto.ConditionByDateDTO;
 import com.ridehub.promotion.service.dto.ConditionDateItemDTO;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", uses = {ConditionByDateMapper.class})
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ConditionDateItemMapper extends EntityMapper<ConditionDateItemDTO, ConditionDateItem> {
 
-    @Override
-    @Mapping(source = "condition.id", target = "condition.id")
-    ConditionDateItemDTO toDto(ConditionDateItem entity);
+    @Named("condDate.idOnly")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    ConditionByDateDTO toDtoCondDateIdOnly(ConditionByDate entity);
+
+    @Named("condDate.fromId")
+    default ConditionByDate toEntityCondDateFromId(ConditionByDateDTO dto) {
+        if (dto == null)
+            return null;
+        ConditionByDate e = new ConditionByDate();
+        e.setId(dto.getId());
+        return e;
+    }
 
     @Override
-    @Mapping(source = "condition.id", target = "condition.id")
+    @Mapping(target = "condition", source = "condition", qualifiedByName = "condDate.idOnly")
+    ConditionDateItemDTO toDto(ConditionDateItem s);
+
+    @Override
+    @Mapping(target = "condition", source = "condition", qualifiedByName = "condDate.fromId")
     ConditionDateItem toEntity(ConditionDateItemDTO dto);
-
 }
-

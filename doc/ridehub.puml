@@ -299,7 +299,7 @@ package "ms-booking\n(Bookings, Tickets, Payments, Invoices)" as MS_BOOK {
     +quantity: Integer
     +totalAmount: BigDecimal
     +bookedAt: Instant
-    +customerId: Long
+    +customerId: UUID
     +idempotencyKey: String
   }
 

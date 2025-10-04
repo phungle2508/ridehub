@@ -1,9 +1,6 @@
 package com.ridehub.booking.service;
 
 import com.ridehub.booking.service.dto.BookingDTO;
-import com.ridehub.booking.service.vm.BookingDraftResultVM;
-import com.ridehub.booking.service.vm.CreateBookingDraftRequestVM;
-
 import java.util.Optional;
 
 /**
@@ -48,6 +45,4 @@ public interface BookingService {
      * @param id the id of the entity.
      */
     void delete(Long id);
-
-    BookingDraftResultVM createDraft(CreateBookingDraftRequestVM req);
 }

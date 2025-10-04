@@ -19,9 +19,9 @@
       "FileBooking"
     ],
     "jhipsterVersion": "8.11.0",
-    "jwtSecretKey": "MWVhMGFhMzU0ZGMzMDU3ZjM5ODk1YjBkMTI4ZTU0OWFhZmMyNDRhZTQxN2I5Y2YzZmY2NTlmZmQ2N2Q2OGQ3YjYzN2NjODcxZTZkYTcxYzdlZmQzMmJmMTc0ZmRhMTZjNjJlZTY1ZDQyMDU4MDE0YmU5NWY1Yjc4OTk5OGFmZTY=",
+    "jwtSecretKey": "NWFkM2JjOTU2MjM2ZDMxMzk4OWVlNWIwOWI0MzQ2NThiMWUwZjE0M2ViMDg2NWVhMDRjMTMzNWUyZTQzMDM0M2RlYzY3M2VmMTA0YzI2NzRlZDU0NzAyMzJjNjZlZGQ2ZDE5MjQ5NDI1MzY1YTVkYWQxZGI0NWNkZGFhN2RkZTU=",
     "languages": ["en"],
-    "lastLiquibaseTimestamp": 1759497850000,
+    "lastLiquibaseTimestamp": 1759576142000,
     "messageBroker": "kafka",
     "monorepository": true,
     "nativeLanguage": "en",

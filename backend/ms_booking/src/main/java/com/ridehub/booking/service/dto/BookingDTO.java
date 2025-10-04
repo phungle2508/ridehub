@@ -31,7 +31,7 @@ public class BookingDTO implements Serializable {
     private Instant bookedAt;
 
     @NotNull
-    private Long customerId;
+    private UUID customerId;
 
     @Size(max = 80)
     private String idempotencyKey;
@@ -99,11 +99,11 @@ public class BookingDTO implements Serializable {
         this.bookedAt = bookedAt;
     }
 
-    public Long getCustomerId() {
+    public UUID getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(Long customerId) {
+    public void setCustomerId(UUID customerId) {
         this.customerId = customerId;
     }
 
@@ -202,7 +202,7 @@ public class BookingDTO implements Serializable {
             ", quantity=" + getQuantity() +
             ", totalAmount=" + getTotalAmount() +
             ", bookedAt='" + getBookedAt() + "'" +
-            ", customerId=" + getCustomerId() +
+            ", customerId='" + getCustomerId() + "'" +
             ", idempotencyKey='" + getIdempotencyKey() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
