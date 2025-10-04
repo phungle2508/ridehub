@@ -1,21 +1,21 @@
 package com.ridehub.promotion.service.mapper;
 
-import com.ridehub.promotion.domain.ConditionByRoute;
 import com.ridehub.promotion.domain.ConditionRouteItem;
-import com.ridehub.promotion.service.dto.ConditionByRouteDTO;
 import com.ridehub.promotion.service.dto.ConditionRouteItemDTO;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 /**
  * Mapper for the entity {@link ConditionRouteItem} and its DTO {@link ConditionRouteItemDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { ConditionByRouteMapper.class }, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ConditionRouteItemMapper extends EntityMapper<ConditionRouteItemDTO, ConditionRouteItem> {
-    @Mapping(target = "condition", source = "condition", qualifiedByName = "conditionByRouteId")
-    ConditionRouteItemDTO toDto(ConditionRouteItem s);
+    @Override
+    @Mapping(source = "condition.id", target = "condition.id")
+    ConditionRouteItemDTO toDto(ConditionRouteItem entity);
 
-    @Named("conditionByRouteId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    ConditionByRouteDTO toDtoConditionByRouteId(ConditionByRoute conditionByRoute);
+    @Override
+    @Mapping(source = "condition.id", target = "condition.id")
+    ConditionRouteItem toEntity(ConditionRouteItemDTO dto);
 }

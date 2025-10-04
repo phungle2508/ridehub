@@ -89,20 +89,24 @@ public class PromotionPolicyConditionResource {
          * buyNGetMFree policy for the promotion.
          */
         @PostMapping("/buy-n-get-m-free")
-        @Operation(summary = "Create a new buyNGetMFree policy for the promotion")
-        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = BuyNGetMFreeDTO.class), examples = @ExampleObject(name = "Create BuyNGetMFree Policy", description = "Example request body for creating a new buyNGetMFree policy. Note: promotion field should be empty object as it will be populated from the URL path parameter. System fields (id, createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are automatically managed.", value = """
-                                        {
-                                          "buyN": 2,
-                                          "getM": 1,
-                                          "minPrice":10000
-                                          "promotion": {},
-                        "createdAt": "2025-09-27T05:24:29.211Z"
-                                        }
-                                        """)))
+        @Operation(summary = "Create a new buyNGetMFree policy for the promotion", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = BuyNGetMFreeDTO.class), examples = @ExampleObject(name = "Create BuyNGetMFree Policy", description = """
+                        Example request body for creating a new buyNGetMFree policy.
+                        Note: promotion field should be an empty object as it will be populated
+                        from the URL path parameter. System fields (id, createdAt, updatedAt,
+                        isDeleted, deletedAt, deletedBy) are automatically managed.
+                        """, value = """
+                        {
+                          "buyN": 2,
+                          "getM": 1,
+                          "promotion": {},
+                          "createdAt": "2025-09-27T05:24:29.211Z"
+                        }
+                        """))))
         public ResponseEntity<BuyNGetMFreeDTO> createBuyNGetMFreePolicy(
                         @PathVariable Long promotionId,
                         @Valid @org.springframework.web.bind.annotation.RequestBody BuyNGetMFreeDTO buyNGetMFreeDTO)
                         throws URISyntaxException {
+
                 LOG.debug("REST request to save BuyNGetMFree for promotion : {}, {}", promotionId, buyNGetMFreeDTO);
 
                 if (!promotionRepository.existsById(promotionId)) {
@@ -111,16 +115,16 @@ public class PromotionPolicyConditionResource {
 
                 if (buyNGetMFreeDTO.getId() != null) {
                         throw new BadRequestAlertException("A new buyNGetMFree cannot already have an ID",
-                                        "buyNGetMFree",
-                                        "idexists");
+                                        "buyNGetMFree", "idexists");
                 }
 
-                // Set the promotion ID
+                // set promotion id
                 PromotionDTO promotionDTO = new PromotionDTO();
                 promotionDTO.setId(promotionId);
                 buyNGetMFreeDTO.setPromotion(promotionDTO);
 
                 buyNGetMFreeDTO = buyNGetMFreeService.save(buyNGetMFreeDTO);
+
                 return ResponseEntity
                                 .created(new URI("/api/promotions/" + promotionId + "/buy-n-get-m-free/"
                                                 + buyNGetMFreeDTO.getId()))
@@ -602,29 +606,35 @@ public class PromotionPolicyConditionResource {
          * location condition for the promotion.
          */
         @PostMapping("/conditions/location")
-        @Operation(summary = "Create a new location condition for the promotion")
-        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConditionByLocationDTO.class), examples = @ExampleObject(name = "Create Location Condition", description = "Example request body for creating a new location condition. Note: promotion field should be empty object as it will be populated from the URL path parameter. System fields (id, createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are automatically managed.", value = """
-                                        {
-                                          "promotion": {},
-                        "createdAt": "2025-09-27T05:24:29.211Z",
-                                          "items": [
-                                            {
-                                              "provinceId": "550e8400-e29b-41d4-a716-446655440001",
-                                              "districtId": "550e8400-e29b-41d4-a716-446655440002",
-                                              "wardId": null
-                                            },
-                                            {
-                                              "provinceId": "550e8400-e29b-41d4-a716-446655440003",
-                                              "districtId": null,
-                                              "wardId": null
-                                            }
-                                          ]
-                                        }
-                                        """)))
+        @Operation(summary = "Create a new location condition for the promotion", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConditionByLocationDTO.class), examples = @ExampleObject(name = "Create Location Condition", description = """
+                        Example request body for creating a new location condition.
+                        Note: the `promotion` field should be an empty object, since it will
+                        be populated automatically from the URL path parameter.
+                        System fields (id, createdAt, updatedAt, isDeleted, deletedAt, deletedBy)
+                        are automatically managed by the system.
+                        """, value = """
+                        {
+                          "promotion": {},
+                          "createdAt": "2025-09-27T05:24:29.211Z",
+                          "items": [
+                            {
+                              "provinceId": 1,
+                              "districtId": 10,
+                              "wardId": null
+                            },
+                            {
+                              "provinceId": 2,
+                              "districtId": null,
+                              "wardId": null
+                            }
+                          ]
+                        }
+                        """))))
         public ResponseEntity<ConditionByLocationDTO> createLocationCondition(
                         @PathVariable Long promotionId,
                         @Valid @org.springframework.web.bind.annotation.RequestBody ConditionByLocationDTO conditionByLocationDTO)
                         throws URISyntaxException {
+
                 LOG.debug("REST request to save ConditionByLocation for promotion : {}, {}", promotionId,
                                 conditionByLocationDTO);
 
@@ -643,10 +653,10 @@ public class PromotionPolicyConditionResource {
                 conditionByLocationDTO.setPromotion(promotionDTO);
 
                 conditionByLocationDTO = conditionByLocationService.save(conditionByLocationDTO);
+
                 return ResponseEntity
-                                .created(new URI(
-                                                "/api/promotions/" + promotionId + "/conditions/location/"
-                                                                + conditionByLocationDTO.getId()))
+                                .created(new URI("/api/promotions/" + promotionId + "/conditions/location/"
+                                                + conditionByLocationDTO.getId()))
                                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true,
                                                 "conditionByLocation",
                                                 conditionByLocationDTO.getId().toString()))
@@ -676,26 +686,33 @@ public class PromotionPolicyConditionResource {
          */
         @PutMapping("/conditions/location/{id}")
         @Operation(summary = "Update location condition")
-        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConditionByLocationDTO.class), examples = @ExampleObject(name = "Update Location Condition", description = "Example request body for updating a location condition. Note: id must match the path parameter, promotion field should be empty object as it will be populated from the URL path parameter. System fields (createdAt, updatedAt, isDeleted, deletedAt, deletedBy) are automatically managed.", value = """
-                                        {
-                                          "id": 1,
-                                          "promotion": {},
-                        "createdAt": "2025-09-27T05:24:29.211Z",
-                                          "items": [
-                                            {
-                                              "id": 1,
-                                              "provinceId": "550e8400-e29b-41d4-a716-446655440005",
-                                              "districtId": "550e8400-e29b-41d4-a716-446655440006",
-                                              "wardId": "550e8400-e29b-41d4-a716-446655440007"
-                                            },
-                                            {
-                                              "provinceId": "550e8400-e29b-41d4-a716-446655440008",
-                                              "districtId": null,
-                                              "wardId": null
-                                            }
-                                          ]
-                                        }
-                                        """)))
+        @RequestBody(content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConditionByLocationDTO.class), examples = @ExampleObject(name = "Update Location Condition", description = """
+                        Example request body for updating a location condition.
+                        Note: `id` must match the path parameter, and `promotionId` will be
+                        automatically populated from the URL path. System fields
+                        (createdAt, updatedAt, isDeleted, deletedAt, deletedBy)
+                        are automatically managed by the system.
+                        """, value = """
+                        {
+                          "id": 1,
+                          "promotionId": 12,
+                          "createdAt": "2025-09-27T05:24:29.211Z",
+                          "items": [
+                            {
+                              "id": 1,
+                              "provinceId": 1,
+                              "districtId": 10,
+                              "wardId": 100
+                            },
+                            {
+                              "provinceId": 2,
+                              "districtId": null,
+                              "wardId": null
+                            }
+                          ]
+                        }
+                        """)))
+
         public ResponseEntity<ConditionByLocationDTO> updateLocationCondition(
                         @PathVariable Long promotionId,
                         @PathVariable Long id,
