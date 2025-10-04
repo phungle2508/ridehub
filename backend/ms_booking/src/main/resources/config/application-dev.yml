@@ -85,3 +85,8 @@ spring:
             consumer:
               # DLQ consumer properties
               startOffset: latest
+
+logging:
+  level:
+    com.ridehub.booking.web.rest.errors.ExceptionTranslator: DEBUG
+    feign: DEBUG
