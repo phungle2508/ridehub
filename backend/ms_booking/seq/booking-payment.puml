@@ -1,0 +1,34 @@
+@startuml
+title ms-booking – Payment & Confirmation Workflow (No Kafka)
+
+actor Customer
+participant "PaymentController" as PAY_API
+participant "Payment Gateway" as GATEWAY
+participant "PaymentWebhookController" as WEBHOOK
+participant "ms-route\n(SeatLockService)" as ROUTE
+collections "Redis" as REDIS
+database "BookingDB" as BOOKDB
+
+== Initialize Payment ==
+Customer -> PAY_API : POST /api/bookings/{id}/pay (method)
+PAY_API -> GATEWAY : initPayment(amount, returnUrl)
+GATEWAY --> PAY_API : paymentUrl
+PAY_API --> Customer : {paymentUrl}
+
+== Payment Webhook – SUCCESS ==
+GATEWAY -> WEBHOOK : POST /payments/webhook (SUCCESS)
+WEBHOOK -> BOOKDB : INSERT PaymentWebhookLog(payloadHash)
+WEBHOOK -> BOOKDB : tx: INSERT PaymentTransaction{SUCCESS}\nupdate Booking=CONFIRMED\nINSERT Ticket(s)
+WEBHOOK -> ROUTE : POST /locks/confirm {bookingId, tripId, seats[]}
+ROUTE -> BOOKDB : audit seat confirmation (optional)
+WEBHOOK -> REDIS : SET booking:{code}=compact view EX 1d
+WEBHOOK --> Customer : {status=CONFIRMED, tickets}
+
+== Payment Webhook – FAILED / REFUNDED ==
+GATEWAY -> WEBHOOK : POST /payments/webhook (FAILED/REFUNDED)
+WEBHOOK -> BOOKDB : INSERT PaymentTransaction{FAILED/REFUNDED}\nupdate Booking=CANCELED/REFUNDED
+WEBHOOK -> ROUTE : POST /locks/cancel {bookingId, tripId, seats[]}
+ROUTE -> BOOKDB : mark SeatLock=EXPIRED
+WEBHOOK -> REDIS : DEL booking:sess:{bookingId}
+WEBHOOK --> Customer : {status=CANCELED/REFUNDED}
+@enduml

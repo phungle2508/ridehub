@@ -1,0 +1,15 @@
+@startuml
+title ms-booking – Timeout & Expiration Scheduler (No Kafka)
+
+participant "BookingScheduler" as SCHEDULER
+participant "ms-route\n(SeatLockService)" as ROUTE
+collections "Redis" as REDIS
+database "BookingDB" as BOOKDB
+
+== Timeout Expiry ==
+SCHEDULER -> BOOKDB : find AWAITING_PAYMENT bookings expired
+SCHEDULER -> BOOKDB : update Booking=CANCELED
+SCHEDULER -> ROUTE : POST /locks/cancel {bookingId, tripId, seats[]}
+SCHEDULER -> REDIS : DEL booking:sess:{bookingId}
+SCHEDULER --> (log) : {canceledBookingsCount}
+@enduml

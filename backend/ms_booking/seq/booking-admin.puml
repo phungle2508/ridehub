@@ -1,0 +1,50 @@
+@startuml
+title ms-booking – Admin Management Flow (No Kafka)
+
+actor Admin
+participant "AdminBookingController" as ADMIN_BOOK
+participant "AdminPaymentController" as ADMIN_PAY
+participant "AdminTicketController" as ADMIN_TICKET
+participant "PaymentWebhookController" as WEBHOOK
+participant "BookingScheduler" as SCHEDULER
+participant "ms-route\n(SeatLockService)" as ROUTE
+participant "Payment Gateway" as GATEWAY
+database "BookingDB" as BOOKDB
+
+== Manage Bookings ==
+Admin -> ADMIN_BOOK : GET /admin/bookings?filter=status
+ADMIN_BOOK -> BOOKDB : SELECT * FROM Booking
+ADMIN_BOOK --> Admin : {bookings[]}
+
+Admin -> ADMIN_BOOK : POST /admin/bookings/{id}/confirm
+ADMIN_BOOK -> BOOKDB : update Booking=CONFIRMED\ncreate Ticket(s)
+ADMIN_BOOK -> ROUTE : POST /locks/confirm
+ADMIN_BOOK --> Admin : OK
+
+Admin -> ADMIN_BOOK : POST /admin/bookings/{id}/cancel
+ADMIN_BOOK -> BOOKDB : update Booking=CANCELED
+ADMIN_BOOK -> ROUTE : POST /locks/cancel
+ADMIN_BOOK --> Admin : OK
+
+== Manage Payments ==
+Admin -> ADMIN_PAY : GET /admin/payments
+ADMIN_PAY -> BOOKDB : SELECT * FROM PaymentTransaction
+ADMIN_PAY --> Admin : {transactions[]}
+
+Admin -> ADMIN_PAY : POST /admin/payments/{id}/refund
+ADMIN_PAY -> GATEWAY : refund(orderRef)
+GATEWAY --> ADMIN_PAY : refundResult
+ADMIN_PAY -> BOOKDB : update PaymentTransaction{REFUNDED}
+ADMIN_PAY --> Admin : OK
+
+== View Webhook Logs ==
+Admin -> WEBHOOK : GET /admin/webhooks
+WEBHOOK -> BOOKDB : SELECT * FROM PaymentWebhookLog
+WEBHOOK --> Admin : {logs[]}
+
+== Manual Cleanup ==
+Admin -> SCHEDULER : POST /admin/cleanup
+SCHEDULER -> BOOKDB : find expired bookings
+SCHEDULER -> ROUTE : /locks/cancel for expired
+SCHEDULER --> Admin : cleanup report
+@enduml

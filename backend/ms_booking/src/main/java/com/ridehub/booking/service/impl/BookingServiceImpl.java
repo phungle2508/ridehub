@@ -15,13 +15,14 @@ import com.ridehub.booking.service.mapper.BookingMapper;
 import com.ridehub.booking.service.vm.BookingDraftResultVM;
 import com.ridehub.booking.service.vm.CreateBookingDraftRequestVM;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,15 +42,17 @@ public class BookingServiceImpl implements BookingService {
     private final PricingSnapshotRepository pricingSnapRepo;
     private final AppliedPromotionRepository appliedPromoRepo;
     private final PricingService pricingService;
+    private final StringRedisTemplate redis;
 
     public BookingServiceImpl(BookingRepository bookingRepository, BookingMapper bookingMapper,
             AppliedPromotionRepository appliedPromoRepo, BookingRepository bookingRepo2,
-            PricingService pricingService, PricingSnapshotRepository pricingSnapRepo) {
+            PricingService pricingService, PricingSnapshotRepository pricingSnapRepo, StringRedisTemplate redis) {
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.pricingSnapRepo = pricingSnapRepo;
         this.appliedPromoRepo = appliedPromoRepo;
         this.pricingService = pricingService;
+        this.redis = redis;
     }
 
     @Override
@@ -96,68 +99,86 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.deleteById(id);
     }
 
-    @Override
     @Transactional
     public BookingDraftResultVM createDraft(CreateBookingDraftRequestVM req) {
-        // 1) Price it (validates seat availability)
-        var pricing = pricingService.computePrice(req.getTripId(), req.getSeats(), req.getPromoCode());
+        String idemKey = "idem:booking:" + req.getIdemKey();
+        String sessKey = null;
 
-        // 2) Persist Booking (DRAFT)
-        Booking b = new Booking();
-        b.setBookingCode(generateBookingCode());
-        b.setStatus(BookingStatus.DRAFT); // enum, not string
-        b.setQuantity(req.getSeats() != null ? req.getSeats().size() : 0);
-        b.setTotalAmount(pricing.getFinalPrice());
-        b.setBookedAt(Instant.now());
-        b.setCustomerId(req.getCustomerId());
-        b.setCreatedAt(Instant.now());
-        b.setUpdatedAt(Instant.now());
-        b = bookingRepository.save(b);
-
-        // 3) Snapshot pricing (normalized to your JDL)
-        PricingSnapshotDTO ps = pricing.getPricingSnapshot();
-        PricingSnapshot snap = new PricingSnapshot();
-        snap.setBaseFare(ps.getBaseFare());
-        snap.setVehicleFactor(ps.getVehicleFactor());
-        snap.setFloorFactor(ps.getFloorFactor());
-        snap.setSeatFactor(ps.getSeatFactor());
-        snap.setFinalPrice(ps.getFinalPrice());
-        snap.setCreatedAt(Instant.now());
-        snap.setBooking(b);
-        pricingSnapRepo.save(snap);
-
-        // 4) Snapshot applied promotion (if any)
-        if (pricing.isPromoApplied() && pricing.getAppliedPromotion() != null) {
-            AppliedPromotionDTO ap = pricing.getAppliedPromotion();
-            AppliedPromotion apEntity = new AppliedPromotion();
-            apEntity.setPromotionId(ap.getPromotionId()); // set if available
-            apEntity.setPromotionCode(ap.getPromotionCode());
-            apEntity.setPolicyType(ap.getPolicyType());
-            apEntity.setPercent(ap.getPercent());
-            apEntity.setMaxOff(ap.getMaxOff());
-            apEntity.setDiscountAmount(ap.getDiscountAmount());
-            apEntity.setAppliedAt(Instant.now());
-            apEntity.setCreatedAt(Instant.now());
-            apEntity.setBooking(b);
-            appliedPromoRepo.save(apEntity);
+        // === 1️⃣ Idempotency guard ===
+        Boolean isNew = redis.opsForValue().setIfAbsent(idemKey, "LOCKED", Duration.ofSeconds(60));
+        if (Boolean.FALSE.equals(isNew)) {
+            throw new IllegalStateException("Duplicate booking request detected (idemKey = " + req.getIdemKey() + ")");
         }
 
-        // 5) Build result
-        BookingDraftResultVM vm = new BookingDraftResultVM();
-        vm.setBookingId(b.getId());
-        vm.setBookingCode(b.getBookingCode());
-        vm.setStatus(b.getStatus().name()); // if VM expects String
-        vm.setQuantity(b.getQuantity());
-        vm.setTotalAmount(b.getTotalAmount());
+        try {
+            // === 2️⃣ Compute pricing (includes promo caching in PricingService) ===
+            var pricing = pricingService.computePrice(req.getTripId(), req.getSeats(), req.getPromoCode());
 
-        vm.setTripId(req.getTripId());
-        vm.setSeats(req.getSeats());
-        vm.setPromoCode(req.getPromoCode());
+            // === 3️⃣ Persist DRAFT booking ===
+            Booking b = new Booking();
+            b.setBookingCode(generateBookingCode());
+            b.setStatus(BookingStatus.DRAFT);
+            b.setQuantity(req.getSeats() != null ? req.getSeats().size() : 0);
+            b.setTotalAmount(pricing.getFinalPrice());
+            b.setBookedAt(Instant.now());
+            b.setCustomerId(req.getCustomerId());
+            b.setCreatedAt(Instant.now());
+            b.setUpdatedAt(Instant.now());
+            b = bookingRepository.save(b);
 
-        vm.setPricingSnapshot(ps);
-        vm.setAppliedPromotion(pricing.getAppliedPromotion());
-        vm.setPromoApplied(pricing.isPromoApplied());
-        return vm;
+            // === 4️⃣ Store booking session state in Redis ===
+            sessKey = "booking:sess:" + b.getId();
+            redis.opsForValue().set(sessKey, "AWAITING_LOCK", Duration.ofMinutes(20));
+
+            // === 5️⃣ Save pricing snapshot ===
+            PricingSnapshotDTO ps = pricing.getPricingSnapshot();
+            PricingSnapshot snap = new PricingSnapshot();
+            snap.setBaseFare(ps.getBaseFare());
+            snap.setVehicleFactor(ps.getVehicleFactor());
+            snap.setFloorFactor(ps.getFloorFactor());
+            snap.setSeatFactor(ps.getSeatFactor());
+            snap.setFinalPrice(ps.getFinalPrice());
+            snap.setCreatedAt(Instant.now());
+            snap.setBooking(b);
+            pricingSnapRepo.save(snap);
+
+            // === 6️⃣ Save applied promotion (if any) ===
+            if (pricing.isPromoApplied() && pricing.getAppliedPromotion() != null) {
+                AppliedPromotionDTO ap = pricing.getAppliedPromotion();
+                AppliedPromotion apEntity = new AppliedPromotion();
+                apEntity.setPromotionId(ap.getPromotionId());
+                apEntity.setPromotionCode(ap.getPromotionCode());
+                apEntity.setPolicyType(ap.getPolicyType());
+                apEntity.setPercent(ap.getPercent());
+                apEntity.setMaxOff(ap.getMaxOff());
+                apEntity.setDiscountAmount(ap.getDiscountAmount());
+                apEntity.setAppliedAt(Instant.now());
+                apEntity.setCreatedAt(Instant.now());
+                apEntity.setBooking(b);
+                appliedPromoRepo.save(apEntity);
+            }
+
+            // === 7️⃣ Build return result ===
+            BookingDraftResultVM vm = new BookingDraftResultVM();
+            vm.setBookingId(b.getId());
+            vm.setBookingCode(b.getBookingCode());
+            vm.setStatus(b.getStatus().name());
+            vm.setQuantity(b.getQuantity());
+            vm.setTotalAmount(b.getTotalAmount());
+            vm.setTripId(req.getTripId());
+            vm.setSeats(req.getSeats());
+            vm.setPromoCode(req.getPromoCode());
+            vm.setPricingSnapshot(ps);
+            vm.setAppliedPromotion(pricing.getAppliedPromotion());
+            vm.setPromoApplied(pricing.isPromoApplied());
+            return vm;
+
+        } catch (Exception ex) {
+            LOG.error("Booking draft failed: {}", ex.getMessage(), ex);
+            if (sessKey != null)
+                redis.delete(sessKey);
+            throw ex;
+        }
     }
 
     private String generateBookingCode() {

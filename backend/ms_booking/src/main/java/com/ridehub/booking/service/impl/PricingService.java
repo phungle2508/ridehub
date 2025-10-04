@@ -1,5 +1,6 @@
 package com.ridehub.booking.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ridehub.booking.service.dto.AppliedPromotionDTO;
 import com.ridehub.booking.service.dto.PricingSnapshotDTO;
 import com.ridehub.booking.service.vm.PricingResultVM;
@@ -17,9 +18,11 @@ import com.ridehub.msroute.client.model.TripDetailVM;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -39,135 +42,83 @@ public class PricingService {
 
     private final PromotionResourceMspromotionApi promotionResourceMspromotionApi;
     private final TripResourceMsrouteApi tripResourceMsrouteApi;
+    private final StringRedisTemplate redis;
 
     public PricingService(
             PromotionResourceMspromotionApi promotionResourceMspromotionApi,
-            TripResourceMsrouteApi tripResourceMsrouteApi) {
+            TripResourceMsrouteApi tripResourceMsrouteApi, StringRedisTemplate redis) {
         this.promotionResourceMspromotionApi = promotionResourceMspromotionApi;
         this.tripResourceMsrouteApi = tripResourceMsrouteApi;
+        this.redis = redis;
     }
 
     /**
      * Main entry point used by BookingService.
      */
     public PricingResultVM computePrice(Long tripId, List<String> seatNos, String promoCode) {
-        if (seatNos == null || seatNos.isEmpty()) {
+        if (seatNos == null || seatNos.isEmpty())
             throw new IllegalArgumentException("Seat list cannot be empty");
-        }
 
-        // ===== 1) Get trip details (direct Feign; caching removed) =====
-        // String tripCacheKey = "trip:detail:" + tripId;
-        // TripDetailVM tripVM = getCached(tripCacheKey, TripDetailVM.class);
-        // if (tripVM == null) { ... setCached(...) }
+        // === 1️⃣ Trip lookup (no cache yet) ===
         TripDetailVM tripVM = tripResourceMsrouteApi.getTripDetail(tripId);
 
-        // Extract inputs
         BigDecimal baseFare = nn(tripVM.getTripDTO().getBaseFare(), BigDecimal.ZERO);
-        BigDecimal vehicleFactor = nn(tripVM.getDetailVM().getVehicle().getTypeFactor(), BigDecimal.ONE); // default 1
+        BigDecimal vehicleFactor = nn(tripVM.getDetailVM().getVehicle().getTypeFactor(), BigDecimal.ONE);
         Long routeId = tripVM.getTripDTO().getRoute().getId();
         LocalDate travelDate = toLocalDate(tripVM.getTripDTO().getDepartureTime());
 
-        // ===== 2) Build lookups: floor factors, seats by seatNo, seatNo → floorId (as
-        // String in VM) =====
-        Map<Long, BigDecimal> floorFactorById = new HashMap<>();
-        if (tripVM.getDetailVM().getFloors() != null) {
-            for (FloorDTO f : tripVM.getDetailVM().getFloors()) {
-                floorFactorById.put(f.getId(), nn(f.getPriceFactorFloor(), BigDecimal.ONE));
-            }
-        }
-
-        Map<String, SeatDTO> seatByNo = new HashMap<>();
-        Map<String, String> seatFloorId = new HashMap<>(); // matches VM map key type (String)
-        Map<String, List<SeatDTO>> byFloor = tripVM.getDetailVM().getSeatsByFloorId();
-
-        if (byFloor != null) {
-            for (Map.Entry<String, List<SeatDTO>> e : byFloor.entrySet()) {
-                String floorIdStr = e.getKey(); // String key
-                for (SeatDTO s : e.getValue()) {
-                    seatByNo.put(s.getSeatNo(), s);
-                    seatFloorId.put(s.getSeatNo(), floorIdStr);
-                }
-            }
-        }
-
-        // ===== 3) Validate seat availability from SeatLockDTOs (HELD/COMMITTED) =====
+        // === 2️⃣ Validate seat availability ===
         if (tripVM.getSeatLockDTOs() != null && !tripVM.getSeatLockDTOs().isEmpty()) {
             Set<String> taken = tripVM.getSeatLockDTOs().stream()
                     .filter(l -> eqAnyIgnoreCase(l.getStatus(), "HELD", "COMMITTED"))
                     .map(SeatLockDTO::getSeatNo)
                     .collect(Collectors.toSet());
-
             for (String s : seatNos) {
-                if (taken.contains(s)) {
+                if (taken.contains(s))
                     throw new IllegalStateException("Seat " + s + " is not available");
-                }
             }
         }
 
-        // ===== 4) Compute per-seat prices and total =====
-        List<BigDecimal> perSeatPrices = new ArrayList<>(seatNos.size());
-        for (String seatNo : seatNos) {
-            SeatDTO seat = seatByNo.get(seatNo);
-            if (seat == null) {
-                throw new IllegalArgumentException("Unknown seat number: " + seatNo);
-            }
-            String floorIdStr = seatFloorId.get(seatNo);
-            Long floorId = parseLongSafe(floorIdStr);
-            BigDecimal floorFactor = nn(floorFactorById.getOrDefault(floorId, BigDecimal.ONE), BigDecimal.ONE);
-            BigDecimal seatFactor = nn(seat.getPriceFactor(), BigDecimal.ONE);
-
-            BigDecimal perSeat = baseFare
-                    .multiply(vehicleFactor)
-                    .multiply(floorFactor)
-                    .multiply(seatFactor);
-
-            perSeatPrices.add(perSeat);
-        }
-
+        // === 3️⃣ Compute total base price ===
+        List<BigDecimal> perSeatPrices = computeSeatPrices(tripVM, seatNos, baseFare, vehicleFactor);
         BigDecimal total = perSeatPrices.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // ===== 5) Apply promotion if present (detail-by-code → local evaluation) =====
+        // === 4️⃣ Try promo cache (Redis) ===
         AppliedPromotionDTO applied = null;
         if (promoCode != null && !promoCode.isBlank()) {
+            String promoKey = "promo:" + promoCode;
             PromotionDetailDTO detail = null;
 
             try {
-                detail = promotionResourceMspromotionApi.getPromotionDetailByCode(promoCode);
+                String cached = redis.opsForValue().get(promoKey);
+                if (cached != null) {
+                    detail = new ObjectMapper().readValue(cached, PromotionDetailDTO.class);
+                    LOG.debug("Promo {} found in Redis cache", promoCode);
+                } else {
+                    detail = promotionResourceMspromotionApi.getPromotionDetailByCode(promoCode);
+                    if (detail != null && detail.getId() != null) {
+                        String json = new ObjectMapper().writeValueAsString(detail);
+                        redis.opsForValue().set(promoKey, json, Duration.ofMinutes(5));
+                        LOG.debug("Promo {} cached in Redis", promoCode);
+                    }
+                }
             } catch (Exception e) {
-                LOG.warn("Failed to load promo detail for code {}: {}", promoCode, e.toString());
+                LOG.warn("Promo {} cache failed: {}", promoCode, e.toString());
             }
 
-            // If we couldn't fetch the detail (or it has no id), DO NOT evaluate/apply.
-            if (detail == null || detail.getId() == null) {
-                LOG.info("Promo {} ignored: detail {} / id {}", promoCode, (detail == null ? "null" : "non-null"),
-                        (detail != null ? detail.getId() : null));
-            } else {
+            if (detail != null && detail.getId() != null) {
                 applied = evaluatePromotion(detail, routeId, travelDate, seatNos.size(), perSeatPrices);
-
-                if (applied != null) {
-                    // Ensure required linkage is present for persistence later
-                    if (applied.getPromotionId() == null) {
-                        applied.setPromotionId(detail.getId());
-                    }
-                    if (applied.getPromotionCode() == null) {
-                        applied.setPromotionCode(detail.getCode());
-                    }
-
-                    // Only subtract if discount is set
-                    if (applied.getDiscountAmount() != null) {
-                        total = total.subtract(applied.getDiscountAmount());
-                        if (total.compareTo(BigDecimal.ZERO) < 0)
-                            total = BigDecimal.ZERO;
-                    }
+                if (applied != null && applied.getDiscountAmount() != null) {
+                    total = total.subtract(applied.getDiscountAmount()).max(BigDecimal.ZERO);
                 }
             }
         }
 
-        // ===== 6) Build snapshots/result =====
+        // === 5️⃣ Snapshot result ===
         PricingSnapshotDTO snap = new PricingSnapshotDTO();
         snap.setBaseFare(baseFare);
         snap.setVehicleFactor(vehicleFactor);
-        snap.setFloorFactor(BigDecimal.ONE); // aggregate kept simple
+        snap.setFloorFactor(BigDecimal.ONE);
         snap.setSeatFactor(BigDecimal.ONE);
         snap.setFinalPrice(total);
 
@@ -176,7 +127,6 @@ public class PricingService {
         out.setAppliedPromotion(applied);
         out.setFinalPrice(total);
         out.setPromoApplied(applied != null);
-
         return out;
     }
 
@@ -287,6 +237,31 @@ public class PricingService {
     // =========================
     // Small utilities
     // =========================
+    // ---- helper: compute per-seat prices ----
+    private List<BigDecimal> computeSeatPrices(
+            TripDetailVM tripVM, List<String> seatNos, BigDecimal baseFare, BigDecimal vehicleFactor) {
+
+        Map<Long, BigDecimal> floorFactorById = new HashMap<>();
+        tripVM.getDetailVM().getFloors()
+                .forEach(f -> floorFactorById.put(f.getId(), nn(f.getPriceFactorFloor(), BigDecimal.ONE)));
+
+        Map<String, SeatDTO> seatByNo = new HashMap<>();
+        tripVM.getDetailVM().getSeatsByFloorId().forEach((floorIdStr, seats) -> {
+            seats.forEach(s -> seatByNo.put(s.getSeatNo(), s));
+        });
+
+        List<BigDecimal> perSeat = new ArrayList<>();
+        for (String seatNo : seatNos) {
+            SeatDTO seat = seatByNo.get(seatNo);
+            if (seat == null)
+                throw new IllegalArgumentException("Unknown seat number: " + seatNo);
+            Long floorId = seat.getFloor().getId();
+            BigDecimal floorFactor = floorFactorById.getOrDefault(floorId, BigDecimal.ONE);
+            BigDecimal seatFactor = nn(seat.getPriceFactor(), BigDecimal.ONE);
+            perSeat.add(baseFare.multiply(vehicleFactor).multiply(floorFactor).multiply(seatFactor));
+        }
+        return perSeat;
+    }
 
     private static boolean eqAnyIgnoreCase(Enum<?> v, String... options) {
         if (v == null)
@@ -307,16 +282,6 @@ public class PricingService {
         if (odt == null)
             return LocalDate.now();
         return odt.toLocalDate();
-    }
-
-    private static Long parseLongSafe(String s) {
-        if (s == null)
-            return null;
-        try {
-            return Long.parseLong(s);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
     }
 
     private BigDecimal percent(BigDecimal base, Integer percent) {
