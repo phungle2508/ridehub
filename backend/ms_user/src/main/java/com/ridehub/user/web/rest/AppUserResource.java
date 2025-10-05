@@ -19,11 +19,13 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
@@ -235,7 +237,7 @@ public class AppUserResource {
             return ResponseEntity.notFound().build();
         }
 
-        AppUserDTO user = userOptional.get();
+        AppUserDTO user = userOptional.orElseThrow();
 
         // Disable user in Keycloak first
         Map<String, Object> keycloakResult = keycloakAuthService.adminDisableUser(user.getKeycloakId().toString());
@@ -249,19 +251,16 @@ public class AppUserResource {
         }
 
         // Disable user locally
-        Optional<AppUserDTO> result = appUserService.disableUser(id, deletedBy);
+        AppUserDTO result = appUserService.disableUser(id, deletedBy)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        if (result.isPresent()) {
-            LOG.info("Successfully disabled user with id: {} by admin: {}", id, deletedBy);
-            return ResponseEntity.ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
-                .body(Map.of(
-                    "status", "success",
-                    "message", "User disabled successfully",
-                    "user", result.get()
-                ));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        LOG.info("Successfully disabled user with id: {} by admin: {}", id, deletedBy);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(Map.of(
+                "status", "success",
+                "message", "User disabled successfully",
+                "user", result
+            ));
     }
 }
