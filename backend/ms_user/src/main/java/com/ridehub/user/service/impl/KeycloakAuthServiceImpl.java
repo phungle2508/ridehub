@@ -63,7 +63,7 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             @Value("${app.keycloak.base-url:https://keycloak.appf4s.io.vn}") String keycloakBaseUrl,
             @Value("${app.keycloak.realm:jhipster}") String realm,
             @Value("${app.keycloak.admin.client-id:svc-admin-bootstrap}") String adminClientId,
-            @Value("${app.keycloak.admin.client-secret:YSEwCJGZfrxUnq1Vvkx0y23u1mLR5hAE}") String adminClientSecret) {
+            @Value("${app.keycloak.admin.client-secret:EB4eohc7BEY3tw1Rjg7FS8xMLfi95n0n}") String adminClientSecret) {
         this.objectMapper = objectMapper;
         this.appUserService = appUserService;
         this.userClientId = userClientId;
@@ -580,6 +580,55 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
         } catch (Exception e) {
             log.error("Error during logout", e);
             return Map.of("status", "error", "message", "Logout failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Map<String, Object> adminDisableUser(String keycloakId) {
+        log.debug("Disabling user in Keycloak: {}", keycloakId);
+        try {
+            String adminToken = getAdminAccessToken();
+
+            // First, logout the user by killing all their sessions
+            try {
+                String logoutApi = adminPath("/users/" + keycloakId + "/logout");
+                HttpRequest logoutReq = HttpRequest.newBuilder()
+                        .uri(uri(logoutApi))
+                        .header("Authorization", "Bearer " + adminToken)
+                        .timeout(REQ_TIMEOUT)
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .build();
+
+                HttpResponse<Void> logoutRes = httpClient.send(logoutReq, HttpResponse.BodyHandlers.discarding());
+                if (logoutRes.statusCode() == 204) {
+                    log.info("Successfully logged out user sessions for: {}", keycloakId);
+                } else {
+                    log.warn("Logout sessions returned HTTP {}, continuing with disable", logoutRes.statusCode());
+                }
+            } catch (Exception logoutEx) {
+                log.warn("Failed to logout user sessions (continuing with disable): {}", logoutEx.getMessage());
+            }
+
+            // Get current user data
+            String userApi = adminPath("/users/" + keycloakId);
+            Map<String, Object> kcUser = getJson(userApi, adminToken, 200);
+
+            // Set enabled to false to disable the user
+            kcUser.put("enabled", false);
+
+            // Update user in Keycloak
+            putJson(userApi, kcUser, 204, adminToken);
+
+            log.info("Successfully disabled user in Keycloak: {}", keycloakId);
+            return Map.of("status", "success", "message", "User disabled successfully in Keycloak and sessions terminated");
+
+        } catch (HttpProblem hp) {
+            KeycloakErrorDetails errorDetails = extractKeycloakErrorDetails(hp.body());
+            log.error("Failed to disable user in Keycloak: HTTP {}: {}", hp.status(), errorDetails.getDisplayMessage());
+            return Map.of("status", "error", "message", errorDetails.getDisplayMessage());
+        } catch (Exception e) {
+            log.error("Error disabling user in Keycloak: {}", e.getMessage(), e);
+            return Map.of("status", "error", "message", "Failed to disable user in Keycloak: " + e.getMessage());
         }
     }
     // ============================

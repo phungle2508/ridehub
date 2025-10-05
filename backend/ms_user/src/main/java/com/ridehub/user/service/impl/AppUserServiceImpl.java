@@ -171,4 +171,24 @@ public class AppUserServiceImpl implements AppUserService {
                 .map(appUserMapper::toDto);
     }
 
+    @Override
+    public Optional<AppUserDTO> disableUser(Long id, UUID deletedBy) {
+        LOG.debug("Request to disable AppUser with id: {} by admin: {}", id, deletedBy);
+
+        return appUserRepository.findById(id)
+                .map(appUser -> {
+                    // Set delete status and timestamps
+                    appUser.setIsDeleted(true);
+                    appUser.setDeletedAt(Instant.now());
+                    appUser.setDeletedBy(deletedBy);
+                    appUser.setIsActive(false); // Also set inactive
+                    appUser.setUpdatedAt(Instant.now());
+
+                    AppUser savedUser = appUserRepository.save(appUser);
+                    LOG.info("Successfully disabled user with id: {} by admin: {}", id, deletedBy);
+                    return savedUser;
+                })
+                .map(appUserMapper::toDto);
+    }
+
 }

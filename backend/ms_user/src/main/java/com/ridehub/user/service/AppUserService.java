@@ -86,4 +86,13 @@ public interface AppUserService {
      */
     Optional<AppUserDTO> updateProfileFromAdmin(UUID keycloakId, String email, String phoneNumber, String firstName,
             String lastName, Boolean enabled);
+
+    /**
+     * Disable user by setting delete status and timestamps
+     *
+     * @param id the id of the user to disable
+     * @param deletedBy the UUID of the admin who is disabling the user
+     * @return the disabled user entity
+     */
+    Optional<AppUserDTO> disableUser(Long id, UUID deletedBy);
 }

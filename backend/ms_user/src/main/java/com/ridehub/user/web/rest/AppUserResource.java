@@ -3,6 +3,7 @@ package com.ridehub.user.web.rest;
 import com.ridehub.user.repository.AppUserRepository;
 import com.ridehub.user.service.AppUserQueryService;
 import com.ridehub.user.service.AppUserService;
+import com.ridehub.user.service.KeycloakAuthService;
 import com.ridehub.user.service.criteria.AppUserCriteria;
 import com.ridehub.user.service.dto.AppUserDTO;
 import com.ridehub.user.web.rest.errors.BadRequestAlertException;
@@ -11,12 +12,17 @@ import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -41,10 +47,13 @@ public class AppUserResource {
 
     private final AppUserQueryService appUserQueryService;
 
-    public AppUserResource(AppUserService appUserService, AppUserRepository appUserRepository, AppUserQueryService appUserQueryService) {
+    private final KeycloakAuthService keycloakAuthService;
+
+    public AppUserResource(AppUserService appUserService, AppUserRepository appUserRepository, AppUserQueryService appUserQueryService, KeycloakAuthService keycloakAuthService) {
         this.appUserService = appUserService;
         this.appUserRepository = appUserRepository;
         this.appUserQueryService = appUserQueryService;
+        this.keycloakAuthService = keycloakAuthService;
     }
 
     /**
@@ -187,5 +196,72 @@ public class AppUserResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code PUT  /app-users/:id/disable} : disable the "id" appUser.
+     * Sets delete status and disables the user in Keycloak.
+     *
+     * @param id the id of the appUserDTO to disable.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the disabled appUserDTO,
+     * or with status {@code 404 (Not Found)} if the appUserDTO is not found.
+     */
+    @PutMapping("/{id}/disable")
+    public ResponseEntity<Map<String, Object>> disableAppUser(@PathVariable("id") Long id) {
+        LOG.debug("REST request to disable AppUser : {}", id);
+
+        if (!appUserRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        // Get current user from security context to track who is disabling the user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UUID deletedBy = null;
+
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            String sub = jwt.getClaimAsString("sub");
+            if (sub != null) {
+                try {
+                    deletedBy = UUID.fromString(sub);
+                } catch (IllegalArgumentException e) {
+                    LOG.warn("Invalid UUID format for user ID: {}", sub);
+                }
+            }
+        }
+
+        // Find the user to get their Keycloak ID
+        Optional<AppUserDTO> userOptional = appUserService.findOne(id);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        AppUserDTO user = userOptional.get();
+
+        // Disable user in Keycloak first
+        Map<String, Object> keycloakResult = keycloakAuthService.adminDisableUser(user.getKeycloakId().toString());
+
+        if (!"success".equals(keycloakResult.get("status"))) {
+            LOG.error("Failed to disable user in Keycloak: {}", keycloakResult.get("message"));
+            return ResponseEntity.badRequest().body(Map.of(
+                "status", "error",
+                "message", "Failed to disable user in Keycloak: " + keycloakResult.get("message")
+            ));
+        }
+
+        // Disable user locally
+        Optional<AppUserDTO> result = appUserService.disableUser(id, deletedBy);
+
+        if (result.isPresent()) {
+            LOG.info("Successfully disabled user with id: {} by admin: {}", id, deletedBy);
+            return ResponseEntity.ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .body(Map.of(
+                    "status", "success",
+                    "message", "User disabled successfully",
+                    "user", result.get()
+                ));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

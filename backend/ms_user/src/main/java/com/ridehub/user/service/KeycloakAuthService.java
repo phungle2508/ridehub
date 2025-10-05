@@ -107,4 +107,12 @@ public interface KeycloakAuthService {
      * @return the logout response
      */
     Map<String, Object> logout(String refreshToken);
+
+    /**
+     * Disable user in Keycloak by setting enabled to false
+     *
+     * @param keycloakId the Keycloak user ID
+     * @return the disable response
+     */
+    Map<String, Object> adminDisableUser(String keycloakId);
 }
