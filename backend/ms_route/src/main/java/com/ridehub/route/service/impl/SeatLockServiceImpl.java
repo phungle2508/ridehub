@@ -11,6 +11,9 @@ import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
 import com.ridehub.route.service.mapper.SeatLockMapper;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -22,7 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service Implementation for managing {@link com.ridehub.route.domain.SeatLock}.
+ * Service Implementation for managing
+ * {@link com.ridehub.route.domain.SeatLock}.
  */
 @Service
 @Transactional
@@ -38,7 +42,7 @@ public class SeatLockServiceImpl implements SeatLockService {
     private static final int LOCK_DURATION_MINUTES = 20; // 20 minutes lock duration as per PlantUML
 
     public SeatLockServiceImpl(SeatLockRepository seatLockRepository, TripRepository tripRepository,
-                              SeatLockMapper seatLockMapper, SeatLockQueryService seatLockQueryService) {
+            SeatLockMapper seatLockMapper, SeatLockQueryService seatLockQueryService) {
         this.seatLockRepository = seatLockRepository;
         this.tripRepository = tripRepository;
         this.seatLockMapper = seatLockMapper;
@@ -66,14 +70,14 @@ public class SeatLockServiceImpl implements SeatLockService {
         LOG.debug("Request to partially update SeatLock : {}", seatLockDTO);
 
         return seatLockRepository
-            .findById(seatLockDTO.getId())
-            .map(existingSeatLock -> {
-                seatLockMapper.partialUpdate(existingSeatLock, seatLockDTO);
+                .findById(seatLockDTO.getId())
+                .map(existingSeatLock -> {
+                    seatLockMapper.partialUpdate(existingSeatLock, seatLockDTO);
 
-                return existingSeatLock;
-            })
-            .map(seatLockRepository::save)
-            .map(seatLockMapper::toDto);
+                    return existingSeatLock;
+                })
+                .map(seatLockRepository::save)
+                .map(seatLockMapper::toDto);
     }
 
     @Override
@@ -95,45 +99,46 @@ public class SeatLockServiceImpl implements SeatLockService {
         LOG.debug("Request to lock seats for booking: {}, trip: {}, seats: {}",
                 request.getBookingId(), request.getTripId(), request.getSeatNumbers());
 
-        // Check idempotency - if this request was already processed using query service
-        Optional<SeatLock> existingLock = seatLockQueryService.findByIdempotencyKey(request.getIdemKey());
-        if (existingLock.isPresent()) {
+        // Idempotency fast-path (this is fine to keep as Optional)
+        SeatLock existingLock = seatLockQueryService
+                .findByIdempotencyKey(request.getIdemKey())
+                .orElse(null);
+
+        if (existingLock != null) {
             LOG.info("Idempotent request detected for key: {}", request.getIdemKey());
-            return createResponseFromExistingLock(existingLock.get(), request);
+            return createResponseFromExistingLock(existingLock, request);
         }
 
         try {
-            // Validate trip exists
-            Optional<Trip> tripOpt = tripRepository.findById(request.getTripId());
-            if (tripOpt.isEmpty()) {
-                LOG.warn("Trip not found: {}", request.getTripId());
-                return new SeatLockResponseDTO("REJECTED", "Trip not found", request.getBookingId(), request.getTripId());
-            }
+            // ✅ Use orElseThrow instead of isEmpty()/get()
+            Trip trip = tripRepository
+                    .findById(request.getTripId())
+                    .orElseThrow(() -> new EntityNotFoundException("Trip not found: " + request.getTripId()));
 
-            Trip trip = tripOpt.get();
             Instant now = Instant.now();
 
-            // Check if any of the requested seats are already locked using query service
+            // Check current active locks
             List<SeatLock> conflictingLocks = seatLockQueryService.findActiveLocksByTripAndSeats(
-                request.getTripId(), request.getSeatNumbers(), LockStatus.HELD, now);
+                    request.getTripId(), request.getSeatNumbers(), LockStatus.HELD, now);
 
             if (!conflictingLocks.isEmpty()) {
                 List<String> unavailableSeats = conflictingLocks.stream()
-                    .map(SeatLock::getSeatNo)
-                    .distinct()
-                    .toList();
+                        .map(SeatLock::getSeatNo)
+                        .distinct()
+                        .toList();
 
                 LOG.warn("Seats {} are not available for trip {}", unavailableSeats, request.getTripId());
-                return new SeatLockResponseDTO("REJECTED",
-                    "Seats not available: " + String.join(", ", unavailableSeats),
-                    request.getBookingId(), request.getTripId());
+                return new SeatLockResponseDTO(
+                        "REJECTED",
+                        "Seats not available: " + String.join(", ", unavailableSeats),
+                        request.getBookingId(),
+                        request.getTripId());
             }
 
-            // All seats are available, proceed with locking
+            // Proceed with locking
             String lockId = UUID.randomUUID().toString();
             Instant expiresAt = now.plus(LOCK_DURATION_MINUTES, ChronoUnit.MINUTES);
 
-            // Create seat locks for each seat - only save if not exists in repository
             for (String seatNumber : request.getSeatNumbers()) {
                 SeatLock seatLock = new SeatLock();
                 seatLock.setSeatNo(seatNumber);
@@ -161,13 +166,18 @@ public class SeatLockServiceImpl implements SeatLockService {
 
             return response;
 
+        } catch (EntityNotFoundException e) { // ✅ map not-found to REJECTED (not 500)
+            LOG.warn("Trip not found: {}", request.getTripId());
+            return new SeatLockResponseDTO("REJECTED", "Trip not found",
+                    request.getBookingId(), request.getTripId());
+
         } catch (Exception e) {
             LOG.error("Error processing seat lock request for booking {}: {}",
                     request.getBookingId(), e.getMessage(), e);
 
             return new SeatLockResponseDTO("REJECTED",
-                "Internal error occurred while processing seat lock",
-                request.getBookingId(), request.getTripId());
+                    "Internal error occurred while processing seat lock",
+                    request.getBookingId(), request.getTripId());
         }
     }
 
@@ -176,11 +186,13 @@ public class SeatLockServiceImpl implements SeatLockService {
         response.setBookingId(request.getBookingId());
         response.setTripId(request.getTripId());
 
-        // Check if the existing lock is still valid
-        if (existingLock.getExpiresAt().isAfter(Instant.now()) &&
-            LockStatus.HELD.equals(existingLock.getStatus()) &&
-            (existingLock.getIsDeleted() == null || !existingLock.getIsDeleted())) {
+        Instant now = Instant.now(); // capture once
 
+        boolean valid = existingLock.getExpiresAt().isAfter(now)
+                && LockStatus.HELD.equals(existingLock.getStatus())
+                && (existingLock.getIsDeleted() == null || !existingLock.getIsDeleted());
+
+        if (valid) {
             response.setStatus("HELD");
             response.setMessage("Seats successfully locked (cached)");
             response.setExpiresAt(existingLock.getExpiresAt().getEpochSecond());
@@ -188,7 +200,7 @@ public class SeatLockServiceImpl implements SeatLockService {
             response.setStatus("REJECTED");
             response.setMessage("Seats not available (cached)");
         }
-
         return response;
     }
+
 }
