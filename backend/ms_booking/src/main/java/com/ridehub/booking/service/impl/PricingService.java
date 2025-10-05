@@ -11,7 +11,6 @@ import com.ridehub.mspromotion.client.model.PercentOffTotalDTO;
 import com.ridehub.mspromotion.client.model.PromotionDetailDTO;
 
 import com.ridehub.msroute.client.api.TripResourceMsrouteApi;
-import com.ridehub.msroute.client.model.FloorDTO;
 import com.ridehub.msroute.client.model.SeatDTO;
 import com.ridehub.msroute.client.model.SeatLockDTO;
 import com.ridehub.msroute.client.model.TripDetailVM;

@@ -66,6 +66,20 @@ class BookingResourceIT {
     private static final String DEFAULT_IDEMPOTENCY_KEY = "AAAAAAAAAA";
     private static final String UPDATED_IDEMPOTENCY_KEY = "BBBBBBBBBB";
 
+    private static final Long DEFAULT_TRIP_ID = 1L;
+    private static final Long UPDATED_TRIP_ID = 2L;
+    private static final Long SMALLER_TRIP_ID = 1L - 1L;
+
+    private static final String DEFAULT_LOCK_GROUP_ID = "AAAAAAAAAA";
+    private static final String UPDATED_LOCK_GROUP_ID = "BBBBBBBBBB";
+
+    private static final Instant DEFAULT_EXPIRES_AT = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_EXPIRES_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    private static final Integer DEFAULT_TIMEOUT_MINUTES = 1;
+    private static final Integer UPDATED_TIMEOUT_MINUTES = 2;
+    private static final Integer SMALLER_TIMEOUT_MINUTES = 1 - 1;
+
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
@@ -121,6 +135,10 @@ class BookingResourceIT {
             .bookedAt(DEFAULT_BOOKED_AT)
             .customerId(DEFAULT_CUSTOMER_ID)
             .idempotencyKey(DEFAULT_IDEMPOTENCY_KEY)
+            .tripId(DEFAULT_TRIP_ID)
+            .lockGroupId(DEFAULT_LOCK_GROUP_ID)
+            .expiresAt(DEFAULT_EXPIRES_AT)
+            .timeoutMinutes(DEFAULT_TIMEOUT_MINUTES)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
             .isDeleted(DEFAULT_IS_DELETED)
@@ -143,6 +161,10 @@ class BookingResourceIT {
             .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
             .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .tripId(UPDATED_TRIP_ID)
+            .lockGroupId(UPDATED_LOCK_GROUP_ID)
+            .expiresAt(UPDATED_EXPIRES_AT)
+            .timeoutMinutes(UPDATED_TIMEOUT_MINUTES)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -294,6 +316,23 @@ class BookingResourceIT {
 
     @Test
     @Transactional
+    void checkTripIdIsRequired() throws Exception {
+        long databaseSizeBeforeTest = getRepositoryCount();
+        // set the field null
+        booking.setTripId(null);
+
+        // Create the Booking, which fails.
+        BookingDTO bookingDTO = bookingMapper.toDto(booking);
+
+        restBookingMockMvc
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(bookingDTO)))
+            .andExpect(status().isBadRequest());
+
+        assertSameRepositoryCount(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     void checkCreatedAtIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null
@@ -328,6 +367,10 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
             .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
+            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.intValue())))
+            .andExpect(jsonPath("$.[*].lockGroupId").value(hasItem(DEFAULT_LOCK_GROUP_ID)))
+            .andExpect(jsonPath("$.[*].expiresAt").value(hasItem(DEFAULT_EXPIRES_AT.toString())))
+            .andExpect(jsonPath("$.[*].timeoutMinutes").value(hasItem(DEFAULT_TIMEOUT_MINUTES)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -354,6 +397,10 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.bookedAt").value(DEFAULT_BOOKED_AT.toString()))
             .andExpect(jsonPath("$.customerId").value(DEFAULT_CUSTOMER_ID.toString()))
             .andExpect(jsonPath("$.idempotencyKey").value(DEFAULT_IDEMPOTENCY_KEY))
+            .andExpect(jsonPath("$.tripId").value(DEFAULT_TRIP_ID.intValue()))
+            .andExpect(jsonPath("$.lockGroupId").value(DEFAULT_LOCK_GROUP_ID))
+            .andExpect(jsonPath("$.expiresAt").value(DEFAULT_EXPIRES_AT.toString()))
+            .andExpect(jsonPath("$.timeoutMinutes").value(DEFAULT_TIMEOUT_MINUTES))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
             .andExpect(jsonPath("$.isDeleted").value(DEFAULT_IS_DELETED))
@@ -726,6 +773,244 @@ class BookingResourceIT {
 
     @Test
     @Transactional
+    void getAllBookingsByTripIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where tripId equals to
+        defaultBookingFiltering("tripId.equals=" + DEFAULT_TRIP_ID, "tripId.equals=" + UPDATED_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTripIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where tripId in
+        defaultBookingFiltering("tripId.in=" + DEFAULT_TRIP_ID + "," + UPDATED_TRIP_ID, "tripId.in=" + UPDATED_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTripIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where tripId is not null
+        defaultBookingFiltering("tripId.specified=true", "tripId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTripIdIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where tripId is greater than or equal to
+        defaultBookingFiltering("tripId.greaterThanOrEqual=" + DEFAULT_TRIP_ID, "tripId.greaterThanOrEqual=" + UPDATED_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTripIdIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where tripId is less than or equal to
+        defaultBookingFiltering("tripId.lessThanOrEqual=" + DEFAULT_TRIP_ID, "tripId.lessThanOrEqual=" + SMALLER_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTripIdIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where tripId is less than
+        defaultBookingFiltering("tripId.lessThan=" + UPDATED_TRIP_ID, "tripId.lessThan=" + DEFAULT_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTripIdIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where tripId is greater than
+        defaultBookingFiltering("tripId.greaterThan=" + SMALLER_TRIP_ID, "tripId.greaterThan=" + DEFAULT_TRIP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByLockGroupIdIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where lockGroupId equals to
+        defaultBookingFiltering("lockGroupId.equals=" + DEFAULT_LOCK_GROUP_ID, "lockGroupId.equals=" + UPDATED_LOCK_GROUP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByLockGroupIdIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where lockGroupId in
+        defaultBookingFiltering(
+            "lockGroupId.in=" + DEFAULT_LOCK_GROUP_ID + "," + UPDATED_LOCK_GROUP_ID,
+            "lockGroupId.in=" + UPDATED_LOCK_GROUP_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByLockGroupIdIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where lockGroupId is not null
+        defaultBookingFiltering("lockGroupId.specified=true", "lockGroupId.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByLockGroupIdContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where lockGroupId contains
+        defaultBookingFiltering("lockGroupId.contains=" + DEFAULT_LOCK_GROUP_ID, "lockGroupId.contains=" + UPDATED_LOCK_GROUP_ID);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByLockGroupIdNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where lockGroupId does not contain
+        defaultBookingFiltering(
+            "lockGroupId.doesNotContain=" + UPDATED_LOCK_GROUP_ID,
+            "lockGroupId.doesNotContain=" + DEFAULT_LOCK_GROUP_ID
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByExpiresAtIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where expiresAt equals to
+        defaultBookingFiltering("expiresAt.equals=" + DEFAULT_EXPIRES_AT, "expiresAt.equals=" + UPDATED_EXPIRES_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByExpiresAtIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where expiresAt in
+        defaultBookingFiltering("expiresAt.in=" + DEFAULT_EXPIRES_AT + "," + UPDATED_EXPIRES_AT, "expiresAt.in=" + UPDATED_EXPIRES_AT);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByExpiresAtIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where expiresAt is not null
+        defaultBookingFiltering("expiresAt.specified=true", "expiresAt.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTimeoutMinutesIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where timeoutMinutes equals to
+        defaultBookingFiltering("timeoutMinutes.equals=" + DEFAULT_TIMEOUT_MINUTES, "timeoutMinutes.equals=" + UPDATED_TIMEOUT_MINUTES);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTimeoutMinutesIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where timeoutMinutes in
+        defaultBookingFiltering(
+            "timeoutMinutes.in=" + DEFAULT_TIMEOUT_MINUTES + "," + UPDATED_TIMEOUT_MINUTES,
+            "timeoutMinutes.in=" + UPDATED_TIMEOUT_MINUTES
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTimeoutMinutesIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where timeoutMinutes is not null
+        defaultBookingFiltering("timeoutMinutes.specified=true", "timeoutMinutes.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTimeoutMinutesIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where timeoutMinutes is greater than or equal to
+        defaultBookingFiltering(
+            "timeoutMinutes.greaterThanOrEqual=" + DEFAULT_TIMEOUT_MINUTES,
+            "timeoutMinutes.greaterThanOrEqual=" + UPDATED_TIMEOUT_MINUTES
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTimeoutMinutesIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where timeoutMinutes is less than or equal to
+        defaultBookingFiltering(
+            "timeoutMinutes.lessThanOrEqual=" + DEFAULT_TIMEOUT_MINUTES,
+            "timeoutMinutes.lessThanOrEqual=" + SMALLER_TIMEOUT_MINUTES
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTimeoutMinutesIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where timeoutMinutes is less than
+        defaultBookingFiltering("timeoutMinutes.lessThan=" + UPDATED_TIMEOUT_MINUTES, "timeoutMinutes.lessThan=" + DEFAULT_TIMEOUT_MINUTES);
+    }
+
+    @Test
+    @Transactional
+    void getAllBookingsByTimeoutMinutesIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedBooking = bookingRepository.saveAndFlush(booking);
+
+        // Get all the bookingList where timeoutMinutes is greater than
+        defaultBookingFiltering(
+            "timeoutMinutes.greaterThan=" + SMALLER_TIMEOUT_MINUTES,
+            "timeoutMinutes.greaterThan=" + DEFAULT_TIMEOUT_MINUTES
+        );
+    }
+
+    @Test
+    @Transactional
     void getAllBookingsByCreatedAtIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedBooking = bookingRepository.saveAndFlush(booking);
@@ -939,6 +1224,10 @@ class BookingResourceIT {
             .andExpect(jsonPath("$.[*].bookedAt").value(hasItem(DEFAULT_BOOKED_AT.toString())))
             .andExpect(jsonPath("$.[*].customerId").value(hasItem(DEFAULT_CUSTOMER_ID.toString())))
             .andExpect(jsonPath("$.[*].idempotencyKey").value(hasItem(DEFAULT_IDEMPOTENCY_KEY)))
+            .andExpect(jsonPath("$.[*].tripId").value(hasItem(DEFAULT_TRIP_ID.intValue())))
+            .andExpect(jsonPath("$.[*].lockGroupId").value(hasItem(DEFAULT_LOCK_GROUP_ID)))
+            .andExpect(jsonPath("$.[*].expiresAt").value(hasItem(DEFAULT_EXPIRES_AT.toString())))
+            .andExpect(jsonPath("$.[*].timeoutMinutes").value(hasItem(DEFAULT_TIMEOUT_MINUTES)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
             .andExpect(jsonPath("$.[*].isDeleted").value(hasItem(DEFAULT_IS_DELETED)))
@@ -999,6 +1288,10 @@ class BookingResourceIT {
             .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
             .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .tripId(UPDATED_TRIP_ID)
+            .lockGroupId(UPDATED_LOCK_GROUP_ID)
+            .expiresAt(UPDATED_EXPIRES_AT)
+            .timeoutMinutes(UPDATED_TIMEOUT_MINUTES)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)
@@ -1100,8 +1393,9 @@ class BookingResourceIT {
             .totalAmount(UPDATED_TOTAL_AMOUNT)
             .customerId(UPDATED_CUSTOMER_ID)
             .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .tripId(UPDATED_TRIP_ID)
             .createdAt(UPDATED_CREATED_AT)
-            .deletedBy(UPDATED_DELETED_BY);
+            .deletedAt(UPDATED_DELETED_AT);
 
         restBookingMockMvc
             .perform(
@@ -1138,6 +1432,10 @@ class BookingResourceIT {
             .bookedAt(UPDATED_BOOKED_AT)
             .customerId(UPDATED_CUSTOMER_ID)
             .idempotencyKey(UPDATED_IDEMPOTENCY_KEY)
+            .tripId(UPDATED_TRIP_ID)
+            .lockGroupId(UPDATED_LOCK_GROUP_ID)
+            .expiresAt(UPDATED_EXPIRES_AT)
+            .timeoutMinutes(UPDATED_TIMEOUT_MINUTES)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
             .isDeleted(UPDATED_IS_DELETED)

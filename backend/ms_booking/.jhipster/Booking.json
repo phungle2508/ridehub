@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251004110202"
+    "changelogDate": "20251005090357"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -42,6 +42,25 @@
       "fieldType": "String",
       "fieldValidateRules": ["maxlength"],
       "fieldValidateRulesMaxlength": "80"
+    },
+    {
+      "fieldName": "tripId",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "lockGroupId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "36"
+    },
+    {
+      "fieldName": "expiresAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "timeoutMinutes",
+      "fieldType": "Integer"
     },
     {
       "fieldName": "createdAt",

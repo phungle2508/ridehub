@@ -18,6 +18,9 @@ public class BookingTestSamples {
             .quantity(1)
             .customerId(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"))
             .idempotencyKey("idempotencyKey1")
+            .tripId(1L)
+            .lockGroupId("lockGroupId1")
+            .timeoutMinutes(1)
             .deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
     }
 
@@ -28,6 +31,9 @@ public class BookingTestSamples {
             .quantity(2)
             .customerId(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"))
             .idempotencyKey("idempotencyKey2")
+            .tripId(2L)
+            .lockGroupId("lockGroupId2")
+            .timeoutMinutes(2)
             .deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
     }
 
@@ -38,6 +44,9 @@ public class BookingTestSamples {
             .quantity(intCount.incrementAndGet())
             .customerId(UUID.randomUUID())
             .idempotencyKey(UUID.randomUUID().toString())
+            .tripId(longCount.incrementAndGet())
+            .lockGroupId(UUID.randomUUID().toString())
+            .timeoutMinutes(intCount.incrementAndGet())
             .deletedBy(UUID.randomUUID());
     }
 }

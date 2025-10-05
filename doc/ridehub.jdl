@@ -435,7 +435,11 @@ entity Booking {
   totalAmount BigDecimal required
   bookedAt Instant required
   customerId UUID required
-  idempotencyKey String maxlength(80) // NEW
+  idempotencyKey String maxlength(80)
+  tripId Long required
+  lockGroupId String maxlength(36)
+  expiresAt Instant                 // <— add
+  timeoutMinutes Integer            // <— add
   createdAt Instant required
   updatedAt Instant
   isDeleted Boolean

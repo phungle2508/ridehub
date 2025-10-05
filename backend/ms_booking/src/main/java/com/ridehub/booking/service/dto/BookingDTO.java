@@ -37,6 +37,16 @@ public class BookingDTO implements Serializable {
     private String idempotencyKey;
 
     @NotNull
+    private Long tripId;
+
+    @Size(max = 36)
+    private String lockGroupId;
+
+    private Instant expiresAt;
+
+    private Integer timeoutMinutes;
+
+    @NotNull
     private Instant createdAt;
 
     private Instant updatedAt;
@@ -113,6 +123,38 @@ public class BookingDTO implements Serializable {
 
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
+    }
+
+    public Long getTripId() {
+        return tripId;
+    }
+
+    public void setTripId(Long tripId) {
+        this.tripId = tripId;
+    }
+
+    public String getLockGroupId() {
+        return lockGroupId;
+    }
+
+    public void setLockGroupId(String lockGroupId) {
+        this.lockGroupId = lockGroupId;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Instant expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public Integer getTimeoutMinutes() {
+        return timeoutMinutes;
+    }
+
+    public void setTimeoutMinutes(Integer timeoutMinutes) {
+        this.timeoutMinutes = timeoutMinutes;
     }
 
     public Instant getCreatedAt() {
@@ -204,6 +246,10 @@ public class BookingDTO implements Serializable {
             ", bookedAt='" + getBookedAt() + "'" +
             ", customerId='" + getCustomerId() + "'" +
             ", idempotencyKey='" + getIdempotencyKey() + "'" +
+            ", tripId=" + getTripId() +
+            ", lockGroupId='" + getLockGroupId() + "'" +
+            ", expiresAt='" + getExpiresAt() + "'" +
+            ", timeoutMinutes=" + getTimeoutMinutes() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

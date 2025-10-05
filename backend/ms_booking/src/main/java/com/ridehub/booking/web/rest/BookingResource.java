@@ -215,8 +215,32 @@ public class BookingResource {
                 .build();
     }
 
+    /**
+     * {@code POST /bookings/draft} : Create a booking draft with seat reservation
+     *
+     * This endpoint follows the sequence diagram flow:
+     * 1. Validates idempotency
+     * 2. Computes pricing with promotion validation
+     * 3. Creates DRAFT booking with pricing snapshot
+     * 4. Attempts seat lock with ms-route
+     * 5. Returns 201 with AWAITING_PAYMENT status if seats locked successfully
+     * 6. Returns 409 if seats are not available
+     *
+     * @param req the booking draft request containing tripId, seats, promoCode, customerId, idemKey
+     * @return ResponseEntity with status 201 (Created) and booking details if successful,
+     *         or 409 (Conflict) if seats are not available
+     */
     @PostMapping("/draft")
     public ResponseEntity<BookingDraftResultVM> createDraft(@Valid @RequestBody CreateBookingDraftRequestVM req) {
-        return ResponseEntity.ok(bookingService.createDraft(req));
+        LOG.debug("REST request to create booking draft: {}", req);
+
+        BookingDraftResultVM result = bookingService.createDraft(req);
+
+        // Return 201 Created as per sequence diagram when seats are successfully locked
+        return ResponseEntity.status(201)
+                .headers(HeaderUtil.createAlert(applicationName,
+                    "Booking draft created with code: " + result.getBookingCode(),
+                    result.getBookingCode()))
+                .body(result);
     }
 }

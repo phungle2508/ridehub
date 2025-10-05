@@ -56,6 +56,14 @@ public class BookingCriteria implements Serializable, Criteria {
 
     private StringFilter idempotencyKey;
 
+    private LongFilter tripId;
+
+    private StringFilter lockGroupId;
+
+    private InstantFilter expiresAt;
+
+    private IntegerFilter timeoutMinutes;
+
     private InstantFilter createdAt;
 
     private InstantFilter updatedAt;
@@ -89,6 +97,10 @@ public class BookingCriteria implements Serializable, Criteria {
         this.bookedAt = other.optionalBookedAt().map(InstantFilter::copy).orElse(null);
         this.customerId = other.optionalCustomerId().map(UUIDFilter::copy).orElse(null);
         this.idempotencyKey = other.optionalIdempotencyKey().map(StringFilter::copy).orElse(null);
+        this.tripId = other.optionalTripId().map(LongFilter::copy).orElse(null);
+        this.lockGroupId = other.optionalLockGroupId().map(StringFilter::copy).orElse(null);
+        this.expiresAt = other.optionalExpiresAt().map(InstantFilter::copy).orElse(null);
+        this.timeoutMinutes = other.optionalTimeoutMinutes().map(IntegerFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
         this.isDeleted = other.optionalIsDeleted().map(BooleanFilter::copy).orElse(null);
@@ -257,6 +269,82 @@ public class BookingCriteria implements Serializable, Criteria {
 
     public void setIdempotencyKey(StringFilter idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
+    }
+
+    public LongFilter getTripId() {
+        return tripId;
+    }
+
+    public Optional<LongFilter> optionalTripId() {
+        return Optional.ofNullable(tripId);
+    }
+
+    public LongFilter tripId() {
+        if (tripId == null) {
+            setTripId(new LongFilter());
+        }
+        return tripId;
+    }
+
+    public void setTripId(LongFilter tripId) {
+        this.tripId = tripId;
+    }
+
+    public StringFilter getLockGroupId() {
+        return lockGroupId;
+    }
+
+    public Optional<StringFilter> optionalLockGroupId() {
+        return Optional.ofNullable(lockGroupId);
+    }
+
+    public StringFilter lockGroupId() {
+        if (lockGroupId == null) {
+            setLockGroupId(new StringFilter());
+        }
+        return lockGroupId;
+    }
+
+    public void setLockGroupId(StringFilter lockGroupId) {
+        this.lockGroupId = lockGroupId;
+    }
+
+    public InstantFilter getExpiresAt() {
+        return expiresAt;
+    }
+
+    public Optional<InstantFilter> optionalExpiresAt() {
+        return Optional.ofNullable(expiresAt);
+    }
+
+    public InstantFilter expiresAt() {
+        if (expiresAt == null) {
+            setExpiresAt(new InstantFilter());
+        }
+        return expiresAt;
+    }
+
+    public void setExpiresAt(InstantFilter expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public IntegerFilter getTimeoutMinutes() {
+        return timeoutMinutes;
+    }
+
+    public Optional<IntegerFilter> optionalTimeoutMinutes() {
+        return Optional.ofNullable(timeoutMinutes);
+    }
+
+    public IntegerFilter timeoutMinutes() {
+        if (timeoutMinutes == null) {
+            setTimeoutMinutes(new IntegerFilter());
+        }
+        return timeoutMinutes;
+    }
+
+    public void setTimeoutMinutes(IntegerFilter timeoutMinutes) {
+        this.timeoutMinutes = timeoutMinutes;
     }
 
     public InstantFilter getCreatedAt() {
@@ -486,6 +574,10 @@ public class BookingCriteria implements Serializable, Criteria {
             Objects.equals(bookedAt, that.bookedAt) &&
             Objects.equals(customerId, that.customerId) &&
             Objects.equals(idempotencyKey, that.idempotencyKey) &&
+            Objects.equals(tripId, that.tripId) &&
+            Objects.equals(lockGroupId, that.lockGroupId) &&
+            Objects.equals(expiresAt, that.expiresAt) &&
+            Objects.equals(timeoutMinutes, that.timeoutMinutes) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(isDeleted, that.isDeleted) &&
@@ -511,6 +603,10 @@ public class BookingCriteria implements Serializable, Criteria {
             bookedAt,
             customerId,
             idempotencyKey,
+            tripId,
+            lockGroupId,
+            expiresAt,
+            timeoutMinutes,
             createdAt,
             updatedAt,
             isDeleted,
@@ -537,6 +633,10 @@ public class BookingCriteria implements Serializable, Criteria {
             optionalBookedAt().map(f -> "bookedAt=" + f + ", ").orElse("") +
             optionalCustomerId().map(f -> "customerId=" + f + ", ").orElse("") +
             optionalIdempotencyKey().map(f -> "idempotencyKey=" + f + ", ").orElse("") +
+            optionalTripId().map(f -> "tripId=" + f + ", ").orElse("") +
+            optionalLockGroupId().map(f -> "lockGroupId=" + f + ", ").orElse("") +
+            optionalExpiresAt().map(f -> "expiresAt=" + f + ", ").orElse("") +
+            optionalTimeoutMinutes().map(f -> "timeoutMinutes=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalIsDeleted().map(f -> "isDeleted=" + f + ", ").orElse("") +

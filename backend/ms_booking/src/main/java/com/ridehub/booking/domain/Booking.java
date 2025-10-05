@@ -61,6 +61,20 @@ public class Booking implements Serializable {
     private String idempotencyKey;
 
     @NotNull
+    @Column(name = "trip_id", nullable = false)
+    private Long tripId;
+
+    @Size(max = 36)
+    @Column(name = "lock_group_id", length = 36)
+    private String lockGroupId;
+
+    @Column(name = "expires_at")
+    private Instant expiresAt;
+
+    @Column(name = "timeout_minutes")
+    private Integer timeoutMinutes;
+
+    @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -206,6 +220,58 @@ public class Booking implements Serializable {
 
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
+    }
+
+    public Long getTripId() {
+        return this.tripId;
+    }
+
+    public Booking tripId(Long tripId) {
+        this.setTripId(tripId);
+        return this;
+    }
+
+    public void setTripId(Long tripId) {
+        this.tripId = tripId;
+    }
+
+    public String getLockGroupId() {
+        return this.lockGroupId;
+    }
+
+    public Booking lockGroupId(String lockGroupId) {
+        this.setLockGroupId(lockGroupId);
+        return this;
+    }
+
+    public void setLockGroupId(String lockGroupId) {
+        this.lockGroupId = lockGroupId;
+    }
+
+    public Instant getExpiresAt() {
+        return this.expiresAt;
+    }
+
+    public Booking expiresAt(Instant expiresAt) {
+        this.setExpiresAt(expiresAt);
+        return this;
+    }
+
+    public void setExpiresAt(Instant expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public Integer getTimeoutMinutes() {
+        return this.timeoutMinutes;
+    }
+
+    public Booking timeoutMinutes(Integer timeoutMinutes) {
+        this.setTimeoutMinutes(timeoutMinutes);
+        return this;
+    }
+
+    public void setTimeoutMinutes(Integer timeoutMinutes) {
+        this.timeoutMinutes = timeoutMinutes;
     }
 
     public Instant getCreatedAt() {
@@ -423,6 +489,10 @@ public class Booking implements Serializable {
             ", bookedAt='" + getBookedAt() + "'" +
             ", customerId='" + getCustomerId() + "'" +
             ", idempotencyKey='" + getIdempotencyKey() + "'" +
+            ", tripId=" + getTripId() +
+            ", lockGroupId='" + getLockGroupId() + "'" +
+            ", expiresAt='" + getExpiresAt() + "'" +
+            ", timeoutMinutes=" + getTimeoutMinutes() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

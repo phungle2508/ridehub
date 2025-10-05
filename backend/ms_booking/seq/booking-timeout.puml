@@ -11,5 +11,5 @@ SCHEDULER -> BOOKDB : find AWAITING_PAYMENT bookings expired
 SCHEDULER -> BOOKDB : update Booking=CANCELED
 SCHEDULER -> ROUTE : POST /locks/cancel {bookingId, tripId, seats[]}
 SCHEDULER -> REDIS : DEL booking:sess:{bookingId}
-SCHEDULER --> (log) : {canceledBookingsCount}
+SCHEDULER -> SCHEDULER : log: {canceledBookingsCount}
 @enduml

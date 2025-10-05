@@ -5,6 +5,8 @@ import com.ridehub.booking.service.TicketQueryService;
 import com.ridehub.booking.service.TicketService;
 import com.ridehub.booking.service.criteria.TicketCriteria;
 import com.ridehub.booking.service.dto.TicketDTO;
+import com.ridehub.booking.service.dto.response.CheckinResponse;
+import com.ridehub.booking.service.dto.response.TicketResponse;
 import com.ridehub.booking.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -29,31 +31,28 @@ import tech.jhipster.web.util.ResponseUtil;
 public class TicketResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(TicketResource.class);
-
     private static final String ENTITY_NAME = "msBookingTicket";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
     private final TicketService ticketService;
-
     private final TicketRepository ticketRepository;
-
     private final TicketQueryService ticketQueryService;
 
-    public TicketResource(TicketService ticketService, TicketRepository ticketRepository, TicketQueryService ticketQueryService) {
+    public TicketResource(
+            TicketService ticketService,
+            TicketRepository ticketRepository,
+            TicketQueryService ticketQueryService) {
         this.ticketService = ticketService;
         this.ticketRepository = ticketRepository;
         this.ticketQueryService = ticketQueryService;
     }
 
-    /**
-     * {@code POST  /tickets} : Create a new ticket.
-     *
-     * @param ticketDTO the ticketDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new ticketDTO, or with status {@code 400 (Bad Request)} if the ticket has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
+    // -----------------------
+    // JHipster CRUD endpoints
+    // -----------------------
+
     @PostMapping("")
     public ResponseEntity<TicketDTO> createTicket(@Valid @RequestBody TicketDTO ticketDTO) throws URISyntaxException {
         LOG.debug("REST request to save Ticket : {}", ticketDTO);
@@ -61,26 +60,17 @@ public class TicketResource {
             throw new BadRequestAlertException("A new ticket cannot already have an ID", ENTITY_NAME, "idexists");
         }
         ticketDTO = ticketService.save(ticketDTO);
-        return ResponseEntity.created(new URI("/api/tickets/" + ticketDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, ticketDTO.getId().toString()))
-            .body(ticketDTO);
+        return ResponseEntity
+                .created(new URI("/api/tickets/" + ticketDTO.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        ticketDTO.getId().toString()))
+                .body(ticketDTO);
     }
 
-    /**
-     * {@code PUT  /tickets/:id} : Updates an existing ticket.
-     *
-     * @param id the id of the ticketDTO to save.
-     * @param ticketDTO the ticketDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated ticketDTO,
-     * or with status {@code 400 (Bad Request)} if the ticketDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the ticketDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
     @PutMapping("/{id}")
     public ResponseEntity<TicketDTO> updateTicket(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody TicketDTO ticketDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody TicketDTO ticketDTO) throws URISyntaxException {
         LOG.debug("REST request to update Ticket : {}, {}", id, ticketDTO);
         if (ticketDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -88,33 +78,21 @@ public class TicketResource {
         if (!Objects.equals(id, ticketDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
-
         if (!ticketRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
         ticketDTO = ticketService.update(ticketDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, ticketDTO.getId().toString()))
-            .body(ticketDTO);
+        return ResponseEntity
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        ticketDTO.getId().toString()))
+                .body(ticketDTO);
     }
 
-    /**
-     * {@code PATCH  /tickets/:id} : Partial updates given fields of an existing ticket, field will ignore if it is null
-     *
-     * @param id the id of the ticketDTO to save.
-     * @param ticketDTO the ticketDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated ticketDTO,
-     * or with status {@code 400 (Bad Request)} if the ticketDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the ticketDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the ticketDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<TicketDTO> partialUpdateTicket(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody TicketDTO ticketDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody TicketDTO ticketDTO) throws URISyntaxException {
         LOG.debug("REST request to partial update Ticket partially : {}, {}", id, ticketDTO);
         if (ticketDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -122,51 +100,31 @@ public class TicketResource {
         if (!Objects.equals(id, ticketDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
-
         if (!ticketRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
         Optional<TicketDTO> result = ticketService.partialUpdate(ticketDTO);
-
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, ticketDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, ticketDTO.getId().toString()));
     }
 
     /**
-     * {@code GET  /tickets} : get all the tickets.
-     *
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of tickets in body.
+     * GET /api/tickets : criteria search (default).
      */
     @GetMapping("")
     public ResponseEntity<List<TicketDTO>> getAllTickets(TicketCriteria criteria) {
         LOG.debug("REST request to get Tickets by criteria: {}", criteria);
-
         List<TicketDTO> entityList = ticketQueryService.findByCriteria(criteria);
         return ResponseEntity.ok().body(entityList);
     }
 
-    /**
-     * {@code GET  /tickets/count} : count all the tickets.
-     *
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
-     */
     @GetMapping("/count")
     public ResponseEntity<Long> countTickets(TicketCriteria criteria) {
         LOG.debug("REST request to count Tickets by criteria: {}", criteria);
         return ResponseEntity.ok().body(ticketQueryService.countByCriteria(criteria));
     }
 
-    /**
-     * {@code GET  /tickets/:id} : get the "id" ticket.
-     *
-     * @param id the id of the ticketDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the ticketDTO, or with status {@code 404 (Not Found)}.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<TicketDTO> getTicket(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Ticket : {}", id);
@@ -174,18 +132,53 @@ public class TicketResource {
         return ResponseUtil.wrapOrNotFound(ticketDTO);
     }
 
-    /**
-     * {@code DELETE  /tickets/:id} : delete the "id" ticket.
-     *
-     * @param id the id of the ticketDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTicket(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Ticket : {}", id);
         ticketService.delete(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity
+                .noContent()
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
     }
+
+    // -------------------------------------------------------
+    // Extra endpoints migrated from the old TicketController
+    // -------------------------------------------------------
+
+    /**
+     * GET /api/tickets?bookingCode=... : get tickets by booking code.
+     * This mapping is disambiguated by the presence of the "bookingCode" param.
+     */
+    @GetMapping(value = "", params = "bookingCode")
+    public ResponseEntity<TicketResponse> getTicketsByBookingCode(@RequestParam String bookingCode) {
+        LOG.debug("REST request to get Tickets by booking code: {}", bookingCode);
+        List<TicketDTO> tickets = ticketService.findByBookingCode(bookingCode);
+        List<String> qrCodes = tickets.stream()
+                .map(TicketDTO::getQrCode)
+                .filter(qr -> qr != null && !qr.isEmpty())
+                .toList();
+        return ResponseEntity.ok(new TicketResponse(tickets, qrCodes));
+    }
+
+    /**
+     * POST /api/tickets/{code}/checkin : check in a ticket.
+     */
+    @PostMapping("/{code}/checkin")
+    public ResponseEntity<CheckinResponse> checkinTicket(@PathVariable String code) {
+        LOG.debug("REST request to check in Ticket with code: {}", code);
+
+        Optional<TicketDTO> ticketOpt = ticketService.findByTicketCode(code);
+        if (ticketOpt.isEmpty()) {
+            throw new BadRequestAlertException("Ticket not found", ENTITY_NAME, "ticketnotfound");
+        }
+        TicketDTO ticket = ticketOpt.get();
+        if (Boolean.TRUE.equals(ticket.getCheckedIn())) {
+            throw new BadRequestAlertException("Ticket already checked in", ENTITY_NAME, "alreadycheckedin");
+        }
+
+        ticketService.checkinTicket(code);
+        return ResponseEntity.ok(new CheckinResponse(true));
+    }
+
 }

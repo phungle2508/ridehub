@@ -14,6 +14,10 @@ import com.ridehub.booking.service.dto.PricingSnapshotDTO;
 import com.ridehub.booking.service.mapper.BookingMapper;
 import com.ridehub.booking.service.vm.BookingDraftResultVM;
 import com.ridehub.booking.service.vm.CreateBookingDraftRequestVM;
+import com.ridehub.booking.web.rest.errors.SeatNotAvailableException;
+import com.ridehub.msroute.client.api.SeatLockResourceMsrouteApi;
+import com.ridehub.msroute.client.model.SeatLockRequestDTO;
+import com.ridehub.msroute.client.model.SeatLockResponseDTO;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -42,16 +46,19 @@ public class BookingServiceImpl implements BookingService {
     private final PricingSnapshotRepository pricingSnapRepo;
     private final AppliedPromotionRepository appliedPromoRepo;
     private final PricingService pricingService;
+    private final SeatLockResourceMsrouteApi seatLockResourceMsrouteApi;
     private final StringRedisTemplate redis;
 
     public BookingServiceImpl(BookingRepository bookingRepository, BookingMapper bookingMapper,
             AppliedPromotionRepository appliedPromoRepo, BookingRepository bookingRepo2,
-            PricingService pricingService, PricingSnapshotRepository pricingSnapRepo, StringRedisTemplate redis) {
+            PricingService pricingService, PricingSnapshotRepository pricingSnapRepo,
+            SeatLockResourceMsrouteApi seatLockResourceMsrouteApi, StringRedisTemplate redis) {
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.pricingSnapRepo = pricingSnapRepo;
         this.appliedPromoRepo = appliedPromoRepo;
         this.pricingService = pricingService;
+        this.seatLockResourceMsrouteApi = seatLockResourceMsrouteApi;
         this.redis = redis;
     }
 
@@ -124,6 +131,7 @@ public class BookingServiceImpl implements BookingService {
             b.setCustomerId(req.getCustomerId());
             b.setCreatedAt(Instant.now());
             b.setUpdatedAt(Instant.now());
+            b.setTripId(req.getTripId());
             b = bookingRepository.save(b);
 
             // === 4️⃣ Store booking session state in Redis ===
@@ -158,21 +166,52 @@ public class BookingServiceImpl implements BookingService {
                 appliedPromoRepo.save(apEntity);
             }
 
-            // === 7️⃣ Build return result ===
-            BookingDraftResultVM vm = new BookingDraftResultVM();
-            vm.setBookingId(b.getId());
-            vm.setBookingCode(b.getBookingCode());
-            vm.setStatus(b.getStatus().name());
-            vm.setQuantity(b.getQuantity());
-            vm.setTotalAmount(b.getTotalAmount());
-            vm.setTripId(req.getTripId());
-            vm.setSeats(req.getSeats());
-            vm.setPromoCode(req.getPromoCode());
-            vm.setPricingSnapshot(ps);
-            vm.setAppliedPromotion(pricing.getAppliedPromotion());
-            vm.setPromoApplied(pricing.isPromoApplied());
-            return vm;
+            // === 7️⃣ Try to lock seats with ms-route ===
+            SeatLockRequestDTO lockRequest = new SeatLockRequestDTO();
+            lockRequest.setBookingId(b.getId());
+            lockRequest.setTripId(req.getTripId());
+            lockRequest.setSeatNumbers(req.getSeats());
+            lockRequest.setIdemKey(req.getIdemKey());
 
+            var lockResult = seatLockResourceMsrouteApi.tryLockSeats(lockRequest);
+
+            if (isHeld(lockResult)) {
+                // Seat lock successful - update to AWAITING_PAYMENT
+                b.setStatus(BookingStatus.AWAITING_PAYMENT);
+                b.setUpdatedAt(Instant.now());
+                b = bookingRepository.save(b);
+
+                redis.opsForValue().set(sessKey, "AWAITING_PAYMENT", Duration.ofMinutes(20));
+
+                // === 8️⃣ Build success result ===
+                BookingDraftResultVM vm = new BookingDraftResultVM();
+                vm.setBookingId(b.getId());
+                vm.setBookingCode(b.getBookingCode());
+                vm.setStatus(b.getStatus().name());
+                vm.setQuantity(b.getQuantity());
+                vm.setTotalAmount(b.getTotalAmount());
+                vm.setTripId(req.getTripId());
+                vm.setSeats(req.getSeats());
+                vm.setPromoCode(req.getPromoCode());
+                vm.setPricingSnapshot(ps);
+                vm.setAppliedPromotion(pricing.getAppliedPromotion());
+                vm.setPromoApplied(pricing.isPromoApplied());
+                return vm;
+
+            } else {
+                // Seat lock failed - update to CANCELED and cleanup
+                b.setStatus(BookingStatus.CANCELED);
+                b.setUpdatedAt(Instant.now());
+                bookingRepository.save(b);
+
+                redis.delete(sessKey);
+
+                throw new SeatNotAvailableException("Seat not available: " + lockResult.getMessage());
+            }
+
+        } catch (SeatNotAvailableException ex) {
+            // Re-throw seat availability exceptions as-is
+            throw ex;
         } catch (Exception ex) {
             LOG.error("Booking draft failed: {}", ex.getMessage(), ex);
             if (sessKey != null)
@@ -185,5 +224,13 @@ public class BookingServiceImpl implements BookingService {
         String a = RandomStringUtils.randomAlphanumeric(4).toUpperCase();
         String b = RandomStringUtils.randomAlphanumeric(4).toUpperCase();
         return "RH-" + a + "-" + b;
+    }
+
+    private static boolean isHeld(SeatLockResponseDTO r) {
+        return r != null && "HELD".equalsIgnoreCase(r.getStatus());
+    }
+
+    private static boolean isRejected(SeatLockResponseDTO r) {
+        return r != null && "REJECTED".equalsIgnoreCase(r.getStatus());
     }
 }

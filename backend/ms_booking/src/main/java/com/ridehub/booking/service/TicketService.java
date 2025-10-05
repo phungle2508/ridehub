@@ -1,6 +1,7 @@
 package com.ridehub.booking.service;
 
 import com.ridehub.booking.service.dto.TicketDTO;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -45,4 +46,28 @@ public interface TicketService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Get tickets by booking code.
+     *
+     * @param bookingCode the booking code.
+     * @return the list of entities.
+     */
+    List<TicketDTO> findByBookingCode(String bookingCode);
+
+    /**
+     * Get ticket by ticket code.
+     *
+     * @param ticketCode the ticket code.
+     * @return the entity.
+     */
+    Optional<TicketDTO> findByTicketCode(String ticketCode);
+
+    /**
+     * Check in a ticket.
+     *
+     * @param ticketCode the ticket code to check in.
+     * @return the updated entity.
+     */
+    Optional<TicketDTO> checkinTicket(String ticketCode);
 }
