@@ -19,7 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service Implementation for managing {@link com.ridehub.route.domain.Attendant}.
+ * Service Implementation for managing
+ * {@link com.ridehub.route.domain.Attendant}.
  */
 @Service
 @Transactional
@@ -33,7 +34,8 @@ public class AttendantServiceImpl implements AttendantService {
 
     private final AttendantMapper attendantMapper;
 
-    public AttendantServiceImpl(AttendantRepository attendantRepository, StaffRepository staffRepository, AttendantMapper attendantMapper) {
+    public AttendantServiceImpl(AttendantRepository attendantRepository, StaffRepository staffRepository,
+            AttendantMapper attendantMapper) {
         this.attendantRepository = attendantRepository;
         this.staffRepository = staffRepository;
         this.attendantMapper = attendantMapper;
@@ -60,14 +62,14 @@ public class AttendantServiceImpl implements AttendantService {
         LOG.debug("Request to partially update Attendant : {}", attendantDTO);
 
         return attendantRepository
-            .findById(attendantDTO.getId())
-            .map(existingAttendant -> {
-                attendantMapper.partialUpdate(existingAttendant, attendantDTO);
+                .findById(attendantDTO.getId())
+                .map(existingAttendant -> {
+                    attendantMapper.partialUpdate(existingAttendant, attendantDTO);
 
-                return existingAttendant;
-            })
-            .map(attendantRepository::save)
-            .map(attendantMapper::toDto);
+                    return existingAttendant;
+                })
+                .map(attendantRepository::save)
+                .map(attendantMapper::toDto);
     }
 
     @Override
@@ -114,12 +116,9 @@ public class AttendantServiceImpl implements AttendantService {
     public SimpleAttendantResponseDTO updateSimpleAttendant(Long id, SimpleAttendantRequestDTO requestDTO) {
         LOG.debug("Request to update simple Attendant : {}, {}", id, requestDTO);
 
-        Optional<Attendant> existingAttendantOpt = attendantRepository.findById(id);
-        if (existingAttendantOpt.isEmpty()) {
-            throw new BadRequestAlertException("Attendant not found", "attendant", "idnotfound");
-        }
-
-        Attendant existingAttendant = existingAttendantOpt.get();
+        Attendant existingAttendant = attendantRepository
+                .findById(id)
+                .orElseThrow(() -> new BadRequestAlertException("Attendant not found", "attendant", "idnotfound"));
         Staff existingStaff = existingAttendant.getStaff();
 
         // Update Staff
@@ -147,7 +146,7 @@ public class AttendantServiceImpl implements AttendantService {
     public Optional<SimpleAttendantResponseDTO> findSimpleAttendantById(Long id) {
         LOG.debug("Request to get simple Attendant : {}", id);
         return attendantRepository.findById(id)
-            .map(this::mapToSimpleResponse);
+                .map(this::mapToSimpleResponse);
     }
 
     private SimpleAttendantResponseDTO mapToSimpleResponse(Attendant attendant) {

@@ -33,7 +33,8 @@ public class DriverServiceImpl implements DriverService {
 
     private final DriverMapper driverMapper;
 
-    public DriverServiceImpl(DriverRepository driverRepository, StaffRepository staffRepository, DriverMapper driverMapper) {
+    public DriverServiceImpl(DriverRepository driverRepository, StaffRepository staffRepository,
+            DriverMapper driverMapper) {
         this.driverRepository = driverRepository;
         this.staffRepository = staffRepository;
         this.driverMapper = driverMapper;
@@ -60,14 +61,14 @@ public class DriverServiceImpl implements DriverService {
         LOG.debug("Request to partially update Driver : {}", driverDTO);
 
         return driverRepository
-            .findById(driverDTO.getId())
-            .map(existingDriver -> {
-                driverMapper.partialUpdate(existingDriver, driverDTO);
+                .findById(driverDTO.getId())
+                .map(existingDriver -> {
+                    driverMapper.partialUpdate(existingDriver, driverDTO);
 
-                return existingDriver;
-            })
-            .map(driverRepository::save)
-            .map(driverMapper::toDto);
+                    return existingDriver;
+                })
+                .map(driverRepository::save)
+                .map(driverMapper::toDto);
     }
 
     @Override
@@ -116,12 +117,9 @@ public class DriverServiceImpl implements DriverService {
     public SimpleDriverResponseDTO updateSimpleDriver(Long id, SimpleDriverRequestDTO requestDTO) {
         LOG.debug("Request to update simple Driver : {}, {}", id, requestDTO);
 
-        Optional<Driver> existingDriverOpt = driverRepository.findById(id);
-        if (existingDriverOpt.isEmpty()) {
-            throw new BadRequestAlertException("Driver not found", "driver", "idnotfound");
-        }
-
-        Driver existingDriver = existingDriverOpt.get();
+        Driver existingDriver = driverRepository
+                .findById(id)
+                .orElseThrow(() -> new BadRequestAlertException("Driver not found", "driver", "idnotfound"));
         Staff existingStaff = existingDriver.getStaff();
 
         // Update Staff
@@ -151,7 +149,7 @@ public class DriverServiceImpl implements DriverService {
     public Optional<SimpleDriverResponseDTO> findSimpleDriverById(Long id) {
         LOG.debug("Request to get simple Driver : {}", id);
         return driverRepository.findById(id)
-            .map(this::mapToSimpleResponse);
+                .map(this::mapToSimpleResponse);
     }
 
     private SimpleDriverResponseDTO mapToSimpleResponse(Driver driver) {
