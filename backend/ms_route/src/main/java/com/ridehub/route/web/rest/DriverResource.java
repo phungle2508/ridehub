@@ -5,6 +5,8 @@ import com.ridehub.route.service.DriverQueryService;
 import com.ridehub.route.service.DriverService;
 import com.ridehub.route.service.criteria.DriverCriteria;
 import com.ridehub.route.service.dto.DriverDTO;
+import com.ridehub.route.service.dto.request.SimpleDriverRequestDTO;
+import com.ridehub.route.service.dto.response.SimpleDriverResponseDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -187,5 +189,58 @@ public class DriverResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code POST  /drivers/simple} : Create a new driver with simplified input.
+     * This endpoint automatically manages staff creation, so users don't need to handle staff details.
+     *
+     * @param requestDTO the simplified driver data to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new driver response.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/simple")
+    public ResponseEntity<SimpleDriverResponseDTO> createSimpleDriver(@Valid @RequestBody SimpleDriverRequestDTO requestDTO) throws URISyntaxException {
+        LOG.debug("REST request to create simple Driver : {}", requestDTO);
+
+        SimpleDriverResponseDTO result = driverService.createSimpleDriver(requestDTO);
+        return ResponseEntity.created(new URI("/api/drivers/simple/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code PUT  /drivers/simple/:id} : Update an existing driver with simplified input.
+     * This endpoint automatically manages staff updates, so users don't need to handle staff details.
+     *
+     * @param id the id of the driver to update.
+     * @param requestDTO the simplified driver data to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated driver response.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/simple/{id}")
+    public ResponseEntity<SimpleDriverResponseDTO> updateSimpleDriver(
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody SimpleDriverRequestDTO requestDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to update simple Driver : {}, {}", id, requestDTO);
+
+        SimpleDriverResponseDTO result = driverService.updateSimpleDriver(id, requestDTO);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code GET  /drivers/simple/:id} : Get a driver by id with simplified response.
+     *
+     * @param id the id of the driver to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the simplified driver response, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/simple/{id}")
+    public ResponseEntity<SimpleDriverResponseDTO> getSimpleDriver(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get simple Driver : {}", id);
+        Optional<SimpleDriverResponseDTO> result = driverService.findSimpleDriverById(id);
+        return ResponseUtil.wrapOrNotFound(result);
     }
 }

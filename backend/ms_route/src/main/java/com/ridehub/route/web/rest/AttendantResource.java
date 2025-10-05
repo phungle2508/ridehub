@@ -5,6 +5,8 @@ import com.ridehub.route.service.AttendantQueryService;
 import com.ridehub.route.service.AttendantService;
 import com.ridehub.route.service.criteria.AttendantCriteria;
 import com.ridehub.route.service.dto.AttendantDTO;
+import com.ridehub.route.service.dto.request.SimpleAttendantRequestDTO;
+import com.ridehub.route.service.dto.response.SimpleAttendantResponseDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -191,5 +193,58 @@ public class AttendantResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code POST  /attendants/simple} : Create a new attendant with simplified input.
+     * This endpoint automatically manages staff creation, so users don't need to handle staff details.
+     *
+     * @param requestDTO the simplified attendant data to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new attendant response.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/simple")
+    public ResponseEntity<SimpleAttendantResponseDTO> createSimpleAttendant(@Valid @RequestBody SimpleAttendantRequestDTO requestDTO) throws URISyntaxException {
+        LOG.debug("REST request to create simple Attendant : {}", requestDTO);
+
+        SimpleAttendantResponseDTO result = attendantService.createSimpleAttendant(requestDTO);
+        return ResponseEntity.created(new URI("/api/attendants/simple/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code PUT  /attendants/simple/:id} : Update an existing attendant with simplified input.
+     * This endpoint automatically manages staff updates, so users don't need to handle staff details.
+     *
+     * @param id the id of the attendant to update.
+     * @param requestDTO the simplified attendant data to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated attendant response.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/simple/{id}")
+    public ResponseEntity<SimpleAttendantResponseDTO> updateSimpleAttendant(
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody SimpleAttendantRequestDTO requestDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to update simple Attendant : {}, {}", id, requestDTO);
+
+        SimpleAttendantResponseDTO result = attendantService.updateSimpleAttendant(id, requestDTO);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code GET  /attendants/simple/:id} : Get an attendant by id with simplified response.
+     *
+     * @param id the id of the attendant to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the simplified attendant response, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/simple/{id}")
+    public ResponseEntity<SimpleAttendantResponseDTO> getSimpleAttendant(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get simple Attendant : {}", id);
+        Optional<SimpleAttendantResponseDTO> result = attendantService.findSimpleAttendantById(id);
+        return ResponseUtil.wrapOrNotFound(result);
     }
 }
