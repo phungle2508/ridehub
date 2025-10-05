@@ -6,7 +6,9 @@ import com.ridehub.route.service.SeatLockService;
 import com.ridehub.route.service.criteria.SeatLockCriteria;
 import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
+import com.ridehub.route.service.dto.request.SeatLockActionRequestDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
+import com.ridehub.route.service.dto.response.SeatLockActionResponseDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -228,4 +230,19 @@ public class SeatLockResource {
         SeatLockResponseDTO result = seatLockService.tryLockSeats(request);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/confirm")
+    public ResponseEntity<SeatLockActionResponseDTO> confirmSeatLocks(@Valid @RequestBody SeatLockActionRequestDTO request) {
+        LOG.debug("REST request to confirm seat locks for booking: {}", request.getBookingId());
+        SeatLockActionResponseDTO result = seatLockService.confirmSeatLocks(request);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<SeatLockActionResponseDTO> cancelSeatLocks(@Valid @RequestBody SeatLockActionRequestDTO request) {
+        LOG.debug("REST request to cancel seat locks for booking: {}", request.getBookingId());
+        SeatLockActionResponseDTO result = seatLockService.cancelSeatLocks(request);
+        return ResponseEntity.ok(result);
+    }
 }
+

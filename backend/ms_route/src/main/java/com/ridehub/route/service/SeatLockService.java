@@ -2,7 +2,9 @@ package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
+import com.ridehub.route.service.dto.request.SeatLockActionRequestDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
+import com.ridehub.route.service.dto.response.SeatLockActionResponseDTO;
 import java.util.Optional;
 
 /**
@@ -55,4 +57,21 @@ public interface SeatLockService {
      * @return the seat lock response with status HELD or REJECTED.
      */
     SeatLockResponseDTO tryLockSeats(SeatLockRequestDTO request);
+
+    /**
+     * Confirm seat locks for a booking.
+     *
+     * @param request the seat lock action request.
+     * @return the seat lock action response.
+     */
+    SeatLockActionResponseDTO confirmSeatLocks(SeatLockActionRequestDTO request);
+
+    /**
+     * Cancel seat locks for a booking.
+     *
+     * @param request the seat lock action request.
+     * @return the seat lock action response.
+     */
+    SeatLockActionResponseDTO cancelSeatLocks(SeatLockActionRequestDTO request);
 }
+

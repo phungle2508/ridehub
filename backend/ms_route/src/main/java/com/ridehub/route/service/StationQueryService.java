@@ -2,37 +2,19 @@ package com.ridehub.route.service;
 
 import com.ridehub.route.domain.*; // for static metamodels
 import com.ridehub.route.repository.StationRepository;
-import com.ridehub.route.repository.search.StationSearchRepository;
 import com.ridehub.route.service.criteria.StationCriteria;
 import com.ridehub.route.service.dto.StationDTO;
 import com.ridehub.route.service.mapper.StationMapper;
-import com.ridehub.route.service.vm.StationWithRoutesVM;
-import com.ridehub.route.repository.RouteRepository;
-import com.ridehub.route.service.mapper.RouteMapper;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Tuple;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Root;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service for executing complex queries for {@link Station} entities in the
@@ -52,16 +34,11 @@ public class StationQueryService extends QueryService<Station> {
 
     private final StationMapper stationMapper;
 
-    private final StationSearchRepository stationSearchRepository;
-
     public StationQueryService(
             StationRepository stationRepository,
-            StationMapper stationMapper,
-            StationSearchRepository stationSearchRepository,
-            RouteQueryService routeQueryService) {
+            StationMapper stationMapper) {
         this.stationRepository = stationRepository;
         this.stationMapper = stationMapper;
-        this.stationSearchRepository = stationSearchRepository;
     }
 
     /**

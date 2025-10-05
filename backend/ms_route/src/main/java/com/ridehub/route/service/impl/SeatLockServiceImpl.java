@@ -8,7 +8,9 @@ import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.SeatLockQueryService;
 import com.ridehub.route.service.SeatLockService;
 import com.ridehub.route.service.dto.SeatLockDTO;
+import com.ridehub.route.service.dto.request.SeatLockActionRequestDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
+import com.ridehub.route.service.dto.response.SeatLockActionResponseDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
 import com.ridehub.route.service.mapper.SeatLockMapper;
 
@@ -201,6 +203,48 @@ public class SeatLockServiceImpl implements SeatLockService {
             response.setMessage("Seats not available (cached)");
         }
         return response;
+    }
+
+    @Override
+    @Transactional
+    public SeatLockActionResponseDTO confirmSeatLocks(SeatLockActionRequestDTO request) {
+        LOG.debug("Request to confirm seat locks for booking: {}", request.getBookingId());
+
+        List<SeatLock> seatLocks = seatLockQueryService.findByBookingId(request.getBookingId());
+
+        if (seatLocks.isEmpty()) {
+            return new SeatLockActionResponseDTO("REJECTED", "No seat locks found for the given booking ID");
+        }
+
+        for (SeatLock seatLock : seatLocks) {
+            seatLock.setStatus(LockStatus.COMMITTED);
+            seatLock.setUpdatedAt(Instant.now());
+        }
+
+        seatLockRepository.saveAll(seatLocks);
+
+        return new SeatLockActionResponseDTO("CONFIRMED", "Seat locks confirmed successfully");
+    }
+
+    @Override
+    @Transactional
+    public SeatLockActionResponseDTO cancelSeatLocks(SeatLockActionRequestDTO request) {
+        LOG.debug("Request to cancel seat locks for booking: {}", request.getBookingId());
+
+        List<SeatLock> seatLocks = seatLockQueryService.findByBookingId(request.getBookingId());
+
+        if (seatLocks.isEmpty()) {
+            return new SeatLockActionResponseDTO("REJECTED", "No seat locks found for the given booking ID");
+        }
+
+        for (SeatLock seatLock : seatLocks) {
+            seatLock.setStatus(LockStatus.EXPIRED);
+            seatLock.setUpdatedAt(Instant.now());
+        }
+
+        seatLockRepository.saveAll(seatLocks);
+
+        return new SeatLockActionResponseDTO("CANCELLED", "Seat locks cancelled successfully");
     }
 
 }
