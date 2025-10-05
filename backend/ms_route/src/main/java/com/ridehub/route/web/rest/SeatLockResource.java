@@ -5,6 +5,8 @@ import com.ridehub.route.service.SeatLockQueryService;
 import com.ridehub.route.service.SeatLockService;
 import com.ridehub.route.service.criteria.SeatLockCriteria;
 import com.ridehub.route.service.dto.SeatLockDTO;
+import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
+import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -42,10 +44,9 @@ public class SeatLockResource {
     private final SeatLockQueryService seatLockQueryService;
 
     public SeatLockResource(
-        SeatLockService seatLockService,
-        SeatLockRepository seatLockRepository,
-        SeatLockQueryService seatLockQueryService
-    ) {
+            SeatLockService seatLockService,
+            SeatLockRepository seatLockRepository,
+            SeatLockQueryService seatLockQueryService) {
         this.seatLockService = seatLockService;
         this.seatLockRepository = seatLockRepository;
         this.seatLockQueryService = seatLockQueryService;
@@ -55,36 +56,42 @@ public class SeatLockResource {
      * {@code POST  /seat-locks} : Create a new seatLock.
      *
      * @param seatLockDTO the seatLockDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new seatLockDTO, or with status {@code 400 (Bad Request)} if the seatLock has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
+     *         body the new seatLockDTO, or with status {@code 400 (Bad Request)} if
+     *         the seatLock has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<SeatLockDTO> createSeatLock(@Valid @RequestBody SeatLockDTO seatLockDTO) throws URISyntaxException {
+    public ResponseEntity<SeatLockDTO> createSeatLock(@Valid @RequestBody SeatLockDTO seatLockDTO)
+            throws URISyntaxException {
         LOG.debug("REST request to save SeatLock : {}", seatLockDTO);
         if (seatLockDTO.getId() != null) {
             throw new BadRequestAlertException("A new seatLock cannot already have an ID", ENTITY_NAME, "idexists");
         }
         seatLockDTO = seatLockService.save(seatLockDTO);
         return ResponseEntity.created(new URI("/api/seat-locks/" + seatLockDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, seatLockDTO.getId().toString()))
-            .body(seatLockDTO);
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        seatLockDTO.getId().toString()))
+                .body(seatLockDTO);
     }
 
     /**
      * {@code PUT  /seat-locks/:id} : Updates an existing seatLock.
      *
-     * @param id the id of the seatLockDTO to save.
+     * @param id          the id of the seatLockDTO to save.
      * @param seatLockDTO the seatLockDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated seatLockDTO,
-     * or with status {@code 400 (Bad Request)} if the seatLockDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the seatLockDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated seatLockDTO,
+     *         or with status {@code 400 (Bad Request)} if the seatLockDTO is not
+     *         valid,
+     *         or with status {@code 500 (Internal Server Error)} if the seatLockDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
     public ResponseEntity<SeatLockDTO> updateSeatLock(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody SeatLockDTO seatLockDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody SeatLockDTO seatLockDTO) throws URISyntaxException {
         LOG.debug("REST request to update SeatLock : {}, {}", id, seatLockDTO);
         if (seatLockDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -99,26 +106,31 @@ public class SeatLockResource {
 
         seatLockDTO = seatLockService.update(seatLockDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, seatLockDTO.getId().toString()))
-            .body(seatLockDTO);
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        seatLockDTO.getId().toString()))
+                .body(seatLockDTO);
     }
 
     /**
-     * {@code PATCH  /seat-locks/:id} : Partial updates given fields of an existing seatLock, field will ignore if it is null
+     * {@code PATCH  /seat-locks/:id} : Partial updates given fields of an existing
+     * seatLock, field will ignore if it is null
      *
-     * @param id the id of the seatLockDTO to save.
+     * @param id          the id of the seatLockDTO to save.
      * @param seatLockDTO the seatLockDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated seatLockDTO,
-     * or with status {@code 400 (Bad Request)} if the seatLockDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the seatLockDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the seatLockDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated seatLockDTO,
+     *         or with status {@code 400 (Bad Request)} if the seatLockDTO is not
+     *         valid,
+     *         or with status {@code 404 (Not Found)} if the seatLockDTO is not
+     *         found,
+     *         or with status {@code 500 (Internal Server Error)} if the seatLockDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<SeatLockDTO> partialUpdateSeatLock(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody SeatLockDTO seatLockDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody SeatLockDTO seatLockDTO) throws URISyntaxException {
         LOG.debug("REST request to partial update SeatLock partially : {}, {}", id, seatLockDTO);
         if (seatLockDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -134,16 +146,16 @@ public class SeatLockResource {
         Optional<SeatLockDTO> result = seatLockService.partialUpdate(seatLockDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, seatLockDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, seatLockDTO.getId().toString()));
     }
 
     /**
      * {@code GET  /seat-locks} : get all the seatLocks.
      *
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of seatLocks in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of seatLocks in body.
      */
     @GetMapping("")
     public ResponseEntity<List<SeatLockDTO>> getAllSeatLocks(SeatLockCriteria criteria) {
@@ -157,7 +169,8 @@ public class SeatLockResource {
      * {@code GET  /seat-locks/count} : count all the seatLocks.
      *
      * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
+     *         in body.
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countSeatLocks(SeatLockCriteria criteria) {
@@ -169,7 +182,8 @@ public class SeatLockResource {
      * {@code GET  /seat-locks/:id} : get the "id" seatLock.
      *
      * @param id the id of the seatLockDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the seatLockDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the seatLockDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<SeatLockDTO> getSeatLock(@PathVariable("id") Long id) {
@@ -189,7 +203,29 @@ public class SeatLockResource {
         LOG.debug("REST request to delete SeatLock : {}", id);
         seatLockService.delete(id);
         return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
+    }
+
+    // ===========================
+    // NEW: Try-lock endpoint
+    // ===========================
+    @PostMapping("/try-lock")
+    public ResponseEntity<SeatLockResponseDTO> tryLockSeats(@Valid @RequestBody SeatLockRequestDTO request) {
+        LOG.debug("REST request to tryLockSeats: bookingId={}, tripId={}, seats={}",
+                request.getBookingId(), request.getTripId(), request.getSeatNumbers());
+
+        if (request.getSeatNumbers() == null || request.getSeatNumbers().isEmpty()) {
+            throw new BadRequestAlertException("Seat list must not be empty", ENTITY_NAME, "emptyseats");
+        }
+        if (request.getTripId() == null) {
+            throw new BadRequestAlertException("TripId is required", ENTITY_NAME, "tripidnull");
+        }
+        if (request.getIdemKey() == null || request.getIdemKey().isBlank()) {
+            throw new BadRequestAlertException("Idempotency key is required", ENTITY_NAME, "idemkeynull");
+        }
+
+        SeatLockResponseDTO result = seatLockService.tryLockSeats(request);
+        return ResponseEntity.ok(result);
     }
 }

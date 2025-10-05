@@ -2,12 +2,15 @@ package com.ridehub.route.service;
 
 import com.ridehub.route.domain.*; // for static metamodels
 import com.ridehub.route.domain.SeatLock;
+import com.ridehub.route.domain.enumeration.LockStatus;
 import com.ridehub.route.repository.SeatLockRepository;
 import com.ridehub.route.service.criteria.SeatLockCriteria;
 import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.mapper.SeatLockMapper;
 import jakarta.persistence.criteria.JoinType;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
@@ -87,5 +90,86 @@ public class SeatLockQueryService extends QueryService<SeatLock> {
             );
         }
         return specification;
+    }
+
+    /**
+     * Find existing seat lock by idempotency key.
+     */
+    @Transactional(readOnly = true)
+    public Optional<SeatLock> findByIdempotencyKey(String idempotencyKey) {
+        LOG.debug("find by idempotency key : {}", idempotencyKey);
+        tech.jhipster.service.filter.StringFilter filter = new tech.jhipster.service.filter.StringFilter();
+        filter.setEquals(idempotencyKey);
+        Specification<SeatLock> specification = Specification.where(
+            buildStringSpecification(filter, SeatLock_.idempotencyKey)
+        );
+        return seatLockRepository.findOne(specification);
+    }
+
+    /**
+     * Find active seat locks for specific trip and seat numbers.
+     */
+    @Transactional(readOnly = true)
+    public List<SeatLock> findActiveLocksByTripAndSeats(Long tripId, List<String> seatNumbers, LockStatus status, Instant now) {
+        LOG.debug("find active locks by trip {} and seats {} with status {} after {}", tripId, seatNumbers, status, now);
+
+        tech.jhipster.service.filter.LongFilter tripFilter = new tech.jhipster.service.filter.LongFilter();
+        tripFilter.setEquals(tripId);
+
+        tech.jhipster.service.filter.StringFilter seatFilter = new tech.jhipster.service.filter.StringFilter();
+        seatFilter.setIn(seatNumbers);
+
+        tech.jhipster.service.filter.Filter<LockStatus> statusFilter = new tech.jhipster.service.filter.Filter<>();
+        statusFilter.setEquals(status);
+
+        tech.jhipster.service.filter.InstantFilter expiresFilter = new tech.jhipster.service.filter.InstantFilter();
+        expiresFilter.setGreaterThan(now);
+
+        tech.jhipster.service.filter.BooleanFilter deletedFilter = new tech.jhipster.service.filter.BooleanFilter();
+        deletedFilter.setEquals(false);
+
+        Specification<SeatLock> specification = Specification.<SeatLock>where(
+            buildSpecification(tripFilter, root -> root.join(SeatLock_.trip, JoinType.LEFT).get(Trip_.id))
+        ).and(
+            buildStringSpecification(seatFilter, SeatLock_.seatNo)
+        ).and(
+            buildSpecification(statusFilter, SeatLock_.status)
+        ).and(
+            buildRangeSpecification(expiresFilter, SeatLock_.expiresAt)
+        ).and(
+            Specification.<SeatLock>where(
+                buildSpecification(deletedFilter, SeatLock_.isDeleted)
+            ).or(
+                (root, query, criteriaBuilder) -> criteriaBuilder.isNull(root.get(SeatLock_.isDeleted))
+            )
+        );
+
+        return seatLockRepository.findAll(specification);
+    }
+
+    /**
+     * Find all locks for a specific booking.
+     */
+    @Transactional(readOnly = true)
+    public List<SeatLock> findByBookingId(Long bookingId) {
+        LOG.debug("find by booking id : {}", bookingId);
+
+        tech.jhipster.service.filter.LongFilter bookingFilter = new tech.jhipster.service.filter.LongFilter();
+        bookingFilter.setEquals(bookingId);
+
+        tech.jhipster.service.filter.BooleanFilter deletedFilter = new tech.jhipster.service.filter.BooleanFilter();
+        deletedFilter.setEquals(false);
+
+        Specification<SeatLock> specification = Specification.<SeatLock>where(
+            buildRangeSpecification(bookingFilter, SeatLock_.bookingId)
+        ).and(
+            Specification.<SeatLock>where(
+                buildSpecification(deletedFilter, SeatLock_.isDeleted)
+            ).or(
+                (root, query, criteriaBuilder) -> criteriaBuilder.isNull(root.get(SeatLock_.isDeleted))
+            )
+        );
+
+        return seatLockRepository.findAll(specification);
     }
 }

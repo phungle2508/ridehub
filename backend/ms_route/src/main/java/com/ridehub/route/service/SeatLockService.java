@@ -1,6 +1,8 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.SeatLockDTO;
+import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
+import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
 import java.util.Optional;
 
 /**
@@ -45,4 +47,12 @@ public interface SeatLockService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Try to lock seats for a booking.
+     *
+     * @param request the seat lock request containing booking details and seat numbers.
+     * @return the seat lock response with status HELD or REJECTED.
+     */
+    SeatLockResponseDTO tryLockSeats(SeatLockRequestDTO request);
 }
