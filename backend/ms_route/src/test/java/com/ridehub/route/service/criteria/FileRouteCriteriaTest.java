@@ -85,9 +85,6 @@ class FileRouteCriteriaTest {
         fileRouteCriteria.isDeleted();
         fileRouteCriteria.deletedAt();
         fileRouteCriteria.deletedBy();
-        fileRouteCriteria.stationId();
-        fileRouteCriteria.vehicleId();
-        fileRouteCriteria.seatMapId();
         fileRouteCriteria.distinct();
     }
 
@@ -104,9 +101,6 @@ class FileRouteCriteriaTest {
                 condition.apply(criteria.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy()) &&
-                condition.apply(criteria.getStationId()) &&
-                condition.apply(criteria.getVehicleId()) &&
-                condition.apply(criteria.getSeatMapId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
         );
@@ -125,9 +119,6 @@ class FileRouteCriteriaTest {
                 condition.apply(criteria.getIsDeleted(), copy.getIsDeleted()) &&
                 condition.apply(criteria.getDeletedAt(), copy.getDeletedAt()) &&
                 condition.apply(criteria.getDeletedBy(), copy.getDeletedBy()) &&
-                condition.apply(criteria.getStationId(), copy.getStationId()) &&
-                condition.apply(criteria.getVehicleId(), copy.getVehicleId()) &&
-                condition.apply(criteria.getSeatMapId(), copy.getSeatMapId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"
         );

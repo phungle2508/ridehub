@@ -1,6 +1,5 @@
 package com.ridehub.route.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -48,14 +47,8 @@ public class SeatMap implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @JsonIgnoreProperties(value = { "station", "vehicle", "seatMap" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     private FileRoute seatMapImg;
-
-    @JsonIgnoreProperties(value = { "seatMap", "vehicleImg" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "seatMap")
-    private Vehicle vehicle;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -160,25 +153,6 @@ public class SeatMap implements Serializable {
 
     public SeatMap seatMapImg(FileRoute fileRoute) {
         this.setSeatMapImg(fileRoute);
-        return this;
-    }
-
-    public Vehicle getVehicle() {
-        return this.vehicle;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        if (this.vehicle != null) {
-            this.vehicle.setSeatMap(null);
-        }
-        if (vehicle != null) {
-            vehicle.setSeatMap(this);
-        }
-        this.vehicle = vehicle;
-    }
-
-    public SeatMap vehicle(Vehicle vehicle) {
-        this.setVehicle(vehicle);
         return this;
     }
 

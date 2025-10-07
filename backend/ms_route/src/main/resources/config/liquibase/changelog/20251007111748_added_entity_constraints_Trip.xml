@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity Trip.
     -->
-    <changeSet id="20251003132711-2" author="jhipster">
+    <changeSet id="20251007111748-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="route_id"
                                  baseTableName="trip"

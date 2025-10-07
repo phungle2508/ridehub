@@ -24,8 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
 
 /**
- * Service for executing complex queries for {@link SeatMap} entities in the database.
- * The main input is a {@link SeatMapCriteria} which gets converted to {@link Specification},
+ * Service for executing complex queries for {@link SeatMap} entities in the
+ * database.
+ * The main input is a {@link SeatMapCriteria} which gets converted to
+ * {@link Specification},
  * in a way that all the filters must apply.
  * It returns a {@link List} of {@link SeatMapDTO} which fulfills the criteria.
  */
@@ -52,8 +54,11 @@ public class SeatMapQueryService extends QueryService<SeatMap> {
     }
 
     /**
-     * Return a {@link List} of {@link SeatMapDTO} which matches the criteria from the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
+     * Return a {@link List} of {@link SeatMapDTO} which matches the criteria from
+     * the database.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
      * @return the matching entities.
      */
     @Transactional(readOnly = true)
@@ -65,7 +70,9 @@ public class SeatMapQueryService extends QueryService<SeatMap> {
 
     /**
      * Return the number of matching entities in the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
+     * 
+     * @param criteria The object which holds all the filters, which the entities
+     *                 should match.
      * @return the number of matching entities.
      */
     @Transactional(readOnly = true)
@@ -93,8 +100,7 @@ public class SeatMapQueryService extends QueryService<SeatMap> {
                 buildSpecification(criteria.getIsDeleted(), SeatMap_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), SeatMap_.deletedAt),
                 buildSpecification(criteria.getDeletedBy(), SeatMap_.deletedBy),
-                buildSpecification(criteria.getSeatMapImgId(), root -> root.join(SeatMap_.seatMapImg, JoinType.LEFT).get(FileRoute_.id)),
-                buildSpecification(criteria.getVehicleId(), root -> root.join(SeatMap_.vehicle, JoinType.LEFT).get(Vehicle_.id))
+                buildSpecification(criteria.getSeatMapImgId(), root -> root.join(SeatMap_.seatMapImg, JoinType.LEFT).get(FileRoute_.id))
             );
         }
         return specification;

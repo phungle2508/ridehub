@@ -279,8 +279,8 @@ entity Vehicle {
   deletedBy UUID
 }
 
-relationship OneToOne {
-  Vehicle{seatMap required} to SeatMap{vehicle}
+relationship ManyToOne {
+  Vehicle{seatMap required} to SeatMap
 }
 
 entity Floor {
@@ -397,10 +397,10 @@ entity FileRoute {
   deletedBy UUID
 }
 
-relationship OneToOne {
-  Station{stationImg} to FileRoute{station}
-  Vehicle{vehicleImg} to FileRoute{vehicle}
-  SeatMap{seatMapImg} to FileRoute{seatMap}
+relationship ManyToOne {
+  Station{stationImg} to FileRoute
+  Vehicle{vehicleImg} to FileRoute
+  SeatMap{seatMapImg} to FileRoute
 }
 
 relationship ManyToOne {

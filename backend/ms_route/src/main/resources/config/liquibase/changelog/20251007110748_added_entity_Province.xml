@@ -7,20 +7,35 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity Address.
+        Added the entity Province.
     -->
-    <changeSet id="20251003132011-1" author="jhipster">
-        <createTable tableName="address">
+    <changeSet id="20251007110748-1" author="jhipster">
+        <createTable tableName="province">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="street_address" type="varchar(255)">
+            <column name="province_code" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_province__province_code" />
+            </column>
+            <column name="name" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="latitude" type="decimal(21,2)">
+            <column name="name_en" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
-            <column name="longitude" type="decimal(21,2)">
+            <column name="full_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="full_name_en" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="code_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="administrative_unit_id" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="administrative_region_id" type="integer">
                 <constraints nullable="true" />
             </column>
             <column name="created_at" type="${datetimeType}">
@@ -38,14 +53,11 @@
             <column name="deleted_by" type="${uuidType}">
                 <constraints nullable="true" />
             </column>
-            <column name="ward_id" type="bigint">
-                <constraints nullable="false" />
-            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="address" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="address" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="address" columnName="deleted_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="province" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="province" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="province" columnName="deleted_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -58,22 +70,26 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20251003132011-1-data" author="jhipster" context="faker">
+    <changeSet id="20251007110748-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/address.csv"
+                  file="config/liquibase/fake-data/province.csv"
                   separator=";"
-                  tableName="address"
+                  tableName="province"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="street_address" type="string"/>
-            <column name="latitude" type="numeric"/>
-            <column name="longitude" type="numeric"/>
+            <column name="province_code" type="string"/>
+            <column name="name" type="string"/>
+            <column name="name_en" type="string"/>
+            <column name="full_name" type="string"/>
+            <column name="full_name_en" type="string"/>
+            <column name="code_name" type="string"/>
+            <column name="administrative_unit_id" type="numeric"/>
+            <column name="administrative_region_id" type="numeric"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
             <column name="is_deleted" type="boolean"/>
             <column name="deleted_at" type="date"/>
             <column name="deleted_by" type="string"/>
-            <column name="ward_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>

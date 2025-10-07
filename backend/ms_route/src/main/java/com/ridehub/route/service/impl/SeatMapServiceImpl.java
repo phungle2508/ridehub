@@ -54,27 +54,14 @@ public class SeatMapServiceImpl implements SeatMapService {
         LOG.debug("Request to partially update SeatMap : {}", seatMapDTO);
 
         return seatMapRepository
-            .findById(seatMapDTO.getId())
-            .map(existingSeatMap -> {
-                seatMapMapper.partialUpdate(existingSeatMap, seatMapDTO);
+                .findById(seatMapDTO.getId())
+                .map(existingSeatMap -> {
+                    seatMapMapper.partialUpdate(existingSeatMap, seatMapDTO);
 
-                return existingSeatMap;
-            })
-            .map(seatMapRepository::save)
-            .map(seatMapMapper::toDto);
-    }
-
-    /**
-     *  Get all the seatMaps where Vehicle is {@code null}.
-     *  @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<SeatMapDTO> findAllWhereVehicleIsNull() {
-        LOG.debug("Request to get all seatMaps where Vehicle is null");
-        return StreamSupport.stream(seatMapRepository.findAll().spliterator(), false)
-            .filter(seatMap -> seatMap.getVehicle() == null)
-            .map(seatMapMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
+                    return existingSeatMap;
+                })
+                .map(seatMapRepository::save)
+                .map(seatMapMapper::toDto);
     }
 
     @Override

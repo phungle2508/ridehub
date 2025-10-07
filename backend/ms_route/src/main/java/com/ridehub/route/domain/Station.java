@@ -73,9 +73,7 @@ public class Station implements Serializable {
     @JoinColumn(unique = true)
     private Address address;
 
-    @JsonIgnoreProperties(value = { "station", "vehicle", "seatMap" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     private FileRoute stationImg;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

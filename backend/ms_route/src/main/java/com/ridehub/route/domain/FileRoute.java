@@ -1,6 +1,5 @@
 package com.ridehub.route.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -57,18 +56,6 @@ public class FileRoute implements Serializable {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
-
-    @JsonIgnoreProperties(value = { "address", "stationImg" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "stationImg")
-    private Station station;
-
-    @JsonIgnoreProperties(value = { "seatMap", "vehicleImg" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "vehicleImg")
-    private Vehicle vehicle;
-
-    @JsonIgnoreProperties(value = { "seatMapImg", "vehicle" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "seatMapImg")
-    private SeatMap seatMap;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -200,63 +187,6 @@ public class FileRoute implements Serializable {
 
     public void setDeletedBy(UUID deletedBy) {
         this.deletedBy = deletedBy;
-    }
-
-    public Station getStation() {
-        return this.station;
-    }
-
-    public void setStation(Station station) {
-        if (this.station != null) {
-            this.station.setStationImg(null);
-        }
-        if (station != null) {
-            station.setStationImg(this);
-        }
-        this.station = station;
-    }
-
-    public FileRoute station(Station station) {
-        this.setStation(station);
-        return this;
-    }
-
-    public Vehicle getVehicle() {
-        return this.vehicle;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        if (this.vehicle != null) {
-            this.vehicle.setVehicleImg(null);
-        }
-        if (vehicle != null) {
-            vehicle.setVehicleImg(this);
-        }
-        this.vehicle = vehicle;
-    }
-
-    public FileRoute vehicle(Vehicle vehicle) {
-        this.setVehicle(vehicle);
-        return this;
-    }
-
-    public SeatMap getSeatMap() {
-        return this.seatMap;
-    }
-
-    public void setSeatMap(SeatMap seatMap) {
-        if (this.seatMap != null) {
-            this.seatMap.setSeatMapImg(null);
-        }
-        if (seatMap != null) {
-            seatMap.setSeatMapImg(this);
-        }
-        this.seatMap = seatMap;
-    }
-
-    public FileRoute seatMap(SeatMap seatMap) {
-        this.setSeatMap(seatMap);
-        return this;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

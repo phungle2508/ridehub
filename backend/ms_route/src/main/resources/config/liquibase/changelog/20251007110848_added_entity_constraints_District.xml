@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity District.
     -->
-    <changeSet id="20251003131811-2" author="jhipster">
+    <changeSet id="20251007110848-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="province_id"
                                  baseTableName="district"

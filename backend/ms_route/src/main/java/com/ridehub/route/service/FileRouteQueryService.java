@@ -6,7 +6,6 @@ import com.ridehub.route.repository.FileRouteRepository;
 import com.ridehub.route.service.criteria.FileRouteCriteria;
 import com.ridehub.route.service.dto.FileRouteDTO;
 import com.ridehub.route.service.mapper.FileRouteMapper;
-import jakarta.persistence.criteria.JoinType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,10 +79,7 @@ public class FileRouteQueryService extends QueryService<FileRoute> {
                 buildRangeSpecification(criteria.getUpdatedAt(), FileRoute_.updatedAt),
                 buildSpecification(criteria.getIsDeleted(), FileRoute_.isDeleted),
                 buildRangeSpecification(criteria.getDeletedAt(), FileRoute_.deletedAt),
-                buildSpecification(criteria.getDeletedBy(), FileRoute_.deletedBy),
-                buildSpecification(criteria.getStationId(), root -> root.join(FileRoute_.station, JoinType.LEFT).get(Station_.id)),
-                buildSpecification(criteria.getVehicleId(), root -> root.join(FileRoute_.vehicle, JoinType.LEFT).get(Vehicle_.id)),
-                buildSpecification(criteria.getSeatMapId(), root -> root.join(FileRoute_.seatMap, JoinType.LEFT).get(SeatMap_.id))
+                buildSpecification(criteria.getDeletedBy(), FileRoute_.deletedBy)
             );
         }
         return specification;

@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251003133211"
+    "changelogDate": "20251007112248"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -50,29 +50,7 @@
   "jpaMetamodelFiltering": true,
   "microserviceName": "ms_route",
   "name": "FileRoute",
-  "relationships": [
-    {
-      "otherEntityName": "station",
-      "otherEntityRelationshipName": "stationImg",
-      "relationshipName": "station",
-      "relationshipSide": "right",
-      "relationshipType": "one-to-one"
-    },
-    {
-      "otherEntityName": "vehicle",
-      "otherEntityRelationshipName": "vehicleImg",
-      "relationshipName": "vehicle",
-      "relationshipSide": "right",
-      "relationshipType": "one-to-one"
-    },
-    {
-      "otherEntityName": "seatMap",
-      "otherEntityRelationshipName": "seatMapImg",
-      "relationshipName": "seatMap",
-      "relationshipSide": "right",
-      "relationshipType": "one-to-one"
-    }
-  ],
+  "relationships": [],
   "searchEngine": "no",
   "service": "serviceImpl"
 }

@@ -799,8 +799,16 @@ class VehicleResourceIT {
     @Test
     @Transactional
     void getAllVehiclesBySeatMapIsEqualToSomething() throws Exception {
-        // Get already existing entity
-        SeatMap seatMap = vehicle.getSeatMap();
+        SeatMap seatMap;
+        if (TestUtil.findAll(em, SeatMap.class).isEmpty()) {
+            vehicleRepository.saveAndFlush(vehicle);
+            seatMap = SeatMapResourceIT.createEntity();
+        } else {
+            seatMap = TestUtil.findAll(em, SeatMap.class).get(0);
+        }
+        em.persist(seatMap);
+        em.flush();
+        vehicle.setSeatMap(seatMap);
         vehicleRepository.saveAndFlush(vehicle);
         Long seatMapId = seatMap.getId();
         // Get all the vehicleList where seatMap equals to seatMapId

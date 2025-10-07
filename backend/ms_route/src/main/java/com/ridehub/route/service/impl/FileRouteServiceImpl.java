@@ -64,44 +64,6 @@ public class FileRouteServiceImpl implements FileRouteService {
             .map(fileRouteMapper::toDto);
     }
 
-    /**
-     *  Get all the fileRoutes where Station is {@code null}.
-     *  @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<FileRouteDTO> findAllWhereStationIsNull() {
-        LOG.debug("Request to get all fileRoutes where Station is null");
-        return StreamSupport.stream(fileRouteRepository.findAll().spliterator(), false)
-            .filter(fileRoute -> fileRoute.getStation() == null)
-            .map(fileRouteMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
-    }
-
-    /**
-     *  Get all the fileRoutes where Vehicle is {@code null}.
-     *  @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<FileRouteDTO> findAllWhereVehicleIsNull() {
-        LOG.debug("Request to get all fileRoutes where Vehicle is null");
-        return StreamSupport.stream(fileRouteRepository.findAll().spliterator(), false)
-            .filter(fileRoute -> fileRoute.getVehicle() == null)
-            .map(fileRouteMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
-    }
-
-    /**
-     *  Get all the fileRoutes where SeatMap is {@code null}.
-     *  @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<FileRouteDTO> findAllWhereSeatMapIsNull() {
-        LOG.debug("Request to get all fileRoutes where SeatMap is null");
-        return StreamSupport.stream(fileRouteRepository.findAll().spliterator(), false)
-            .filter(fileRoute -> fileRoute.getSeatMap() == null)
-            .map(fileRouteMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
-    }
 
     @Override
     @Transactional(readOnly = true)

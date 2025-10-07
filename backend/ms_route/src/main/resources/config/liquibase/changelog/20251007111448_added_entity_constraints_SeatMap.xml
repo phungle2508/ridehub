@@ -6,15 +6,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
     <!--
-        Added the constraints for entity Floor.
+        Added the constraints for entity SeatMap.
     -->
-    <changeSet id="20251003132511-2" author="jhipster">
+    <changeSet id="20251007111448-2" author="jhipster">
 
-        <addForeignKeyConstraint baseColumnNames="seat_map_id"
-                                 baseTableName="floor"
-                                 constraintName="fk_floor__seat_map_id"
+        <addForeignKeyConstraint baseColumnNames="seat_map_img_id"
+                                 baseTableName="seat_map"
+                                 constraintName="fk_seat_map__seat_map_img_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="seat_map"
+                                 referencedTableName="file_route"
                                  />
     </changeSet>
 </databaseChangeLog>

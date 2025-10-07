@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251003132411"
+    "changelogDate": "20251007111448"
   },
   "applications": ["ms_route"],
   "clientRootFolder": "ms_route",
@@ -40,17 +40,9 @@
   "relationships": [
     {
       "otherEntityName": "fileRoute",
-      "otherEntityRelationshipName": "seatMap",
       "relationshipName": "seatMapImg",
       "relationshipSide": "left",
-      "relationshipType": "one-to-one"
-    },
-    {
-      "otherEntityName": "vehicle",
-      "otherEntityRelationshipName": "seatMap",
-      "relationshipName": "vehicle",
-      "relationshipSide": "right",
-      "relationshipType": "one-to-one"
+      "relationshipType": "many-to-one"
     }
   ],
   "searchEngine": "no",

@@ -7,32 +7,17 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity Ward.
+        Added the entity Floor.
     -->
-    <changeSet id="20251003131911-1" author="jhipster">
-        <createTable tableName="ward">
+    <changeSet id="20251007111548-1" author="jhipster">
+        <createTable tableName="floor">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="ward_code" type="varchar(255)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="ux_ward__ward_code" />
-            </column>
-            <column name="name" type="varchar(255)">
+            <column name="floor_no" type="integer">
                 <constraints nullable="false" />
             </column>
-            <column name="name_en" type="varchar(255)">
-                <constraints nullable="true" />
-            </column>
-            <column name="full_name" type="varchar(255)">
-                <constraints nullable="true" />
-            </column>
-            <column name="full_name_en" type="varchar(255)">
-                <constraints nullable="true" />
-            </column>
-            <column name="code_name" type="varchar(255)">
-                <constraints nullable="true" />
-            </column>
-            <column name="administrative_unit_id" type="integer">
+            <column name="price_factor_floor" type="decimal(21,2)">
                 <constraints nullable="true" />
             </column>
             <column name="created_at" type="${datetimeType}">
@@ -50,14 +35,14 @@
             <column name="deleted_by" type="${uuidType}">
                 <constraints nullable="true" />
             </column>
-            <column name="district_id" type="bigint">
+            <column name="seat_map_id" type="bigint">
                 <constraints nullable="false" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="ward" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="ward" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="ward" columnName="deleted_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="floor" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="floor" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="floor" columnName="deleted_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -70,26 +55,21 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20251003131911-1-data" author="jhipster" context="faker">
+    <changeSet id="20251007111548-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/ward.csv"
+                  file="config/liquibase/fake-data/floor.csv"
                   separator=";"
-                  tableName="ward"
+                  tableName="floor"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="ward_code" type="string"/>
-            <column name="name" type="string"/>
-            <column name="name_en" type="string"/>
-            <column name="full_name" type="string"/>
-            <column name="full_name_en" type="string"/>
-            <column name="code_name" type="string"/>
-            <column name="administrative_unit_id" type="numeric"/>
+            <column name="floor_no" type="numeric"/>
+            <column name="price_factor_floor" type="numeric"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
             <column name="is_deleted" type="boolean"/>
             <column name="deleted_at" type="date"/>
             <column name="deleted_by" type="string"/>
-            <column name="district_id" type="numeric"/>
+            <column name="seat_map_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>

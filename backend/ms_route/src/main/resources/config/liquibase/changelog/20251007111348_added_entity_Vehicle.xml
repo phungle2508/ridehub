@@ -7,18 +7,30 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <!--
-        Added the entity Floor.
+        Added the entity Vehicle.
     -->
-    <changeSet id="20251003132511-1" author="jhipster">
-        <createTable tableName="floor">
+    <changeSet id="20251007111348-1" author="jhipster">
+        <createTable tableName="vehicle">
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="floor_no" type="integer">
+            <column name="type" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="price_factor_floor" type="decimal(21,2)">
+            <column name="type_factor" type="decimal(21,2)">
                 <constraints nullable="true" />
+            </column>
+            <column name="plate_number" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_vehicle__plate_number" />
+            </column>
+            <column name="brand" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="description" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false" />
             </column>
             <column name="created_at" type="${datetimeType}">
                 <constraints nullable="false" />
@@ -38,11 +50,14 @@
             <column name="seat_map_id" type="bigint">
                 <constraints nullable="false" />
             </column>
+            <column name="vehicle_img_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
-        <dropDefaultValue tableName="floor" columnName="created_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="floor" columnName="updated_at" columnDataType="${datetimeType}"/>
-        <dropDefaultValue tableName="floor" columnName="deleted_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="vehicle" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="vehicle" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="vehicle" columnName="deleted_at" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -55,15 +70,19 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20251003132511-1-data" author="jhipster" context="faker">
+    <changeSet id="20251007111348-1-data" author="jhipster" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/floor.csv"
+                  file="config/liquibase/fake-data/vehicle.csv"
                   separator=";"
-                  tableName="floor"
+                  tableName="vehicle"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="floor_no" type="numeric"/>
-            <column name="price_factor_floor" type="numeric"/>
+            <column name="type" type="string"/>
+            <column name="type_factor" type="numeric"/>
+            <column name="plate_number" type="string"/>
+            <column name="brand" type="string"/>
+            <column name="description" type="string"/>
+            <column name="status" type="string"/>
             <column name="created_at" type="date"/>
             <column name="updated_at" type="date"/>
             <column name="is_deleted" type="boolean"/>

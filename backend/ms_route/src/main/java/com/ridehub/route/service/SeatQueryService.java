@@ -143,17 +143,26 @@ public class SeatQueryService extends QueryService<Seat> {
         var cb = entityManager.getCriteriaBuilder();
         var cq = cb.createTupleQuery();
 
+        // Roots / joins
         var seat = cq.from(Seat.class);
         var floor = seat.join(Seat_.floor, JoinType.INNER);
         var seatMap = floor.join(Floor_.seatMap, JoinType.INNER);
-        var vehicle = seatMap.join(SeatMap_.vehicle, JoinType.INNER);
+
+        // Vehicle is now a root; relate it via seatMap
+        var vehicle = cq.from(Vehicle.class);
 
         cq.multiselect(
                 vehicle.get(Vehicle_.id).alias("vehicleId"),
                 cb.count(seat).alias("seatCount"));
 
         cq.where(cb.and(
+                // link vehicle ↔ seatMap
+                cb.equal(vehicle.get(Vehicle_.seatMap), seatMap),
+
+                // filter by requested vehicles
                 vehicle.get(Vehicle_.id).in(vehicleIds),
+
+                // soft-delete guards
                 cb.or(cb.isFalse(seat.get(Seat_.isDeleted)), cb.isNull(seat.get(Seat_.isDeleted))),
                 cb.or(cb.isFalse(floor.get(Floor_.isDeleted)), cb.isNull(floor.get(Floor_.isDeleted))),
                 cb.or(cb.isFalse(vehicle.get(Vehicle_.isDeleted)), cb.isNull(vehicle.get(Vehicle_.isDeleted)))));
@@ -167,4 +176,5 @@ public class SeatQueryService extends QueryService<Seat> {
                         t -> (Long) t.get("vehicleId"),
                         t -> (Long) t.get("seatCount")));
     }
+
 }

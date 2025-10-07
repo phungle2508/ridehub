@@ -1,7 +1,6 @@
 package com.ridehub.route.service;
 
 import com.ridehub.route.service.dto.FileRouteDTO;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,25 +30,6 @@ public interface FileRouteService {
      * @return the persisted entity.
      */
     Optional<FileRouteDTO> partialUpdate(FileRouteDTO fileRouteDTO);
-
-    /**
-     * Get all the FileRouteDTO where Station is {@code null}.
-     *
-     * @return the {@link List} of entities.
-     */
-    List<FileRouteDTO> findAllWhereStationIsNull();
-    /**
-     * Get all the FileRouteDTO where Vehicle is {@code null}.
-     *
-     * @return the {@link List} of entities.
-     */
-    List<FileRouteDTO> findAllWhereVehicleIsNull();
-    /**
-     * Get all the FileRouteDTO where SeatMap is {@code null}.
-     *
-     * @return the {@link List} of entities.
-     */
-    List<FileRouteDTO> findAllWhereSeatMapIsNull();
 
     /**
      * Get the "id" fileRoute.

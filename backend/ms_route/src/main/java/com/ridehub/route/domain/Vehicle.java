@@ -70,15 +70,12 @@ public class Vehicle implements Serializable {
     @Column(name = "deleted_by", length = 36)
     private UUID deletedBy;
 
-    @JsonIgnoreProperties(value = { "seatMapImg", "vehicle" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @NotNull
-    @JoinColumn(unique = true)
+    @JsonIgnoreProperties(value = { "seatMapImg" }, allowSetters = true)
     private SeatMap seatMap;
 
-    @JsonIgnoreProperties(value = { "station", "vehicle", "seatMap" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     private FileRoute vehicleImg;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
