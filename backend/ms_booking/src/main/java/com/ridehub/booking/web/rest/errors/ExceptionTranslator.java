@@ -312,14 +312,14 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
             }
         }
 
-        if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
-            if (err instanceof HttpMessageConversionException)
-                return "Unable to convert http message";
-            if (err instanceof DataAccessException)
-                return "Failure during data access";
-            if (containsPackageName(err.getMessage()))
-                return "Unexpected runtime exception";
-        }
+        // if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
+        //     if (err instanceof HttpMessageConversionException)
+        //         return "Unable to convert http message";
+        //     if (err instanceof DataAccessException)
+        //         return "Failure during data access";
+        //     if (containsPackageName(err.getMessage()))
+        //         return "Unexpected runtime exception";
+        // }
         return err.getCause() != null ? err.getCause().getMessage() : err.getMessage();
     }
 
