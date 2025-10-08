@@ -1,6 +1,5 @@
 package com.ridehub.promotion;
 
-import com.ridehub.kafka.config.KafkaLibraryAutoConfiguration;
 import com.ridehub.promotion.config.ApplicationProperties;
 import com.ridehub.promotion.config.CRLFLogConverter;
 import jakarta.annotation.PostConstruct;
@@ -8,30 +7,40 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Import;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
 import tech.jhipster.config.DefaultProfileUtil;
 import tech.jhipster.config.JHipsterConstants;
 
 @SpringBootApplication
 @EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class })
-@Import(KafkaLibraryAutoConfiguration.class)
 public class MsPromotionApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(MsPromotionApp.class);
 
     private final Environment env;
+    private ConfigurableEnvironment environment;
 
     public MsPromotionApp(Environment env) {
         this.env = env;
+    }
+
+    @Autowired
+    public void setConfigurableEnvironment(ConfigurableEnvironment environment) {
+        this.environment = environment;
     }
 
     /**
@@ -46,6 +55,18 @@ public class MsPromotionApp {
     @PostConstruct
     public void initApplication() {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
+
+        if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT)) {
+            String serverPortStr = env.getProperty("server.port", "8083");
+            int serverPort = Integer.parseInt(serverPortStr);
+            int tunnelPort = serverPort + 1000;
+            // Create a map of properties to add/override
+            Map<String, Object> dynamicProps = new HashMap<>();
+            dynamicProps.put("spring.cloud.consul.discovery.port", tunnelPort);
+            // Add the properties to the environment
+            MutablePropertySources propertySources = environment.getPropertySources();
+            propertySources.addFirst(new MapPropertySource("dynamicConsulProps", dynamicProps));
+        }
         if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
                 activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
             LOG.error(

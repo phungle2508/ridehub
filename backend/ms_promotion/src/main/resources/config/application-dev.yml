@@ -20,7 +20,12 @@ server:
   sql-port: ${SQL_PORT:3310}
   sql-name: ${SQL_NAME:promotion}
   dev-config-folder: /home/phungvip/Desktop/work-space/ridehub/backend/ridehub-central-config
-  
+
+# Consul SSH Tunnel configuration for ms_promotion
+tunnel:
+  service-id: mspromotion
+  service-name: mspromotion
+
 spring:
   config:
     # Import shared config first

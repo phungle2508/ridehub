@@ -20,6 +20,11 @@ server:
   sql-port: ${SQL_PORT:3309}
   sql-name: ${SQL_NAME:booking}
   dev-config-folder: /home/phungvip/Desktop/work-space/ridehub/backend/ridehub-central-config
+
+# Consul SSH Tunnel configuration for ms_booking
+tunnel:
+  service-id: msbooking
+  service-name: msbooking
   
 spring:
   config:

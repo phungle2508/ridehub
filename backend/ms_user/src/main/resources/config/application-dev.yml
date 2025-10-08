@@ -21,6 +21,11 @@ server:
   sql-name: ${SQL_NAME:user}
   dev-config-folder: /home/phungvip/Desktop/work-space/ridehub/backend/ridehub-central-config
 
+# Consul SSH Tunnel configuration for ms_user
+tunnel:
+  service-id: msuser
+  service-name: msuser
+
 spring:
   config:
     # Import shared config first
