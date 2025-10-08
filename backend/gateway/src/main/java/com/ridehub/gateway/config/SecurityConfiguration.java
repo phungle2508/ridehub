@@ -44,11 +44,15 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
+import org.springframework.security.web.server.csrf.CsrfWebFilter;
 import org.springframework.security.web.server.csrf.ServerCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter.Mode;
+import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -67,103 +71,173 @@ public class SecurityConfiguration {
     private final ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     // See https://github.com/jhipster/generator-jhipster/issues/18868
-    // We don't use a distributed cache or the user selected cache implementation here on purpose
+    // We don't use a distributed cache or the user selected cache implementation
+    // here on purpose
     private final Cache<String, Mono<Jwt>> users = Caffeine.newBuilder()
-        .maximumSize(10_000)
-        .expireAfterWrite(Duration.ofHours(1))
-        .recordStats()
-        .build();
+            .maximumSize(10_000)
+            .expireAfterWrite(Duration.ofHours(1))
+            .recordStats()
+            .build();
 
-    public SecurityConfiguration(ReactiveClientRegistrationRepository clientRegistrationRepository, JHipsterProperties jHipsterProperties) {
+    public SecurityConfiguration(ReactiveClientRegistrationRepository clientRegistrationRepository,
+            JHipsterProperties jHipsterProperties) {
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.jHipsterProperties = jHipsterProperties;
     }
 
+    // @Bean
+    // public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity
+    // http) {
+    // ServerWebExchangeMatcher excludedAuth = new OrServerWebExchangeMatcher(
+    // ServerWebExchangeMatchers.pathMatchers("/api/authenticate"),
+    // ServerWebExchangeMatchers.pathMatchers("/api/auth/**"),
+    // ServerWebExchangeMatchers.pathMatchers("/services/{svc}/api/authenticate"),
+    // ServerWebExchangeMatchers.pathMatchers("/services/{svc}/api/auth/**")); // **
+    // at the end is allowed);
+
+    // // Require CSRF only if default matcher says so AND not excluded
+    // ServerWebExchangeMatcher requireCsrf = new AndServerWebExchangeMatcher(
+    // CsrfWebFilter.DEFAULT_CSRF_MATCHER,
+    // new NegatedServerWebExchangeMatcher(excludedAuth));
+    // http
+    // .securityMatcher(
+    // new NegatedServerWebExchangeMatcher(
+    // new OrServerWebExchangeMatcher(
+    // pathMatchers("/app/**", "/i18n/**", "/content/**", "/swagger-ui/**"))))
+    // .cors(withDefaults())
+    // .csrf(csrf -> csrf
+    // .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+    // // See https://stackoverflow.com/q/74447118/65681
+    // .csrfTokenRequestHandler(new ServerCsrfTokenRequestAttributeHandler())
+    // .requireCsrfProtectionMatcher(requireCsrf) // <-- no lambda, no type mismatch
+    // )
+    // // See https://github.com/spring-projects/spring-security/issues/5766
+    // .addFilterAt(new CookieCsrfFilter(), SecurityWebFiltersOrder.REACTOR_CONTEXT)
+    // .addFilterAfter(new SpaWebFilter(), SecurityWebFiltersOrder.HTTPS_REDIRECT)
+    // .headers(headers -> headers
+    // .contentSecurityPolicy(csp -> csp
+    // .policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
+    // .frameOptions(frameOptions -> frameOptions.mode(Mode.DENY))
+    // .referrerPolicy(referrer -> referrer.policy(
+    // ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+    // .permissionsPolicy(permissions -> permissions.policy(
+    // "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(),
+    // microphone=(), midi=(), payment=(), sync-xhr=()")))
+    // .authorizeExchange(authz ->
+    // // prettier-ignore
+    // authz
+    // .pathMatchers("/services/{svc}/api/authenticate",
+    // "/services/{svc}/api/auth/**")
+    // .permitAll()
+    // .pathMatchers("/").permitAll()
+    // .pathMatchers("/*.*").permitAll()
+    // .pathMatchers("/api/authenticate").permitAll()
+    // .pathMatchers("/api/auth-info").permitAll()
+    // .pathMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
+    // .pathMatchers("/api/**").authenticated()
+    // .pathMatchers("/services/*/management/health/readiness").permitAll()
+    // .pathMatchers("/services/*/v3/api-docs").hasAuthority(AuthoritiesConstants.ADMIN)
+    // .pathMatchers("/services/**").authenticated()
+    // .pathMatchers("/v3/api-docs/**").hasAuthority(AuthoritiesConstants.ADMIN)
+    // .pathMatchers("/management/health").permitAll()
+    // .pathMatchers("/management/health/**").permitAll()
+    // .pathMatchers("/management/info").permitAll()
+    // .pathMatchers("/management/prometheus").permitAll()
+    // .pathMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN))
+    // .oauth2Login(oauth2 -> oauth2
+    // .authorizationRequestResolver(authorizationRequestResolver(this.clientRegistrationRepository)))
+    // .oauth2Client(withDefaults())
+    // .oauth2ResourceServer(
+    // oauth2 -> oauth2.jwt(jwt ->
+    // jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+    // return http.build();
+    // }
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        http
-            .securityMatcher(
-                new NegatedServerWebExchangeMatcher(
-                    new OrServerWebExchangeMatcher(pathMatchers("/app/**", "/i18n/**", "/content/**", "/swagger-ui/**"))
-                )
-            )
-            .cors(withDefaults())
-            .csrf(csrf ->
-                csrf
-                    .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
-                    // See https://stackoverflow.com/q/74447118/65681
-                    .csrfTokenRequestHandler(new ServerCsrfTokenRequestAttributeHandler())
-            )
-            // See https://github.com/spring-projects/spring-security/issues/5766
-            .addFilterAt(new CookieCsrfFilter(), SecurityWebFiltersOrder.REACTOR_CONTEXT)
-            .addFilterAfter(new SpaWebFilter(), SecurityWebFiltersOrder.HTTPS_REDIRECT)
-            .headers(headers ->
-                headers
-                    .contentSecurityPolicy(csp -> csp.policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
-                    .frameOptions(frameOptions -> frameOptions.mode(Mode.DENY))
-                    .referrerPolicy(referrer ->
-                        referrer.policy(ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-                    )
-                    .permissionsPolicy(permissions ->
-                        permissions.policy(
-                            "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()"
-                        )
-                    )
-            )
-            .authorizeExchange(authz ->
-                // prettier-ignore
-                authz
-                    .pathMatchers("/").permitAll()
-                    .pathMatchers("/*.*").permitAll()
-                    .pathMatchers("/api/authenticate").permitAll()
-                    .pathMatchers("/api/auth-info").permitAll()
-                    .pathMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
-                    .pathMatchers("/api/**").authenticated()
-                    .pathMatchers("/services/*/management/health/readiness").permitAll()
-                    .pathMatchers("/services/*/v3/api-docs").hasAuthority(AuthoritiesConstants.ADMIN)
-                    .pathMatchers("/services/**").authenticated()
-                    .pathMatchers("/v3/api-docs/**").hasAuthority(AuthoritiesConstants.ADMIN)
-                    .pathMatchers("/management/health").permitAll()
-                    .pathMatchers("/management/health/**").permitAll()
-                    .pathMatchers("/management/info").permitAll()
-                    .pathMatchers("/management/prometheus").permitAll()
-                    .pathMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
-            )
-            .oauth2Login(oauth2 -> oauth2.authorizationRequestResolver(authorizationRequestResolver(this.clientRegistrationRepository)))
-            .oauth2Client(withDefaults())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
-        return http.build();
+        ServerWebExchangeMatcher excludedAuth = new OrServerWebExchangeMatcher(
+                ServerWebExchangeMatchers.pathMatchers("/api/authenticate"),
+                ServerWebExchangeMatchers.pathMatchers("/api/auth/**"),
+                ServerWebExchangeMatchers.pathMatchers("/services/{svc}/api/authenticate"),
+                ServerWebExchangeMatchers.pathMatchers("/services/{svc}/api/auth/**"));
+
+        return http
+                .securityMatcher(new NegatedServerWebExchangeMatcher(
+                        new OrServerWebExchangeMatcher(
+                                pathMatchers("/app/**", "/i18n/**", "/content/**",
+                                        "/swagger-ui/**"))))
+                .cors(withDefaults())
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // <-- disable CSRF
+                // .addFilterAt(new CookieCsrfFilter(), SecurityWebFiltersOrder.REACTOR_CONTEXT)
+                // // <-- remove this line
+                .addFilterAfter(new SpaWebFilter(), SecurityWebFiltersOrder.HTTPS_REDIRECT)
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                jHipsterProperties.getSecurity()
+                                        .getContentSecurityPolicy()))
+                        .frameOptions(frameOptions -> frameOptions.mode(Mode.DENY))
+                        .referrerPolicy(referrer -> referrer.policy(
+                                ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        .permissionsPolicy(permissions -> permissions.policy(
+                                "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()")))
+                .authorizeExchange(authz -> authz
+                        .pathMatchers("/services/{svc}/api/authenticate",
+                                "/services/{svc}/api/auth/**")
+                        .permitAll()
+                        .pathMatchers("/").permitAll()
+                        .pathMatchers("/*.*").permitAll()
+                        .pathMatchers("/api/authenticate").permitAll()
+                        .pathMatchers("/api/auth-info").permitAll()
+                        .pathMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
+                        .pathMatchers("/api/**").authenticated()
+                        .pathMatchers("/services/*/management/health/readiness").permitAll()
+                        .pathMatchers("/services/*/v3/api-docs")
+                        .hasAuthority(AuthoritiesConstants.ADMIN)
+                        .pathMatchers("/services/**").authenticated()
+                        .pathMatchers("/v3/api-docs/**")
+                        .hasAuthority(AuthoritiesConstants.ADMIN)
+                        .pathMatchers("/management/health").permitAll()
+                        .pathMatchers("/management/health/**").permitAll()
+                        .pathMatchers("/management/info").permitAll()
+                        .pathMatchers("/management/prometheus").permitAll()
+                        .pathMatchers("/management/**")
+                        .hasAuthority(AuthoritiesConstants.ADMIN))
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationRequestResolver(authorizationRequestResolver(
+                                this.clientRegistrationRepository)))
+                .oauth2Client(withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(
+                                jwtAuthenticationConverter())))
+                .build();
     }
 
     private ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
-        ReactiveClientRegistrationRepository clientRegistrationRepository
-    ) {
+            ReactiveClientRegistrationRepository clientRegistrationRepository) {
         DefaultServerOAuth2AuthorizationRequestResolver authorizationRequestResolver = new DefaultServerOAuth2AuthorizationRequestResolver(
-            clientRegistrationRepository
-        );
+                clientRegistrationRepository);
         if (this.issuerUri.contains("auth0.com")) {
-            authorizationRequestResolver.setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
+            authorizationRequestResolver
+                    .setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
         }
         return authorizationRequestResolver;
     }
 
     private Consumer<OAuth2AuthorizationRequest.Builder> authorizationRequestCustomizer() {
-        return customizer ->
-            customizer.authorizationRequestUri(uriBuilder ->
-                uriBuilder.queryParam("audience", jHipsterProperties.getSecurity().getOauth2().getAudience()).build()
-            );
+        return customizer -> customizer.authorizationRequestUri(uriBuilder -> uriBuilder
+                .queryParam("audience", jHipsterProperties.getSecurity().getOauth2().getAudience())
+                .build());
     }
 
     Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter() {
         ReactiveJwtAuthenticationConverter jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(
-            new Converter<Jwt, Flux<GrantedAuthority>>() {
-                @Override
-                public Flux<GrantedAuthority> convert(Jwt jwt) {
-                    return Flux.fromIterable(SecurityUtils.extractAuthorityFromClaims(jwt.getClaims()));
-                }
-            }
-        );
+                new Converter<Jwt, Flux<GrantedAuthority>>() {
+                    @Override
+                    public Flux<GrantedAuthority> convert(Jwt jwt) {
+                        return Flux.fromIterable(SecurityUtils
+                                .extractAuthorityFromClaims(jwt.getClaims()));
+                    }
+                });
         jwtAuthenticationConverter.setPrincipalClaimName(PREFERRED_USERNAME);
         return jwtAuthenticationConverter;
     }
@@ -180,23 +254,27 @@ public class SecurityConfiguration {
         return userRequest -> {
             // Delegate to the default implementation for loading a user
             return delegate
-                .loadUser(userRequest)
-                .map(user -> {
-                    Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+                    .loadUser(userRequest)
+                    .map(user -> {
+                        Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
 
-                    user
-                        .getAuthorities()
-                        .forEach(authority -> {
-                            if (authority instanceof OidcUserAuthority) {
-                                OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-                                mappedAuthorities.addAll(
-                                    SecurityUtils.extractAuthorityFromClaims(oidcUserAuthority.getUserInfo().getClaims())
-                                );
-                            }
-                        });
+                        user
+                                .getAuthorities()
+                                .forEach(authority -> {
+                                    if (authority instanceof OidcUserAuthority) {
+                                        OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
+                                        mappedAuthorities.addAll(
+                                                SecurityUtils.extractAuthorityFromClaims(
+                                                        oidcUserAuthority
+                                                                .getUserInfo()
+                                                                .getClaims()));
+                                    }
+                                });
 
-                    return new DefaultOidcUser(mappedAuthorities, user.getIdToken(), user.getUserInfo(), PREFERRED_USERNAME);
-                });
+                        return new DefaultOidcUser(mappedAuthorities, user.getIdToken(),
+                                user.getUserInfo(),
+                                PREFERRED_USERNAME);
+                    });
         };
     }
 
@@ -205,21 +283,20 @@ public class SecurityConfiguration {
         Mono<ClientRegistration> clientRegistration = registrations.findByRegistrationId("oidc");
 
         return clientRegistration
-            .map(oidc ->
-                createJwtDecoder(
-                    oidc.getProviderDetails().getIssuerUri(),
-                    oidc.getProviderDetails().getJwkSetUri(),
-                    oidc.getProviderDetails().getUserInfoEndpoint().getUri()
-                )
-            )
-            .block();
+                .map(oidc -> createJwtDecoder(
+                        oidc.getProviderDetails().getIssuerUri(),
+                        oidc.getProviderDetails().getJwkSetUri(),
+                        oidc.getProviderDetails().getUserInfoEndpoint().getUri()))
+                .block();
     }
 
     private ReactiveJwtDecoder createJwtDecoder(String issuerUri, String jwkSetUri, String userInfoUri) {
         NimbusReactiveJwtDecoder jwtDecoder = new NimbusReactiveJwtDecoder(jwkSetUri);
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(
+                jHipsterProperties.getSecurity().getOauth2().getAudience());
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer,
+                audienceValidator);
 
         jwtDecoder.setJwtValidator(withAudience);
 
@@ -235,40 +312,58 @@ public class SecurityConfiguration {
                     return Mono.just(jwt);
                 }
                 // Get user info from `users` cache if present
-                return Optional.ofNullable(users.getIfPresent(jwt.getSubject())).orElseGet(() -> // Retrieve user info from OAuth provider if not already loaded
-                    WebClient.create()
+                return Optional.ofNullable(users.getIfPresent(jwt.getSubject())).orElseGet(() -> // Retrieve
+                                                                                                 // user
+                                                                                                 // info
+                                                                                                 // from
+                                                                                                 // OAuth
+                                                                                                 // provider
+                                                                                                 // if
+                                                                                                 // not
+                                                                                                 // already
+                                                                                                 // loaded
+                WebClient.create()
                         .get()
                         .uri(userInfoUri)
                         .headers(headers -> headers.setBearerAuth(token))
                         .retrieve()
-                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                        .map(userInfo ->
-                            Jwt.withTokenValue(jwt.getTokenValue())
+                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+                        })
+                        .map(userInfo -> Jwt.withTokenValue(jwt.getTokenValue())
                                 .subject(jwt.getSubject())
                                 .audience(jwt.getAudience())
                                 .headers(headers -> headers.putAll(jwt.getHeaders()))
                                 .claims(claims -> {
-                                    String username = userInfo.get("preferred_username").toString();
+                                    String username = userInfo
+                                            .get("preferred_username")
+                                            .toString();
                                     // special handling for Auth0
-                                    if (userInfo.get("sub").toString().contains("|") && username.contains("@")) {
+                                    if (userInfo.get("sub").toString().contains("|")
+                                            && username.contains("@")) {
                                         userInfo.put("email", username);
                                     }
-                                    // Allow full name in a name claim - happens with Auth0
+                                    // Allow full name in a name claim - happens
+                                    // with Auth0
                                     if (userInfo.get("name") != null) {
-                                        String[] name = userInfo.get("name").toString().split("\\s+");
+                                        String[] name = userInfo.get("name")
+                                                .toString()
+                                                .split("\\s+");
                                         if (name.length > 0) {
-                                            userInfo.put("given_name", name[0]);
-                                            userInfo.put("family_name", String.join(" ", Arrays.copyOfRange(name, 1, name.length)));
+                                            userInfo.put("given_name",
+                                                    name[0]);
+                                            userInfo.put("family_name",
+                                                    String.join(" ", Arrays
+                                                            .copyOfRange(name,
+                                                                    1,
+                                                                    name.length)));
                                         }
                                     }
                                     claims.putAll(userInfo);
                                 })
                                 .claims(claims -> claims.putAll(jwt.getClaims()))
-                                .build()
-                        )
+                                .build())
                         // Put user info into the `users` cache
-                        .doOnNext(newJwt -> users.put(jwt.getSubject(), Mono.just(newJwt)))
-                );
+                        .doOnNext(newJwt -> users.put(jwt.getSubject(), Mono.just(newJwt))));
             }
         };
     }

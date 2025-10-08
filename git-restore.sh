@@ -37,6 +37,7 @@ for sm in backend/ms_* backend/gateway; do
     )
   else
     patterns=(
+      "src/main/java/com/ridehub/gateway/config/SecurityConfiguration.java"
       "src/main/java/com/ridehub/gateway/config/ConsulSSHTunnel.java"
       "src/main/resources/logback-spring.xml"
       "pom.xml"
