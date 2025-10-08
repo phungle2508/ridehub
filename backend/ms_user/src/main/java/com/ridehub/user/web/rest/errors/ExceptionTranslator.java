@@ -194,7 +194,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     private String getCustomizedErrorDetails(Throwable err) {
-        Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
+        // Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         // if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
         //     if (err instanceof HttpMessageConversionException) return "Unable to convert http message";
         //     if (err instanceof DataAccessException) return "Failure during data access";
