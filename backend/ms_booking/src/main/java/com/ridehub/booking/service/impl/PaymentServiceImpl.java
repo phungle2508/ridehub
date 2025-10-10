@@ -25,6 +25,8 @@ import com.ridehub.msroute.client.model.SeatLockActionResponseDTO;
 import com.ridehub.msroute.client.model.TripDTO;
 import com.ridehub.msroute.client.model.TripDetailVM;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -500,4 +502,6 @@ public class PaymentServiceImpl implements PaymentService {
             return amount;
         }
     }
+
+
 }

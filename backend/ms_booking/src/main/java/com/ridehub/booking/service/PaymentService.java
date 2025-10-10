@@ -16,7 +16,7 @@ public interface PaymentService {
      * @param httpRequest the HTTP request to extract IP address
      * @return the payment initiation result with payment URL
      */
-    PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request, HttpServletRequest httpRequest);
+    PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request);
 
     /**
      * Process payment webhook from gateway.
@@ -28,12 +28,4 @@ public interface PaymentService {
      */
     String processWebhook(String provider, String payload, String signature);
 
-    /**
-     * Process payment by transaction ID (for polling/reconciliation).
-     *
-     * @param transactionId the transaction ID
-     * @param status the payment status from gateway
-     * @return processing result message
-     */
-    String processPaymentByTransactionId(String transactionId, String status);
 }
