@@ -104,12 +104,17 @@ vnpay:
   hash-secret: ${VNPAY_HASH_SECRET:69ML0ON3RUOD1F4L1YWZ4DO3L9NY54Q2}
   pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
   query-url: ${VNPAY_QUERY_URL:https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
+  refund-url: ${VNPAY_REFUND_URL:https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
   return-url: ${VNPAY_RETURN_URL:https://apigateway.microservices.appf4s.io.vn/services/msbookingdev/api/payment/vnpay/callback}
   version: 2.1.0
   command: pay
   order-type: other
   locale: vn
   curr-code: VND
+  # Refund configuration
+  refund-transaction-type-full: 02  # Full refund
+  refund-transaction-type-partial: 03  # Partial refund
+  refund-create-by: system
 
 # ===================================================================
 # MoMo Configuration

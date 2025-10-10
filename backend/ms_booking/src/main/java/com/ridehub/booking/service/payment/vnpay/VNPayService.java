@@ -4,10 +4,12 @@ import com.ridehub.booking.service.vm.InitiatePaymentRequestVM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * VNPay payment service implementation
@@ -18,9 +20,11 @@ public class VNPayService {
     private static final Logger LOG = LoggerFactory.getLogger(VNPayService.class);
     
     private final VNPayConfig vnPayConfig;
+    private final RestTemplate restTemplate;
     
     public VNPayService(VNPayConfig vnPayConfig) {
         this.vnPayConfig = vnPayConfig;
+        this.restTemplate = new RestTemplate();
     }
     
     /**
@@ -34,7 +38,7 @@ public class VNPayService {
         vnpParams.put("vnp_Version", vnPayConfig.getVersion());
         vnpParams.put("vnp_Command", vnPayConfig.getCommand());
         vnpParams.put("vnp_TmnCode", vnPayConfig.getTmnCode());
-        vnpParams.put("vnp_Amount", String.valueOf(amount.multiply(new BigDecimal("100")).longValue()));
+        vnpParams.put("vnp_Amount", String.valueOf(amount.multiply(new BigDecimal("10000")).longValue()));
         vnpParams.put("vnp_CurrCode", vnPayConfig.getCurrCode());
         vnpParams.put("vnp_TxnRef", transactionId);
         vnpParams.put("vnp_OrderInfo", "Payment for booking: " + orderRef);
@@ -102,6 +106,183 @@ public class VNPayService {
         return new VNPayWebhookData(transactionId, status, amount, params);
     }
     
+    /**
+     * Query transaction status from VNPay
+     */
+    public VNPayQueryResult queryTransaction(String transactionId, String ipAddress, String transactionDate) {
+        return queryTransaction(transactionId, ipAddress, transactionDate, null);
+    }
+
+    /**
+     * Query transaction status from VNPay with order reference for reconciliation
+     */
+    public VNPayQueryResult queryTransaction(String transactionId, String ipAddress, String transactionDate, String orderRef) {
+        LOG.debug("Querying VNPay transaction status: {} for orderRef: {}", transactionId, orderRef);
+        
+        try {
+            // Generate unique request ID
+            String requestId = UUID.randomUUID().toString().replace("-", "");
+            String createDate = VNPayUtils.getVNPayDate();
+            
+            // Build query parameters
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("vnp_RequestId", requestId);
+            queryParams.put("vnp_Version", vnPayConfig.getVersion());
+            queryParams.put("vnp_Command", "querydr");
+            queryParams.put("vnp_TmnCode", vnPayConfig.getTmnCode());
+            queryParams.put("vnp_TxnRef", transactionId);
+            queryParams.put("vnp_OrderInfo", orderRef != null ? 
+                "Query transaction for order: " + orderRef : "Query transaction: " + transactionId);
+            queryParams.put("vnp_TransactionDate", transactionDate != null ? transactionDate : createDate);
+            queryParams.put("vnp_CreateDate", createDate);
+            queryParams.put("vnp_IpAddr", ipAddress);
+            
+            // Build data for hash
+            String hashData = String.join("|",
+                requestId,
+                vnPayConfig.getVersion(),
+                "querydr",
+                vnPayConfig.getTmnCode(),
+                transactionId,
+                orderRef != null ? 
+                    "Query transaction for order: " + orderRef : "Query transaction: " + transactionId,
+                transactionDate != null ? transactionDate : createDate,
+                createDate,
+                ipAddress
+            );
+            
+            // Generate secure hash
+            String secureHash = VNPayUtils.hmacSHA512(vnPayConfig.getHashSecret(), hashData);
+            queryParams.put("vnp_SecureHash", secureHash);
+            
+            // Make API call
+            Map<String, Object> response = restTemplate.postForObject(
+                vnPayConfig.getQueryUrl(), 
+                queryParams, 
+                Map.class
+            );
+            
+            if (response != null) {
+                return parseQueryResponse(response);
+            } else {
+                return new VNPayQueryResult(false, "99", "No response from VNPay", null, null);
+            }
+            
+        } catch (Exception e) {
+            LOG.error("Error querying VNPay transaction: {} for orderRef: {}", transactionId, orderRef, e);
+            return new VNPayQueryResult(false, "99", "Error: " + e.getMessage(), null, null);
+        }
+    }
+    
+    /**
+     * Refund transaction
+     */
+    public VNPayRefundResult refundTransaction(String transactionId, BigDecimal amount, 
+                                               String ipAddress, String orderInfo, String transactionType) {
+        LOG.debug("Refunding VNPay transaction: {} amount: {}", transactionId, amount);
+        
+        try {
+            // Generate unique request ID
+            String requestId = UUID.randomUUID().toString().replace("-", "");
+            String createDate = VNPayUtils.getVNPayDate();
+            String amountInVND = String.valueOf(amount.multiply(new BigDecimal("100")).longValue());
+            
+            // Build refund parameters
+            Map<String, String> refundParams = new HashMap<>();
+            refundParams.put("vnp_RequestId", requestId);
+            refundParams.put("vnp_Version", vnPayConfig.getVersion());
+            refundParams.put("vnp_Command", "refund");
+            refundParams.put("vnp_TmnCode", vnPayConfig.getTmnCode());
+            refundParams.put("vnp_TransactionType", transactionType != null ? transactionType : vnPayConfig.getRefundTransactionTypeFull()); // 02: full refund, 03: partial refund
+            refundParams.put("vnp_TxnRef", transactionId);
+            refundParams.put("vnp_Amount", amountInVND);
+            refundParams.put("vnp_OrderInfo", orderInfo != null ? orderInfo : "Refund for transaction: " + transactionId);
+            refundParams.put("vnp_CreateBy", vnPayConfig.getRefundCreateBy());
+            refundParams.put("vnp_CreateDate", createDate);
+            refundParams.put("vnp_IpAddr", ipAddress);
+            
+            // Build data for hash
+            String hashData = String.join("|",
+                requestId,
+                vnPayConfig.getVersion(),
+                "refund",
+                vnPayConfig.getTmnCode(),
+                transactionType != null ? transactionType : vnPayConfig.getRefundTransactionTypeFull(),
+                transactionId,
+                amountInVND,
+                orderInfo != null ? orderInfo : "Refund for transaction: " + transactionId,
+                vnPayConfig.getRefundCreateBy(),
+                createDate,
+                ipAddress
+            );
+            
+            // Generate secure hash
+            String secureHash = VNPayUtils.hmacSHA512(vnPayConfig.getHashSecret(), hashData);
+            refundParams.put("vnp_SecureHash", secureHash);
+            
+            // Make API call
+            Map<String, Object> response = restTemplate.postForObject(
+                vnPayConfig.getQueryUrl(), 
+                refundParams, 
+                Map.class
+            );
+            
+            if (response != null) {
+                return parseRefundResponse(response);
+            } else {
+                return new VNPayRefundResult(false, "99", "No response from VNPay", null, null, null);
+            }
+            
+        } catch (Exception e) {
+            LOG.error("Error refunding VNPay transaction: {}", transactionId, e);
+            return new VNPayRefundResult(false, "99", "Error: " + e.getMessage(), null, null, null);
+        }
+    }
+    
+    /**
+     * Parse query response from VNPay
+     */
+    private VNPayQueryResult parseQueryResponse(Map<String, Object> response) {
+        String responseCode = String.valueOf(response.get("vnp_ResponseCode"));
+        String message = String.valueOf(response.get("vnp_Message"));
+        String transactionStatus = response.containsKey("vnp_TransactionStatus") ? 
+            String.valueOf(response.get("vnp_TransactionStatus")) : null;
+        
+        // Extract amount from response if available
+        BigDecimal amount = null;
+        if (response.containsKey("vnp_Amount")) {
+            String amountStr = String.valueOf(response.get("vnp_Amount"));
+            if (amountStr != null && !amountStr.isEmpty()) {
+                try {
+                    amount = new BigDecimal(amountStr).divide(new BigDecimal("100"));
+                } catch (NumberFormatException e) {
+                    LOG.warn("Could not parse amount from VNPay response: {}", amountStr);
+                }
+            }
+        }
+        
+        boolean isSuccess = "00".equals(responseCode);
+        return new VNPayQueryResult(isSuccess, responseCode, message, transactionStatus, amount);
+    }
+    
+    /**
+     * Parse refund response from VNPay
+     */
+    private VNPayRefundResult parseRefundResponse(Map<String, Object> response) {
+        String responseCode = String.valueOf(response.get("vnp_ResponseCode"));
+        String message = String.valueOf(response.get("vnp_Message"));
+        String transactionNo = response.containsKey("vnp_TransactionNo") ? 
+            String.valueOf(response.get("vnp_TransactionNo")) : null;
+        String transactionType = response.containsKey("vnp_TransactionType") ? 
+            String.valueOf(response.get("vnp_TransactionType")) : null;
+        String transactionStatus = response.containsKey("vnp_TransactionStatus") ? 
+            String.valueOf(response.get("vnp_TransactionStatus")) : null;
+        
+        boolean isSuccess = "00".equals(responseCode);
+        return new VNPayRefundResult(isSuccess, responseCode, message, transactionNo, 
+            transactionType, transactionStatus);
+    }
+    
     
     /**
      * VNPay callback result
@@ -145,5 +326,63 @@ public class VNPayService {
         public String getStatus() { return status; }
         public BigDecimal getAmount() { return amount; }
         public Map<String, String> getRawParams() { return rawParams; }
+    }
+    
+    /**
+     * VNPay query result
+     */
+    public static class VNPayQueryResult {
+        private final boolean success;
+        private final String responseCode;
+        private final String message;
+        private final String transactionStatus;
+        private final BigDecimal amount;
+        
+        public VNPayQueryResult(boolean success, String responseCode, String message, String transactionStatus) {
+            this(success, responseCode, message, transactionStatus, null);
+        }
+        
+        public VNPayQueryResult(boolean success, String responseCode, String message, String transactionStatus, BigDecimal amount) {
+            this.success = success;
+            this.responseCode = responseCode;
+            this.message = message;
+            this.transactionStatus = transactionStatus;
+            this.amount = amount;
+        }
+        
+        public boolean isSuccess() { return success; }
+        public String getResponseCode() { return responseCode; }
+        public String getMessage() { return message; }
+        public String getTransactionStatus() { return transactionStatus; }
+        public BigDecimal getAmount() { return amount; }
+    }
+    
+    /**
+     * VNPay refund result
+     */
+    public static class VNPayRefundResult {
+        private final boolean success;
+        private final String responseCode;
+        private final String message;
+        private final String transactionNo;
+        private final String transactionType;
+        private final String transactionStatus;
+        
+        public VNPayRefundResult(boolean success, String responseCode, String message, 
+                                String transactionNo, String transactionType, String transactionStatus) {
+            this.success = success;
+            this.responseCode = responseCode;
+            this.message = message;
+            this.transactionNo = transactionNo;
+            this.transactionType = transactionType;
+            this.transactionStatus = transactionStatus;
+        }
+        
+        public boolean isSuccess() { return success; }
+        public String getResponseCode() { return responseCode; }
+        public String getMessage() { return message; }
+        public String getTransactionNo() { return transactionNo; }
+        public String getTransactionType() { return transactionType; }
+        public String getTransactionStatus() { return transactionStatus; }
     }
 }

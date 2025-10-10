@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,27 +101,129 @@ public class VNPayCallbackResource {
 
     /**
      * Handle VNPay query transaction status
+     * This endpoint is used for reconciliation and manual transaction status checking
      */
     @GetMapping("/query/{transactionId}")
-    public ResponseEntity<Map<String, Object>> queryTransaction(@PathVariable String transactionId) {
-        LOG.debug("Querying VNPay transaction status: {}", transactionId);
+    public ResponseEntity<Map<String, Object>> queryTransaction(@PathVariable String transactionId,
+                                                                @RequestParam(required = false) String transactionDate,
+                                                                @RequestParam(required = false) String orderRef,
+                                                                HttpServletRequest request) {
+        LOG.debug("Querying VNPay transaction status: {} for orderRef: {}", transactionId, orderRef);
 
         try {
-            // This would typically involve calling VNPay's query API
-            // For now, return a placeholder response
+            String ipAddress = getClientIpAddress(request);
+            VNPayService.VNPayQueryResult result = vnPayService.queryTransaction(transactionId, ipAddress, transactionDate, orderRef);
+
             Map<String, Object> response = new HashMap<>();
             response.put("transactionId", transactionId);
-            response.put("status", "PENDING");
-            response.put("message", "Transaction query not implemented yet");
+            response.put("orderRef", orderRef);
+            response.put("success", result.isSuccess());
+            response.put("responseCode", result.getResponseCode());
+            response.put("message", result.getMessage());
+            response.put("transactionStatus", result.getTransactionStatus());
+            response.put("amount", result.getAmount());
+            response.put("paymentMethod", "VNPAY");
+            response.put("queryTime", System.currentTimeMillis());
 
-            return ResponseEntity.ok(response);
+            // Add additional fields for reconciliation
+            if (result.isSuccess()) {
+                response.put("canSynthesizeWebhook", true);
+                Map<String, Object> reconciliationData = new HashMap<>();
+                reconciliationData.put("gatewayStatus", result.getTransactionStatus());
+                reconciliationData.put("amount", result.getAmount());
+                reconciliationData.put("transactionId", transactionId);
+                reconciliationData.put("orderRef", orderRef);
+                reconciliationData.put("responseCode", result.getResponseCode());
+                response.put("reconciliationData", reconciliationData);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("canSynthesizeWebhook", false);
+                return ResponseEntity.badRequest().body(response);
+            }
 
         } catch (Exception e) {
-            LOG.error("Error querying VNPay transaction: {}", transactionId, e);
+            LOG.error("Error querying VNPay transaction: {} for orderRef: {}", transactionId, orderRef, e);
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "error");
-            errorResponse.put("message", "Internal server error");
+            errorResponse.put("transactionId", transactionId);
+            errorResponse.put("orderRef", orderRef);
+            errorResponse.put("success", false);
+            errorResponse.put("responseCode", "99");
+            errorResponse.put("message", "Internal server error: " + e.getMessage());
+            errorResponse.put("paymentMethod", "VNPAY");
+            errorResponse.put("queryTime", System.currentTimeMillis());
+            errorResponse.put("canSynthesizeWebhook", false);
             return ResponseEntity.internalServerError().body(errorResponse);
         }
+    }
+
+    /**
+     * Handle VNPay refund transaction
+     */
+    @PostMapping("/refund/{transactionId}")
+    public ResponseEntity<Map<String, Object>> refundTransaction(@PathVariable String transactionId,
+                                                                  @RequestBody Map<String, Object> refundRequest,
+                                                                  HttpServletRequest request) {
+        LOG.debug("Refunding VNPay transaction: {}", transactionId);
+
+        try {
+            String ipAddress = getClientIpAddress(request);
+            BigDecimal amount = refundRequest.containsKey("amount") ? 
+                new BigDecimal(refundRequest.get("amount").toString()) : null;
+            String orderInfo = refundRequest.containsKey("orderInfo") ? 
+                refundRequest.get("orderInfo").toString() : null;
+            String transactionType = refundRequest.containsKey("transactionType") ? 
+                refundRequest.get("transactionType").toString() : null;
+
+            if (amount == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("responseCode", "03");
+                errorResponse.put("message", "Amount is required");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            VNPayService.VNPayRefundResult result = vnPayService.refundTransaction(
+                transactionId, amount, ipAddress, orderInfo, transactionType);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("transactionId", transactionId);
+            response.put("success", result.isSuccess());
+            response.put("responseCode", result.getResponseCode());
+            response.put("message", result.getMessage());
+            response.put("transactionNo", result.getTransactionNo());
+            response.put("transactionType", result.getTransactionType());
+            response.put("transactionStatus", result.getTransactionStatus());
+
+            if (result.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+
+        } catch (Exception e) {
+            LOG.error("Error refunding VNPay transaction: {}", transactionId, e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("responseCode", "99");
+            errorResponse.put("message", "Internal server error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * Get client IP address
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty() && !"unknown".equalsIgnoreCase(xRealIp)) {
+            return xRealIp;
+        }
+        
+        return request.getRemoteAddr();
     }
 }

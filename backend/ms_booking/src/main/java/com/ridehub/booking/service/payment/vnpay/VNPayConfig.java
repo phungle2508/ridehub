@@ -20,6 +20,10 @@ public class VNPayConfig {
     private String orderType = "other";
     private String locale = "vn";
     private String currCode = "VND";
+    private String refundUrl;
+    private String refundTransactionTypeFull = "02";
+    private String refundTransactionTypePartial = "03";
+    private String refundCreateBy = "system";
     
     // Getters and Setters
     public String getTmnCode() {
@@ -100,5 +104,37 @@ public class VNPayConfig {
     
     public void setCurrCode(String currCode) {
         this.currCode = currCode;
+    }
+    
+    public String getRefundUrl() {
+        return refundUrl;
+    }
+    
+    public void setRefundUrl(String refundUrl) {
+        this.refundUrl = refundUrl;
+    }
+    
+    public String getRefundTransactionTypeFull() {
+        return refundTransactionTypeFull;
+    }
+    
+    public void setRefundTransactionTypeFull(String refundTransactionTypeFull) {
+        this.refundTransactionTypeFull = refundTransactionTypeFull;
+    }
+    
+    public String getRefundTransactionTypePartial() {
+        return refundTransactionTypePartial;
+    }
+    
+    public void setRefundTransactionTypePartial(String refundTransactionTypePartial) {
+        this.refundTransactionTypePartial = refundTransactionTypePartial;
+    }
+    
+    public String getRefundCreateBy() {
+        return refundCreateBy;
+    }
+    
+    public void setRefundCreateBy(String refundCreateBy) {
+        this.refundCreateBy = refundCreateBy;
     }
 }
