@@ -12,25 +12,20 @@ import com.ridehub.booking.repository.PaymentWebhookLogRepository;
 import com.ridehub.booking.repository.TicketRepository;
 import com.ridehub.booking.service.PaymentService;
 import com.ridehub.booking.service.payment.vnpay.VNPayService;
-import com.ridehub.booking.service.payment.momo.MoMoService;
-import com.ridehub.booking.service.payment.zalopay.ZaloPayService;
+import com.ridehub.booking.service.payment.vnpay.VNPayUtils;
 import com.ridehub.booking.service.vm.InitiatePaymentRequestVM;
 import com.ridehub.booking.service.vm.PaymentInitiationResultVM;
 import com.ridehub.msroute.client.api.SeatLockResourceMsrouteApi;
 import com.ridehub.msroute.client.api.TripResourceMsrouteApi;
-import com.ridehub.msroute.client.model.SeatLockDTO;
 import com.ridehub.msroute.client.model.SeatDTO;
 import com.ridehub.msroute.client.model.SeatLockActionRequestDTO;
 import com.ridehub.msroute.client.model.SeatLockActionResponseDTO;
 import com.ridehub.msroute.client.model.TripDTO;
 import com.ridehub.msroute.client.model.TripDetailVM;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,8 +55,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final TripResourceMsrouteApi tripResourceMsrouteApi;
     private final SeatLockResourceMsrouteApi seatLockResourceMsrouteApi;
     private final VNPayService vnPayService;
-    private final MoMoService moMoService;
-    private final ZaloPayService zaloPayService;
 
     public PaymentServiceImpl(
             BookingRepository bookingRepository,
@@ -71,9 +64,7 @@ public class PaymentServiceImpl implements PaymentService {
             StringRedisTemplate redis,
             TripResourceMsrouteApi tripResourceMsrouteApi,
             SeatLockResourceMsrouteApi seatLockResourceMsrouteApi,
-            VNPayService vnPayService,
-            MoMoService moMoService,
-            ZaloPayService zaloPayService) {
+            VNPayService vnPayService) {
 
         this.bookingRepository = bookingRepository;
         this.paymentTransactionRepository = paymentTransactionRepository;
@@ -83,13 +74,11 @@ public class PaymentServiceImpl implements PaymentService {
         this.tripResourceMsrouteApi = tripResourceMsrouteApi;
         this.seatLockResourceMsrouteApi = seatLockResourceMsrouteApi;
         this.vnPayService = vnPayService;
-        this.moMoService = moMoService;
-        this.zaloPayService = zaloPayService;
     }
 
     @Override
     @Transactional
-    public PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request) {
+    public PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request, String returnUrl, String ipAddress) {
         LOG.debug("Initiating payment for booking: {}", request.getBookingId());
 
         // 1) Validate booking exists and is in AWAITING_PAYMENT
@@ -110,6 +99,7 @@ public class PaymentServiceImpl implements PaymentService {
         transaction.setMethod(request.getMethod());
         transaction.setStatus(PaymentStatus.INITIATED);
         transaction.setAmount(booking.getTotalAmount());
+        transaction.setGatewayCreateDate(VNPayUtils.getVNPayDate());
         transaction.setTime(Instant.now());
         transaction.setCreatedAt(Instant.now());
         transaction.setUpdatedAt(Instant.now());
@@ -118,7 +108,7 @@ public class PaymentServiceImpl implements PaymentService {
         transaction = paymentTransactionRepository.save(transaction);
 
         // 3) Generate payment URL based on method
-        String paymentUrl = generatePaymentUrl(request, transactionId, orderRef, booking.getTotalAmount());
+        String paymentUrl = generatePaymentUrl(request, transactionId, orderRef, booking.getTotalAmount(), returnUrl, ipAddress);
 
         // NOTE: keep booking in AWAITING_PAYMENT; do not flip to PAID here
         booking.setPaymentTransaction(transaction);
@@ -401,35 +391,25 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private String generatePaymentUrl(InitiatePaymentRequestVM request, String transactionId, String orderRef,
-            BigDecimal amount) {
+            BigDecimal amount, String returnUrl, String ipAddress) {
         // Check payment method and delegate to appropriate service
         if (request.getMethod() != null) {
             switch (request.getMethod().name()) {
                 case "VNPAY":
-                    return vnPayService.createPaymentUrl(request, transactionId, orderRef, amount);
-                case "MOMO":
-                    return moMoService.createPaymentUrl(request, transactionId, orderRef, amount);
-                case "ZALOPAY":
-                    return zaloPayService.createPaymentUrl(request, transactionId, orderRef, amount);
+                    return vnPayService.createPaymentUrl(request, transactionId, orderRef, amount, returnUrl, ipAddress);
             }
         }
 
         // Default/mock payment gateway for other methods
         String baseUrl = "https://sandbox-payment.gateway.com/pay"; // replace with real gateway
         return String.format("%s?txn=%s&order=%s&amount=%s&return=%s",
-                baseUrl, transactionId, orderRef, amount.toString(), request.getReturnUrl());
+                baseUrl, transactionId, orderRef, amount.toString(), returnUrl);
     }
 
     private boolean verifySignature(String payload, String signature, String provider) {
         if ("VNPAY".equalsIgnoreCase(provider)) {
             // For VNPay, we'll validate the signature in the parseWebhookPayload method
             // since VNPay uses query parameters instead of a separate signature
-            return true;
-        } else if ("MOMO".equalsIgnoreCase(provider)) {
-            // MoMo signature verification is handled in the parseWebhookPayload method
-            return true;
-        } else if ("ZALOPAY".equalsIgnoreCase(provider)) {
-            // ZaloPay signature verification is handled in the parseWebhookPayload method
             return true;
         }
         // Default signature check for other providers
@@ -457,12 +437,6 @@ public class PaymentServiceImpl implements PaymentService {
         if ("VNPAY".equalsIgnoreCase(provider)) {
             VNPayService.VNPayWebhookData vnpayData = vnPayService.parseWebhookPayload(payload);
             return new WebhookData(vnpayData.getTransactionId(), vnpayData.getStatus(), vnpayData.getAmount());
-        } else if ("MOMO".equalsIgnoreCase(provider)) {
-            MoMoService.MoMoWebhookData momoData = moMoService.parseWebhookPayload(payload);
-            return new WebhookData(momoData.getTransactionId(), momoData.getStatus(), momoData.getAmount());
-        } else if ("ZALOPAY".equalsIgnoreCase(provider)) {
-            ZaloPayService.ZaloPayWebhookData zaloData = zaloPayService.parseWebhookPayload(payload);
-            return new WebhookData(zaloData.getTransactionId(), zaloData.getStatus(), zaloData.getAmount());
         }
 
         // Default fallback for unknown providers
@@ -502,6 +476,5 @@ public class PaymentServiceImpl implements PaymentService {
             return amount;
         }
     }
-
 
 }

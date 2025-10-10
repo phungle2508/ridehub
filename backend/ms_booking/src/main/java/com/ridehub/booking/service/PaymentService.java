@@ -13,10 +13,11 @@ public interface PaymentService {
      * Initiate payment for a booking.
      *
      * @param request the payment initiation request
-     * @param httpRequest the HTTP request to extract IP address
+     * @param returnUrl the return URL from configuration
+     * @param ipAddress the client IP address
      * @return the payment initiation result with payment URL
      */
-    PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request);
+    PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request, String returnUrl, String ipAddress);
 
     /**
      * Process payment webhook from gateway.

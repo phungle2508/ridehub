@@ -1,6 +1,7 @@
 package com.ridehub.booking.web.rest;
 
 import com.ridehub.booking.service.PaymentService;
+import com.ridehub.booking.service.payment.vnpay.VNPayConfig;
 import com.ridehub.booking.service.vm.InitiatePaymentRequestVM;
 import com.ridehub.booking.service.vm.PaymentInitiationResultVM;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,9 +21,11 @@ public class PaymentResource {
     private static final Logger LOG = LoggerFactory.getLogger(PaymentResource.class);
 
     private final PaymentService paymentService;
+    private final VNPayConfig vnPayConfig;
 
-    public PaymentResource(PaymentService paymentService) {
+    public PaymentResource(PaymentService paymentService, VNPayConfig vnPayConfig) {
         this.paymentService = paymentService;
+        this.vnPayConfig = vnPayConfig;
     }
 
     /**
@@ -44,11 +47,13 @@ public class PaymentResource {
         // Set booking ID from path parameter
         request.setBookingId(id);
         
+        // Get returnUrl from configuration
+        String returnUrl = vnPayConfig.getReturnUrl();
+        
         // Extract IP address from request
         String ipAddress = getClientIpAddress(httpRequest);
-        request.setIpAddress(ipAddress);
         
-        PaymentInitiationResultVM result = paymentService.initiatePayment(request);
+        PaymentInitiationResultVM result = paymentService.initiatePayment(request, returnUrl, ipAddress);
         
         return ResponseEntity.ok(result);
     }

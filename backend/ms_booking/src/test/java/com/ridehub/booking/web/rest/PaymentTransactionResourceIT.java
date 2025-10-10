@@ -49,7 +49,7 @@ class PaymentTransactionResourceIT {
     private static final String UPDATED_ORDER_REF = "BBBBBBBBBB";
 
     private static final PaymentMethod DEFAULT_METHOD = PaymentMethod.VNPAY;
-    private static final PaymentMethod UPDATED_METHOD = PaymentMethod.MOMO;
+    private static final PaymentMethod UPDATED_METHOD = PaymentMethod.CREDIT_CARD;
 
     private static final PaymentStatus DEFAULT_STATUS = PaymentStatus.INITIATED;
     private static final PaymentStatus UPDATED_STATUS = PaymentStatus.PROCESSING;
@@ -140,7 +140,6 @@ class PaymentTransactionResourceIT {
         return new PaymentTransaction()
             .transactionId(UPDATED_TRANSACTION_ID)
             .orderRef(UPDATED_ORDER_REF)
-            .method(UPDATED_METHOD)
             .status(UPDATED_STATUS)
             .amount(UPDATED_AMOUNT)
             .time(UPDATED_TIME)

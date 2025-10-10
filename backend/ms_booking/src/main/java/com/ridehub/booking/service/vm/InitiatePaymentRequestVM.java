@@ -10,21 +10,13 @@ public class InitiatePaymentRequestVM {
     
     @NotNull
     private PaymentMethod method;
-    
-    @NotBlank
-    private String returnUrl;
-    
-    private String ipAddress;
 
     public InitiatePaymentRequestVM() {
     }
 
-    public InitiatePaymentRequestVM(@NotNull Long bookingId, @NotNull PaymentMethod method, 
-                                  @NotBlank String returnUrl, String ipAddress) {
+    public InitiatePaymentRequestVM(@NotNull Long bookingId, @NotNull PaymentMethod method) {
         this.bookingId = bookingId;
         this.method = method;
-        this.returnUrl = returnUrl;
-        this.ipAddress = ipAddress;
     }
 
     public Long getBookingId() {
@@ -41,21 +33,5 @@ public class InitiatePaymentRequestVM {
 
     public void setMethod(PaymentMethod method) {
         this.method = method;
-    }
-
-    public String getReturnUrl() {
-        return returnUrl;
-    }
-
-    public void setReturnUrl(String returnUrl) {
-        this.returnUrl = returnUrl;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
     }
 }

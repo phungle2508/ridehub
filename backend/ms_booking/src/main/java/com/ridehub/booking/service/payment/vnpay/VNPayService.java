@@ -27,7 +27,7 @@ public class VNPayService {
      * Create VNPay payment URL
      */
     public String createPaymentUrl(InitiatePaymentRequestVM request, String transactionId, 
-                                   String orderRef, BigDecimal amount) {
+                                   String orderRef, BigDecimal amount, String returnUrl, String ipAddress) {
         LOG.debug("Creating VNPay payment URL for transaction: {}", transactionId);
         
         Map<String, String> vnpParams = new HashMap<>();
@@ -40,8 +40,8 @@ public class VNPayService {
         vnpParams.put("vnp_OrderInfo", "Payment for booking: " + orderRef);
         vnpParams.put("vnp_OrderType", vnPayConfig.getOrderType());
         vnpParams.put("vnp_Locale", vnPayConfig.getLocale());
-        vnpParams.put("vnp_ReturnUrl", request.getReturnUrl());
-        vnpParams.put("vnp_IpAddr", getClientIpAddress(request));
+        vnpParams.put("vnp_ReturnUrl", returnUrl);
+        vnpParams.put("vnp_IpAddr", ipAddress);
         vnpParams.put("vnp_CreateDate", VNPayUtils.getVNPayDate());
         vnpParams.put("vnp_ExpireDate", VNPayUtils.getVNPayExpireDate());
         
@@ -102,11 +102,6 @@ public class VNPayService {
         return new VNPayWebhookData(transactionId, status, amount, params);
     }
     
-    private String getClientIpAddress(InitiatePaymentRequestVM request) {
-        // In a real implementation, you would extract this from the HTTP request
-        // For now, return a default IP
-        return "127.0.0.1";
-    }
     
     /**
      * VNPay callback result
