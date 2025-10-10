@@ -31,7 +31,6 @@ for sm in backend/ms_* backend/gateway; do
       "src/main/resources/config/bootstrap.yml"
       "src/main/resources/config/application-dev.yml"
       "src/main/java/com/ridehub/*/web/rest/Ms*KafkaResource.java"
-      "src/main/java/com/ridehub/*/config/ConsulSSHTunnel.java"
       "src/main/java/com/ridehub/*/web/rest/errors/ExceptionTranslator.java"
       # "src/main/java/com/ridehub/*/config/FeignClientConfiguration.java"
     )

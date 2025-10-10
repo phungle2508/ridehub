@@ -8,7 +8,7 @@
     <!--
         Added the constraints for entity AppliedPromotion.
     -->
-    <changeSet id="20251005090757-2" author="jhipster">
+    <changeSet id="20251010121749-2" author="jhipster">
 
         <addForeignKeyConstraint baseColumnNames="booking_id"
                                  baseTableName="applied_promotion"

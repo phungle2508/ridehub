@@ -49,7 +49,7 @@ public class MoMoService {
                 orderId,
                 moMoConfig.getOrderInfo() + " " + orderRef,
                 moMoConfig.getPartnerCode(),
-                request.getReturnUrl(),
+                moMoConfig.getReturnUrl(),
                 requestId,
                 moMoConfig.getRequestType()
             );
@@ -65,7 +65,7 @@ public class MoMoService {
             requestBody.put("amount", amountStr);
             requestBody.put("orderId", orderId);
             requestBody.put("orderInfo", moMoConfig.getOrderInfo() + " " + orderRef);
-            requestBody.put("redirectUrl", request.getReturnUrl());
+            requestBody.put("redirectUrl", moMoConfig.getReturnUrl());
             requestBody.put("ipnUrl", moMoConfig.getNotifyUrl());
             requestBody.put("extraData", extraData);
             requestBody.put("requestType", moMoConfig.getRequestType());

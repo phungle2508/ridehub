@@ -61,6 +61,9 @@ class PaymentTransactionResourceIT {
     private static final Instant DEFAULT_TIME = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_TIME = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
+    private static final String DEFAULT_GATEWAY_CREATE_DATE = "AAAAAAAAAA";
+    private static final String UPDATED_GATEWAY_CREATE_DATE = "BBBBBBBBBB";
+
     private static final String DEFAULT_GATEWAY_NOTE = "AAAAAAAAAA";
     private static final String UPDATED_GATEWAY_NOTE = "BBBBBBBBBB";
 
@@ -118,6 +121,7 @@ class PaymentTransactionResourceIT {
             .status(DEFAULT_STATUS)
             .amount(DEFAULT_AMOUNT)
             .time(DEFAULT_TIME)
+            .gatewayCreateDate(DEFAULT_GATEWAY_CREATE_DATE)
             .gatewayNote(DEFAULT_GATEWAY_NOTE)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT)
@@ -140,6 +144,7 @@ class PaymentTransactionResourceIT {
             .status(UPDATED_STATUS)
             .amount(UPDATED_AMOUNT)
             .time(UPDATED_TIME)
+            .gatewayCreateDate(UPDATED_GATEWAY_CREATE_DATE)
             .gatewayNote(UPDATED_GATEWAY_NOTE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
@@ -278,6 +283,7 @@ class PaymentTransactionResourceIT {
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].amount").value(hasItem(sameNumber(DEFAULT_AMOUNT))))
             .andExpect(jsonPath("$.[*].time").value(hasItem(DEFAULT_TIME.toString())))
+            .andExpect(jsonPath("$.[*].gatewayCreateDate").value(hasItem(DEFAULT_GATEWAY_CREATE_DATE)))
             .andExpect(jsonPath("$.[*].gatewayNote").value(hasItem(DEFAULT_GATEWAY_NOTE)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
@@ -304,6 +310,7 @@ class PaymentTransactionResourceIT {
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
             .andExpect(jsonPath("$.amount").value(sameNumber(DEFAULT_AMOUNT)))
             .andExpect(jsonPath("$.time").value(DEFAULT_TIME.toString()))
+            .andExpect(jsonPath("$.gatewayCreateDate").value(DEFAULT_GATEWAY_CREATE_DATE))
             .andExpect(jsonPath("$.gatewayNote").value(DEFAULT_GATEWAY_NOTE))
             .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
             .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
@@ -604,6 +611,68 @@ class PaymentTransactionResourceIT {
 
     @Test
     @Transactional
+    void getAllPaymentTransactionsByGatewayCreateDateIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where gatewayCreateDate equals to
+        defaultPaymentTransactionFiltering(
+            "gatewayCreateDate.equals=" + DEFAULT_GATEWAY_CREATE_DATE,
+            "gatewayCreateDate.equals=" + UPDATED_GATEWAY_CREATE_DATE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByGatewayCreateDateIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where gatewayCreateDate in
+        defaultPaymentTransactionFiltering(
+            "gatewayCreateDate.in=" + DEFAULT_GATEWAY_CREATE_DATE + "," + UPDATED_GATEWAY_CREATE_DATE,
+            "gatewayCreateDate.in=" + UPDATED_GATEWAY_CREATE_DATE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByGatewayCreateDateIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where gatewayCreateDate is not null
+        defaultPaymentTransactionFiltering("gatewayCreateDate.specified=true", "gatewayCreateDate.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByGatewayCreateDateContainsSomething() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where gatewayCreateDate contains
+        defaultPaymentTransactionFiltering(
+            "gatewayCreateDate.contains=" + DEFAULT_GATEWAY_CREATE_DATE,
+            "gatewayCreateDate.contains=" + UPDATED_GATEWAY_CREATE_DATE
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllPaymentTransactionsByGatewayCreateDateNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
+
+        // Get all the paymentTransactionList where gatewayCreateDate does not contain
+        defaultPaymentTransactionFiltering(
+            "gatewayCreateDate.doesNotContain=" + UPDATED_GATEWAY_CREATE_DATE,
+            "gatewayCreateDate.doesNotContain=" + DEFAULT_GATEWAY_CREATE_DATE
+        );
+    }
+
+    @Test
+    @Transactional
     void getAllPaymentTransactionsByGatewayNoteIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedPaymentTransaction = paymentTransactionRepository.saveAndFlush(paymentTransaction);
@@ -843,6 +912,7 @@ class PaymentTransactionResourceIT {
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
             .andExpect(jsonPath("$.[*].amount").value(hasItem(sameNumber(DEFAULT_AMOUNT))))
             .andExpect(jsonPath("$.[*].time").value(hasItem(DEFAULT_TIME.toString())))
+            .andExpect(jsonPath("$.[*].gatewayCreateDate").value(hasItem(DEFAULT_GATEWAY_CREATE_DATE)))
             .andExpect(jsonPath("$.[*].gatewayNote").value(hasItem(DEFAULT_GATEWAY_NOTE)))
             .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
             .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
@@ -903,6 +973,7 @@ class PaymentTransactionResourceIT {
             .status(UPDATED_STATUS)
             .amount(UPDATED_AMOUNT)
             .time(UPDATED_TIME)
+            .gatewayCreateDate(UPDATED_GATEWAY_CREATE_DATE)
             .gatewayNote(UPDATED_GATEWAY_NOTE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)
@@ -1009,7 +1080,8 @@ class PaymentTransactionResourceIT {
         partialUpdatedPaymentTransaction
             .method(UPDATED_METHOD)
             .status(UPDATED_STATUS)
-            .updatedAt(UPDATED_UPDATED_AT)
+            .createdAt(UPDATED_CREATED_AT)
+            .deletedAt(UPDATED_DELETED_AT)
             .deletedBy(UPDATED_DELETED_BY);
 
         restPaymentTransactionMockMvc
@@ -1049,6 +1121,7 @@ class PaymentTransactionResourceIT {
             .status(UPDATED_STATUS)
             .amount(UPDATED_AMOUNT)
             .time(UPDATED_TIME)
+            .gatewayCreateDate(UPDATED_GATEWAY_CREATE_DATE)
             .gatewayNote(UPDATED_GATEWAY_NOTE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT)

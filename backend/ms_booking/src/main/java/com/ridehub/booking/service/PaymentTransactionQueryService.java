@@ -81,6 +81,7 @@ public class PaymentTransactionQueryService extends QueryService<PaymentTransact
                 buildSpecification(criteria.getStatus(), PaymentTransaction_.status),
                 buildRangeSpecification(criteria.getAmount(), PaymentTransaction_.amount),
                 buildRangeSpecification(criteria.getTime(), PaymentTransaction_.time),
+                buildStringSpecification(criteria.getGatewayCreateDate(), PaymentTransaction_.gatewayCreateDate),
                 buildStringSpecification(criteria.getGatewayNote(), PaymentTransaction_.gatewayNote),
                 buildRangeSpecification(criteria.getCreatedAt(), PaymentTransaction_.createdAt),
                 buildRangeSpecification(criteria.getUpdatedAt(), PaymentTransaction_.updatedAt),

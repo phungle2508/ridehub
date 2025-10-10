@@ -14,6 +14,7 @@ public class PaymentTransactionTestSamples {
             .id(1L)
             .transactionId("transactionId1")
             .orderRef("orderRef1")
+            .gatewayCreateDate("gatewayCreateDate1")
             .gatewayNote("gatewayNote1")
             .deletedBy(UUID.fromString("23d8dc04-a48b-45d9-a01d-4b728f0ad4aa"));
     }
@@ -23,6 +24,7 @@ public class PaymentTransactionTestSamples {
             .id(2L)
             .transactionId("transactionId2")
             .orderRef("orderRef2")
+            .gatewayCreateDate("gatewayCreateDate2")
             .gatewayNote("gatewayNote2")
             .deletedBy(UUID.fromString("ad79f240-3727-46c3-b89f-2cf6ebd74367"));
     }
@@ -32,6 +34,7 @@ public class PaymentTransactionTestSamples {
             .id(longCount.incrementAndGet())
             .transactionId(UUID.randomUUID().toString())
             .orderRef(UUID.randomUUID().toString())
+            .gatewayCreateDate(UUID.randomUUID().toString())
             .gatewayNote(UUID.randomUUID().toString())
             .deletedBy(UUID.randomUUID());
     }

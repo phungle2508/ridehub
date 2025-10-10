@@ -55,6 +55,10 @@ public class PaymentTransaction implements Serializable {
     @Column(name = "time")
     private Instant time;
 
+    @Size(max = 14)
+    @Column(name = "gateway_create_date", length = 14)
+    private String gatewayCreateDate;
+
     @Size(max = 1024)
     @Column(name = "gateway_note", length = 1024)
     private String gatewayNote;
@@ -176,6 +180,19 @@ public class PaymentTransaction implements Serializable {
 
     public void setTime(Instant time) {
         this.time = time;
+    }
+
+    public String getGatewayCreateDate() {
+        return this.gatewayCreateDate;
+    }
+
+    public PaymentTransaction gatewayCreateDate(String gatewayCreateDate) {
+        this.setGatewayCreateDate(gatewayCreateDate);
+        return this;
+    }
+
+    public void setGatewayCreateDate(String gatewayCreateDate) {
+        this.gatewayCreateDate = gatewayCreateDate;
     }
 
     public String getGatewayNote() {
@@ -336,6 +353,7 @@ public class PaymentTransaction implements Serializable {
             ", status='" + getStatus() + "'" +
             ", amount=" + getAmount() +
             ", time='" + getTime() + "'" +
+            ", gatewayCreateDate='" + getGatewayCreateDate() + "'" +
             ", gatewayNote='" + getGatewayNote() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

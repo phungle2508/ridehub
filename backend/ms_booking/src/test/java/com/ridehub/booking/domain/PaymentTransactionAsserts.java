@@ -56,6 +56,7 @@ public class PaymentTransactionAsserts {
                 assertThat(a.getAmount()).as("check amount").usingComparator(bigDecimalCompareTo).isEqualTo(expected.getAmount())
             )
             .satisfies(a -> assertThat(a.getTime()).as("check time").isEqualTo(expected.getTime()))
+            .satisfies(a -> assertThat(a.getGatewayCreateDate()).as("check gatewayCreateDate").isEqualTo(expected.getGatewayCreateDate()))
             .satisfies(a -> assertThat(a.getGatewayNote()).as("check gatewayNote").isEqualTo(expected.getGatewayNote()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
             .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))

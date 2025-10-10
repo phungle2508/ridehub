@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20251005090657"
+    "changelogDate": "20251010121649"
   },
   "applications": ["ms_booking"],
   "clientRootFolder": "ms_booking",
@@ -36,6 +36,12 @@
     {
       "fieldName": "time",
       "fieldType": "Instant"
+    },
+    {
+      "fieldName": "gatewayCreateDate",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "14"
     },
     {
       "fieldName": "gatewayNote",

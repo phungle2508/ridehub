@@ -469,6 +469,7 @@ entity PaymentTransaction {
   status PaymentStatus
   amount BigDecimal
   time Instant
+  gatewayCreateDate String maxlength(14)
   gatewayNote String maxlength(1024)
   createdAt Instant required
   updatedAt Instant

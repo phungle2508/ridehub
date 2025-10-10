@@ -2,6 +2,7 @@ package com.ridehub.booking.service;
 
 import com.ridehub.booking.service.vm.InitiatePaymentRequestVM;
 import com.ridehub.booking.service.vm.PaymentInitiationResultVM;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Service Interface for managing Payment operations.
@@ -12,9 +13,10 @@ public interface PaymentService {
      * Initiate payment for a booking.
      *
      * @param request the payment initiation request
+     * @param httpRequest the HTTP request to extract IP address
      * @return the payment initiation result with payment URL
      */
-    PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request);
+    PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request, HttpServletRequest httpRequest);
 
     /**
      * Process payment webhook from gateway.
@@ -25,4 +27,13 @@ public interface PaymentService {
      * @return processing result message
      */
     String processWebhook(String provider, String payload, String signature);
+
+    /**
+     * Process payment by transaction ID (for polling/reconciliation).
+     *
+     * @param transactionId the transaction ID
+     * @param status the payment status from gateway
+     * @return processing result message
+     */
+    String processPaymentByTransactionId(String transactionId, String status);
 }

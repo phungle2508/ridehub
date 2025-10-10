@@ -72,6 +72,8 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
 
     private InstantFilter time;
 
+    private StringFilter gatewayCreateDate;
+
     private StringFilter gatewayNote;
 
     private InstantFilter createdAt;
@@ -100,6 +102,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
         this.status = other.optionalStatus().map(PaymentStatusFilter::copy).orElse(null);
         this.amount = other.optionalAmount().map(BigDecimalFilter::copy).orElse(null);
         this.time = other.optionalTime().map(InstantFilter::copy).orElse(null);
+        this.gatewayCreateDate = other.optionalGatewayCreateDate().map(StringFilter::copy).orElse(null);
         this.gatewayNote = other.optionalGatewayNote().map(StringFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(InstantFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(InstantFilter::copy).orElse(null);
@@ -247,6 +250,25 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
 
     public void setTime(InstantFilter time) {
         this.time = time;
+    }
+
+    public StringFilter getGatewayCreateDate() {
+        return gatewayCreateDate;
+    }
+
+    public Optional<StringFilter> optionalGatewayCreateDate() {
+        return Optional.ofNullable(gatewayCreateDate);
+    }
+
+    public StringFilter gatewayCreateDate() {
+        if (gatewayCreateDate == null) {
+            setGatewayCreateDate(new StringFilter());
+        }
+        return gatewayCreateDate;
+    }
+
+    public void setGatewayCreateDate(StringFilter gatewayCreateDate) {
+        this.gatewayCreateDate = gatewayCreateDate;
     }
 
     public StringFilter getGatewayNote() {
@@ -437,6 +459,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
             Objects.equals(status, that.status) &&
             Objects.equals(amount, that.amount) &&
             Objects.equals(time, that.time) &&
+            Objects.equals(gatewayCreateDate, that.gatewayCreateDate) &&
             Objects.equals(gatewayNote, that.gatewayNote) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
@@ -459,6 +482,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
             status,
             amount,
             time,
+            gatewayCreateDate,
             gatewayNote,
             createdAt,
             updatedAt,
@@ -482,6 +506,7 @@ public class PaymentTransactionCriteria implements Serializable, Criteria {
             optionalStatus().map(f -> "status=" + f + ", ").orElse("") +
             optionalAmount().map(f -> "amount=" + f + ", ").orElse("") +
             optionalTime().map(f -> "time=" + f + ", ").orElse("") +
+            optionalGatewayCreateDate().map(f -> "gatewayCreateDate=" + f + ", ").orElse("") +
             optionalGatewayNote().map(f -> "gatewayNote=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +

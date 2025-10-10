@@ -82,6 +82,7 @@ class PaymentTransactionCriteriaTest {
         paymentTransactionCriteria.status();
         paymentTransactionCriteria.amount();
         paymentTransactionCriteria.time();
+        paymentTransactionCriteria.gatewayCreateDate();
         paymentTransactionCriteria.gatewayNote();
         paymentTransactionCriteria.createdAt();
         paymentTransactionCriteria.updatedAt();
@@ -103,6 +104,7 @@ class PaymentTransactionCriteriaTest {
                 condition.apply(criteria.getStatus()) &&
                 condition.apply(criteria.getAmount()) &&
                 condition.apply(criteria.getTime()) &&
+                condition.apply(criteria.getGatewayCreateDate()) &&
                 condition.apply(criteria.getGatewayNote()) &&
                 condition.apply(criteria.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt()) &&
@@ -129,6 +131,7 @@ class PaymentTransactionCriteriaTest {
                 condition.apply(criteria.getStatus(), copy.getStatus()) &&
                 condition.apply(criteria.getAmount(), copy.getAmount()) &&
                 condition.apply(criteria.getTime(), copy.getTime()) &&
+                condition.apply(criteria.getGatewayCreateDate(), copy.getGatewayCreateDate()) &&
                 condition.apply(criteria.getGatewayNote(), copy.getGatewayNote()) &&
                 condition.apply(criteria.getCreatedAt(), copy.getCreatedAt()) &&
                 condition.apply(criteria.getUpdatedAt(), copy.getUpdatedAt()) &&

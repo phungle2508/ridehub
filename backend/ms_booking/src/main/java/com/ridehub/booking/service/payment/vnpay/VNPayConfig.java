@@ -13,6 +13,7 @@ public class VNPayConfig {
     private String tmnCode;
     private String hashSecret;
     private String payUrl;
+    private String queryUrl;
     private String returnUrl;
     private String version = "2.1.0";
     private String command = "pay";
@@ -43,6 +44,14 @@ public class VNPayConfig {
     
     public void setPayUrl(String payUrl) {
         this.payUrl = payUrl;
+    }
+    
+    public String getQueryUrl() {
+        return queryUrl;
+    }
+    
+    public void setQueryUrl(String queryUrl) {
+        this.queryUrl = queryUrl;
     }
     
     public String getReturnUrl() {

@@ -32,6 +32,9 @@ public class PaymentTransactionDTO implements Serializable {
 
     private Instant time;
 
+    @Size(max = 14)
+    private String gatewayCreateDate;
+
     @Size(max = 1024)
     private String gatewayNote;
 
@@ -100,6 +103,14 @@ public class PaymentTransactionDTO implements Serializable {
 
     public void setTime(Instant time) {
         this.time = time;
+    }
+
+    public String getGatewayCreateDate() {
+        return gatewayCreateDate;
+    }
+
+    public void setGatewayCreateDate(String gatewayCreateDate) {
+        this.gatewayCreateDate = gatewayCreateDate;
     }
 
     public String getGatewayNote() {
@@ -182,6 +193,7 @@ public class PaymentTransactionDTO implements Serializable {
             ", status='" + getStatus() + "'" +
             ", amount=" + getAmount() +
             ", time='" + getTime() + "'" +
+            ", gatewayCreateDate='" + getGatewayCreateDate() + "'" +
             ", gatewayNote='" + getGatewayNote() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
