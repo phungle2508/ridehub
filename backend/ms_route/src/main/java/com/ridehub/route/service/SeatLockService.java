@@ -84,4 +84,13 @@ public interface SeatLockService {
      * @return the seat validate lock response with validation results, lock status, and pricing.
      */
     SeatValidateLockResponseDTO validateAndLockSeats(SeatValidateLockRequestDTO request);
+
+    /**
+     * Validate seat existence without locking seats or calculating pricing.
+     * This method only checks if the seats exist and are available for validation.
+     *
+     * @param request the seat validate request containing trip details and seat numbers.
+     * @return the seat validate response with validation results only.
+     */
+    SeatValidateLockResponseDTO validateSeatsOnly(SeatValidateLockRequestDTO request);
 }

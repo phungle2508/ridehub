@@ -39,35 +39,41 @@ sequenceDiagram
     Redis-->>BookingService: LOCKED/EXISTS
     
     alt Idempotency Pass
-        Note right of BookingService: 🎯 Step 1: Pricing + Seat Validation
-        BookingService->>PricingService: computePrice(tripId, seats, promoCode)
+        Note right of BookingService: 🎯 Step 1: Seat Validation Only
+        BookingService->>RouteAPI: validateSeatsOnly(tripId, seats, idemKey)
         
-        Note right of PricingService: ✅ Validates seat existence & availability
-        PricingService->>RouteAPI: getTripDetail(tripId)
-        RouteAPI-->>PricingService: TripDetailVM with seat locks
-        PricingService->>PricingService: Check if seats exist & not locked
-        PricingService-->>BookingService: PricingResult (or throw exception)
+        Note right of RouteAPI: ✅ Validates seat existence & duplicates
+        RouteAPI-->>BookingService: VALIDATED/REJECTED
         
-        Note right of BookingService: 🎯 Step 2: Actual Seat Lock Attempt
-        BookingService->>RouteAPI: tryLockSeats(lockRequest)
-        RouteAPI-->>BookingService: SeatLockResponse(HELD/REJECTED)
-        
-        alt Seat Lock Success
-            Note right of BookingService: Booking Creation
-            BookingService->>Database: save(Booking) with lockGroupId
-            Database-->>BookingService: Booking with ID
+        alt Validation Success
+            Note right of BookingService: 🎯 Step 2: Actual Seat Lock Attempt
+            BookingService->>RouteAPI: tryLockSeats(lockRequest)
+            RouteAPI-->>BookingService: SeatLockResponse(HELD/REJECTED)
             
-            BookingService->>Redis: store session & seats
-            BookingService->>Database: save pricing snapshot
-            BookingService->>Database: save applied promotions
-            
-            Note right of BookingService: Update Seat Lock
-            BookingService->>RouteAPI: updateSeatLock(bookingId)
-            BookingService->>Database: update status to AWAITING_PAYMENT
-            
-            BookingService-->>BookingAPI: BookingDraftResultVM
-            BookingAPI-->>Client: 201 Created with booking details
-        else Seat Lock Failed
+            alt Seat Lock Success
+                Note right of BookingService: 🎯 Step 3: Pricing Calculation
+                BookingService->>PricingService: computePrice(tripId, seats, promoCode)
+                PricingService-->>BookingService: PricingResult
+                
+                Note right of BookingService: Booking Creation
+                BookingService->>Database: save(Booking) with lockGroupId
+                Database-->>BookingService: Booking with ID
+                
+                BookingService->>Redis: store session & seats
+                BookingService->>Database: save pricing snapshot
+                BookingService->>Database: save applied promotions
+                
+                Note right of BookingService: Update Seat Lock
+                BookingService->>RouteAPI: updateSeatLock(bookingId)
+                BookingService->>Database: update status to AWAITING_PAYMENT
+                
+                BookingService-->>BookingAPI: BookingDraftResultVM
+                BookingAPI-->>Client: 201 Created with booking details
+            else Seat Lock Failed
+                BookingService-->>BookingAPI: SeatNotAvailableException
+                BookingAPI-->>Client: 409 Conflict
+            end
+        else Validation Failed
             BookingService-->>BookingAPI: SeatNotAvailableException
             BookingAPI-->>Client: 409 Conflict
         end
@@ -139,27 +145,31 @@ stateDiagram-v2
 ```mermaid
 flowchart TD
     A[Booking Request] --> B{Idempotency Check}
-    B -->|Pass| C[Lock Seats via ms-route]
+    B -->|Pass| C[Validate Seats via ms-route]
     B -->|Fail| D[Return Error]
     
-    C --> E{Seat Lock Result}
-    E -->|HELD| F[Create Booking with lockGroupId]
+    C --> E{Validation Result}
+    E -->|VALIDATED| F[Lock Seats via ms-route]
     E -->|REJECTED| G[Seat Not Available Error]
     
-    F --> H[Store in Database]
-    H --> I[Update Seat Lock with Booking ID]
-    I --> J[Set Status: AWAITING_PAYMENT]
-    J --> K[Store Session in Redis]
+    F --> H{Seat Lock Result}
+    H -->|HELD| I[Create Booking with lockGroupId]
+    H -->|REJECTED| G
     
-    K --> L{Payment Result}
-    L -->|Success| M[Confirm Seat Locks]
-    L -->|Failed/Timeout| N[Cancel Seat Locks]
+    I --> J[Store in Database]
+    J --> K[Update Seat Lock with Booking ID]
+    K --> L[Set Status: AWAITING_PAYMENT]
+    L --> M[Store Session in Redis]
     
-    M --> O[Create Tickets]
-    N --> P[Release Seats]
+    M --> N{Payment Result}
+    N -->|Success| O[Confirm Seat Locks]
+    N -->|Failed/Timeout| P[Cancel Seat Locks]
     
-    O --> Q[Status: CONFIRMED]
-    P --> R[Status: CANCELED]
+    O --> Q[Create Tickets]
+    P --> R[Release Seats]
+    
+    Q --> S[Status: CONFIRMED]
+    R --> T[Status: CANCELED]
 ```
 
 ## Seat Validation Strategy
@@ -185,22 +195,30 @@ sequenceDiagram
     participant BookingService as Booking Service
     participant PricingService as Pricing Service
     
-    Note over Client, PricingService: 🎯 Ideal Flow: Route-First Validation
+    Note over Client, PricingService: 🎯 Current Flow: Route-First Validation
     Client->>BookingAPI: POST /api/bookings/draft
-    BookingAPI->>RouteAPI: validateAndLockSeats(tripId, seats, idemKey)
+    BookingAPI->>RouteAPI: validateSeatsOnly(tripId, seats, idemKey)
     
-    Note right of RouteAPI: ✅ Single Source of Truth
+    Note right of RouteAPI: ✅ Single Source of Truth for Validation
     RouteAPI->>RouteAPI: Validate seat existence
-    RouteAPI->>RouteAPI: Check current locks
-    RouteAPI->>RouteAPI: Atomic seat lock
-    RouteAPI-->>BookingAPI: SeatLockResponse(HELD) + pricing data
+    RouteAPI->>RouteAPI: Check for duplicates
+    RouteAPI-->>BookingAPI: VALIDATED/REJECTED
     
-    alt Lock Success
-        BookingAPI->>PricingService: calculatePromotions(basePrice, promoCode)
-        PricingService-->>BookingAPI: Final pricing
-        BookingAPI->>BookingService: createBooking()
-        BookingService-->>BookingAPI: Booking created
-    else Lock Failed
+    alt Validation Success
+        BookingAPI->>RouteAPI: tryLockSeats(lockRequest)
+        Note right of RouteAPI: Atomic seat lock
+        RouteAPI-->>BookingAPI: SeatLockResponse(HELD/REJECTED)
+        
+        alt Lock Success
+            BookingAPI->>PricingService: computePrice(tripId, seats, promoCode)
+            PricingService-->>BookingAPI: Final pricing
+            BookingAPI->>BookingService: createBooking()
+            BookingService-->>BookingAPI: Booking created
+        else Lock Failed
+            RouteAPI-->>BookingAPI: SeatNotAvailableException
+            BookingAPI-->>Client: 409 Conflict
+        end
+    else Validation Failed
         RouteAPI-->>BookingAPI: SeatNotAvailableException
         BookingAPI-->>Client: 409 Conflict
     end

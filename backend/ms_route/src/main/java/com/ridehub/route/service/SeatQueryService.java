@@ -185,36 +185,37 @@ public class SeatQueryService extends QueryService<Seat> {
      */
     @Transactional(readOnly = true)
     public List<Seat> findByTripIdAndSeatNumbers(Long tripId, List<String> seatNumbers) {
-        if (tripId == null || seatNumbers == null || seatNumbers.isEmpty()) {
+        if (tripId == null || seatNumbers == null || seatNumbers.isEmpty())
             return List.of();
-        }
+
+        // normalize once
+        List<String> seatNos = seatNumbers.stream()
+                .filter(s -> s != null && !s.isBlank())
+                .map(s -> s.trim().toUpperCase())
+                .toList();
 
         var cb = entityManager.getCriteriaBuilder();
         var cq = cb.createQuery(Seat.class);
         var seat = cq.from(Seat.class);
 
-        // Join through floor -> seatMap
         var floor = seat.join(Seat_.floor, JoinType.INNER);
         var seatMap = floor.join(Floor_.seatMap, JoinType.INNER);
 
-        // Subquery to get vehicle ID from trip
-        var tripSubquery = cq.subquery(Long.class);
-        var trip = tripSubquery.from(Trip.class);
-        tripSubquery.select(trip.get(Trip_.vehicle).get(Vehicle_.id))
-                     .where(cb.equal(trip.get(Trip_.id), tripId));
+        // subquery: seatMapId of the vehicle used by this trip
+        var sq = cq.subquery(Long.class);
+        var t = sq.from(Trip.class);
+        var v = t.join(Trip_.vehicle);
+        var vSeatMap = v.join(Vehicle_.seatMap);
+        sq.select(vSeatMap.get(SeatMap_.id))
+                .where(cb.equal(t.get(Trip_.id), tripId));
 
+        cq.select(seat).distinct(true);
         cq.where(cb.and(
-                // Match vehicle from trip
-                cb.equal(seatMap.get(SeatMap_.id), tripSubquery),
-                
-                // Match seat numbers
-                seat.get(Seat_.seatNo).in(seatNumbers),
-                
-                // Soft-delete guards
+                cb.equal(seatMap.get(SeatMap_.id), sq), // seatMap matches trip's vehicle seatMap
+                cb.upper(seat.get(Seat_.seatNo)).in(seatNos), // seat numbers
                 cb.or(cb.isFalse(seat.get(Seat_.isDeleted)), cb.isNull(seat.get(Seat_.isDeleted))),
                 cb.or(cb.isFalse(floor.get(Floor_.isDeleted)), cb.isNull(floor.get(Floor_.isDeleted))),
-                cb.or(cb.isFalse(seatMap.get(SeatMap_.isDeleted)), cb.isNull(seatMap.get(SeatMap_.isDeleted)))
-        ));
+                cb.or(cb.isFalse(seatMap.get(SeatMap_.isDeleted)), cb.isNull(seatMap.get(SeatMap_.isDeleted)))));
 
         return entityManager.createQuery(cq).getResultList();
     }

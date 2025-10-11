@@ -268,4 +268,26 @@ public class SeatLockResource {
         SeatValidateLockResponseDTO result = seatLockService.validateAndLockSeats(request);
         return ResponseEntity.ok(result);
     }
+
+    // ===========================
+    // NEW: Validate only endpoint
+    // ===========================
+    @PostMapping("/validate-only")
+    public ResponseEntity<SeatValidateLockResponseDTO> validateSeatsOnly(@Valid @RequestBody SeatValidateLockRequestDTO request) {
+        LOG.debug("REST request to validateSeatsOnly: tripId={}, seats={}",
+                request.getTripId(), request.getSeatNumbers());
+
+        if (request.getSeatNumbers() == null || request.getSeatNumbers().isEmpty()) {
+            throw new BadRequestAlertException("Seat list must not be empty", ENTITY_NAME, "emptyseats");
+        }
+        if (request.getTripId() == null) {
+            throw new BadRequestAlertException("TripId is required", ENTITY_NAME, "tripidnull");
+        }
+        if (request.getIdemKey() == null || request.getIdemKey().isBlank()) {
+            throw new BadRequestAlertException("Idempotency key is required", ENTITY_NAME, "idemkeynull");
+        }
+
+        SeatValidateLockResponseDTO result = seatLockService.validateSeatsOnly(request);
+        return ResponseEntity.ok(result);
+    }
 }

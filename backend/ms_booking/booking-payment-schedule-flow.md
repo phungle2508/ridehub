@@ -39,35 +39,41 @@ sequenceDiagram
     Redis-->>BookingService: LOCKED/EXISTS
     
     alt Idempotency Pass
-        Note right of BookingService: 🎯 Step 1: Pricing + Seat Validation
-        BookingService->>PricingService: computePrice(tripId, seats, promoCode)
+        Note right of BookingService: 🎯 Step 1: Seat Validation Only
+        BookingService->>RouteAPI: validateSeatsOnly(tripId, seats, idemKey)
         
-        Note right of PricingService: ✅ Validates seat existence & availability
-        PricingService->>RouteAPI: getTripDetail(tripId)
-        RouteAPI-->>PricingService: TripDetailVM with seat locks
-        PricingService->>PricingService: Check if seats exist & not locked
-        PricingService-->>BookingService: PricingResult (or throw exception)
+        Note right of RouteAPI: ✅ Validates seat existence & duplicates
+        RouteAPI-->>BookingService: VALIDATED/REJECTED
         
-        Note right of BookingService: 🎯 Step 2: Actual Seat Lock Attempt
-        BookingService->>RouteAPI: tryLockSeats(lockRequest)
-        RouteAPI-->>BookingService: SeatLockResponse(HELD/REJECTED)
-        
-        alt Seat Lock Success
-            Note right of BookingService: Booking Creation
-            BookingService->>Database: save(Booking) with lockGroupId
-            Database-->>BookingService: Booking with ID
+        alt Validation Success
+            Note right of BookingService: 🎯 Step 2: Actual Seat Lock Attempt
+            BookingService->>RouteAPI: tryLockSeats(lockRequest)
+            RouteAPI-->>BookingService: SeatLockResponse(HELD/REJECTED)
             
-            BookingService->>Redis: store session & seats
-            BookingService->>Database: save pricing snapshot
-            BookingService->>Database: save applied promotions
-            
-            Note right of BookingService: Update Seat Lock
-            BookingService->>RouteAPI: updateSeatLock(bookingId)
-            BookingService->>Database: update status to AWAITING_PAYMENT
-            
-            BookingService-->>BookingAPI: BookingDraftResultVM
-            BookingAPI-->>Client: 201 Created with booking details
-        else Seat Lock Failed
+            alt Seat Lock Success
+                Note right of BookingService: 🎯 Step 3: Pricing Calculation
+                BookingService->>PricingService: computePrice(tripId, seats, promoCode)
+                PricingService-->>BookingService: PricingResult
+                
+                Note right of BookingService: Booking Creation
+                BookingService->>Database: save(Booking) with lockGroupId
+                Database-->>BookingService: Booking with ID
+                
+                BookingService->>Redis: store session & seats
+                BookingService->>Database: save pricing snapshot
+                BookingService->>Database: save applied promotions
+                
+                Note right of BookingService: Update Seat Lock
+                BookingService->>RouteAPI: updateSeatLock(bookingId)
+                BookingService->>Database: update status to AWAITING_PAYMENT
+                
+                BookingService-->>BookingAPI: BookingDraftResultVM
+                BookingAPI-->>Client: 201 Created with booking details
+            else Seat Lock Failed
+                BookingService-->>BookingAPI: SeatNotAvailableException
+                BookingAPI-->>Client: 409 Conflict
+            end
+        else Validation Failed
             BookingService-->>BookingAPI: SeatNotAvailableException
             BookingAPI-->>Client: 409 Conflict
         end
@@ -139,27 +145,31 @@ stateDiagram-v2
 ```mermaid
 flowchart TD
     A[Booking Request] --> B{Idempotency Check}
-    B -->|Pass| C[Lock Seats via ms-route]
+    B -->|Pass| C[Validate Seats via ms-route]
     B -->|Fail| D[Return Error]
     
-    C --> E{Seat Lock Result}
-    E -->|HELD| F[Create Booking with lockGroupId]
+    C --> E{Validation Result}
+    E -->|VALIDATED| F[Lock Seats via ms-route]
     E -->|REJECTED| G[Seat Not Available Error]
     
-    F --> H[Store in Database]
-    H --> I[Update Seat Lock with Booking ID]
-    I --> J[Set Status: AWAITING_PAYMENT]
-    J --> K[Store Session in Redis]
+    F --> H{Seat Lock Result}
+    H -->|HELD| I[Create Booking with lockGroupId]
+    H -->|REJECTED| G
     
-    K --> L{Payment Result}
-    L -->|Success| M[Confirm Seat Locks]
-    L -->|Failed/Timeout| N[Cancel Seat Locks]
+    I --> J[Store in Database]
+    J --> K[Update Seat Lock with Booking ID]
+    K --> L[Set Status: AWAITING_PAYMENT]
+    L --> M[Store Session in Redis]
     
-    M --> O[Create Tickets]
-    N --> P[Release Seats]
+    M --> N{Payment Result}
+    N -->|Success| O[Confirm Seat Locks]
+    N -->|Failed/Timeout| P[Cancel Seat Locks]
     
-    O --> Q[Status: CONFIRMED]
-    P --> R[Status: CANCELED]
+    O --> Q[Create Tickets]
+    P --> R[Release Seats]
+    
+    Q --> S[Status: CONFIRMED]
+    R --> T[Status: CANCELED]
 ```
 
 ## Seat Validation Strategy
@@ -185,22 +195,30 @@ sequenceDiagram
     participant BookingService as Booking Service
     participant PricingService as Pricing Service
     
-    Note over Client, PricingService: 🎯 Ideal Flow: Route-First Validation
+    Note over Client, PricingService: 🎯 Current Flow: Route-First Validation
     Client->>BookingAPI: POST /api/bookings/draft
-    BookingAPI->>RouteAPI: validateAndLockSeats(tripId, seats, idemKey)
+    BookingAPI->>RouteAPI: validateSeatsOnly(tripId, seats, idemKey)
     
-    Note right of RouteAPI: ✅ Single Source of Truth
+    Note right of RouteAPI: ✅ Single Source of Truth for Validation
     RouteAPI->>RouteAPI: Validate seat existence
-    RouteAPI->>RouteAPI: Check current locks
-    RouteAPI->>RouteAPI: Atomic seat lock
-    RouteAPI-->>BookingAPI: SeatLockResponse(HELD) + pricing data
+    RouteAPI->>RouteAPI: Check for duplicates
+    RouteAPI-->>BookingAPI: VALIDATED/REJECTED
     
-    alt Lock Success
-        BookingAPI->>PricingService: calculatePromotions(basePrice, promoCode)
-        PricingService-->>BookingAPI: Final pricing
-        BookingAPI->>BookingService: createBooking()
-        BookingService-->>BookingAPI: Booking created
-    else Lock Failed
+    alt Validation Success
+        BookingAPI->>RouteAPI: tryLockSeats(lockRequest)
+        Note right of RouteAPI: Atomic seat lock
+        RouteAPI-->>BookingAPI: SeatLockResponse(HELD/REJECTED)
+        
+        alt Lock Success
+            BookingAPI->>PricingService: computePrice(tripId, seats, promoCode)
+            PricingService-->>BookingAPI: Final pricing
+            BookingAPI->>BookingService: createBooking()
+            BookingService-->>BookingAPI: Booking created
+        else Lock Failed
+            RouteAPI-->>BookingAPI: SeatNotAvailableException
+            BookingAPI-->>Client: 409 Conflict
+        end
+    else Validation Failed
         RouteAPI-->>BookingAPI: SeatNotAvailableException
         BookingAPI-->>Client: 409 Conflict
     end
@@ -312,17 +330,34 @@ if (!isHeld(lockResult)) {
 }
 ```
 
-### Booking Method Differences
+### Booking Method Differences: Why Draft vs Real Booking Have Different Validation
 
-| Method | Seat Validation | Database Operations | Use Case |
-|--------|----------------|-------------------|----------|
-| **createSimpleDraft()** | ❌ No validation | ❌ No persistence | Price calculation only |
-| **createRealBooking()** | ✅ Both levels | ✅ Full persistence | Real booking creation |
+#### **Core Design Principle**
+The system implements two distinct booking approaches based on user intent:
+
+| Method | Seat Validation | Seat Holding | Database Operations | Use Case | Performance |
+|--------|----------------|--------------|-------------------|----------|-------------|
+| **createSimpleDraft()** | ❌ No validation | ❌ No holding | ❌ No persistence | **Price inquiry only** | ⚡ Fast |
+| **createRealBooking()** | ✅ Both levels | ✅ Atomic lock | ✅ Full persistence | **Actual reservation** | 🛡️ Reliable |
+
+#### **Why This Separation Makes Sense**
+
+**Draft Flow (`createSimpleDraft`)**
+- **Purpose**: Users exploring pricing options without commitment
+- **No Resource Impact**: Seats aren't limited resources during price exploration
+- **Performance Priority**: Fast response times for better user experience
+- **Business Logic**: No need to validate/hold seats for what might be just browsing
+
+**Real Booking Flow (`createRealBooking`)**
+- **Purpose**: Users committing to purchase limited resources
+- **Resource Management**: Seats are valuable, limited assets that must be protected
+- **Data Integrity**: Prevent double bookings and race conditions
+- **Business Logic**: Can't sell already booked seats to multiple customers
 
 #### createSimpleDraft() Flow
 ```mermaid
 flowchart LR
-    A[Request] --> B[Calculate Price]
+    A[Price Inquiry] --> B[Calculate Base Price]
     B --> C[Apply Promotions]
     C --> D[Return Pricing Result]
     
@@ -330,18 +365,24 @@ flowchart LR
     style D fill:#c8e6c9
 ```
 
+**Key Characteristics:**
+- ⚡ **Fast**: No external API calls to Route MS
+- 💰 **Cost-effective**: No resource consumption
+- 🔍 **Exploratory**: Users can check multiple scenarios
+- 📊 **Pricing-focused**: Only concerned with cost calculation
+
 #### createRealBooking() Flow
 ```mermaid
 flowchart TD
-    A[Request] --> B[Idempotency Check]
-    B --> C[Pricing + Seat Validation]
-    C --> D{Seats Available?}
-    D -->|No| E[Throw Exception]
-    D -->|Yes| F[Lock Seats via API]
+    A[Booking Commitment] --> B[Idempotency Check]
+    B --> C[Level 1: Seat Validation]
+    C --> D{Seats Exist & Available?}
+    D -->|No| E[Fail Fast: Invalid Seats]
+    D -->|Yes| F[Level 2: Atomic Seat Lock]
     F --> G{Lock Success?}
     G -->|No| H[SeatNotAvailableException]
-    G -->|Yes| I[Create Booking]
-    I --> J[Store in Database]
+    G -->|Yes| I[Create Booking Record]
+    I --> J[Persist to Database]
     J --> K[Return Success]
     
     style A fill:#e1f5fe
@@ -349,6 +390,25 @@ flowchart TD
     style E fill:#ffcdd2
     style H fill:#ffcdd2
 ```
+
+**Key Characteristics:**
+- 🛡️ **Reliable**: Two-level validation prevents issues
+- 🔒 **Resource-aware**: Holds seats to prevent double booking
+- 💾 **Persistent**: Creates actual booking records
+- 🔄 **Transactional**: Ensures data consistency
+
+#### **Real-World Analogy**
+- **Draft**: Like browsing a hotel website to check room prices
+- **Real Booking**: Like actually booking a room and getting a confirmation number
+
+#### **Performance vs Reliability Trade-off**
+
+| Aspect | Draft (Performance) | Real Booking (Reliability) |
+|--------|---------------------|----------------------------|
+| **Response Time** | ~50ms | ~200-500ms |
+| **Resource Usage** | Minimal | Seat locks + DB writes |
+| **User Experience** | Instant price feedback | Confirmed reservation |
+| **Business Impact** | None | Actual revenue transaction |
 
 ### Seat Validation Benefits
 

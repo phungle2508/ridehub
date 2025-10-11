@@ -24,8 +24,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -50,7 +53,8 @@ public class SeatLockServiceImpl implements SeatLockService {
     private static final int LOCK_DURATION_MINUTES = 20; // 20 minutes lock duration as per PlantUML
 
     public SeatLockServiceImpl(SeatLockRepository seatLockRepository, TripRepository tripRepository,
-            SeatQueryService seatQueryService, SeatLockMapper seatLockMapper, SeatLockQueryService seatLockQueryService) {
+            SeatQueryService seatQueryService, SeatLockMapper seatLockMapper,
+            SeatLockQueryService seatLockQueryService) {
         this.seatLockRepository = seatLockRepository;
         this.tripRepository = tripRepository;
         this.seatQueryService = seatQueryService;
@@ -282,12 +286,32 @@ public class SeatLockServiceImpl implements SeatLockService {
             List<Seat> existingSeats = seatQueryService.findByTripIdAndSeatNumbers(
                     request.getTripId(), request.getSeatNumbers());
 
+            // Group all seats by normalized seatNo
+            Map<String, List<Seat>> groupedSeats = existingSeats.stream()
+                    .filter(s -> s.getSeatNo() != null)
+                    .collect(Collectors.groupingBy(s -> s.getSeatNo().trim().toUpperCase()));
+
+            // Detect duplicates (same seat number, multiple seats)
+            List<String> duplicates = groupedSeats.entrySet().stream()
+                    .filter(e -> e.getValue().size() > 1)
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            if (!duplicates.isEmpty()) {
+                String message = "Duplicate seat numbers detected for trip " + request.getTripId()
+                        + ": " + String.join(", ", duplicates);
+                return new SeatValidateLockResponseDTO(
+                        "REJECTED",
+                        message,
+                        request.getTripId());
+            }
+
             if (existingSeats.size() != request.getSeatNumbers().size()) {
                 // Find which seats don't exist
                 List<String> existingSeatNumbers = existingSeats.stream()
                         .map(Seat::getSeatNo)
                         .toList();
-                
+
                 List<String> missingSeats = request.getSeatNumbers().stream()
                         .filter(seatNo -> !existingSeatNumbers.contains(seatNo))
                         .toList();
@@ -317,7 +341,8 @@ public class SeatLockServiceImpl implements SeatLockService {
             }
 
             // Step 4: Calculate pricing (basic implementation)
-            SeatValidateLockResponseDTO.PricingInfo pricing = calculatePricing(trip, existingSeats, request.getPromoCode());
+            SeatValidateLockResponseDTO.PricingInfo pricing = calculatePricing(trip, existingSeats,
+                    request.getPromoCode());
 
             // Step 5: Lock seats atomically
             String lockGroupId = request.getIdemKey();
@@ -367,7 +392,7 @@ public class SeatLockServiceImpl implements SeatLockService {
 
     private SeatValidateLockResponseDTO createValidateLockResponseFromExistingLock(
             SeatLock existingLock, SeatValidateLockRequestDTO request) {
-        
+
         SeatValidateLockResponseDTO response = new SeatValidateLockResponseDTO();
         response.setTripId(request.getTripId());
 
@@ -382,7 +407,7 @@ public class SeatLockServiceImpl implements SeatLockService {
             response.setMessage("Seats successfully validated and locked (cached)");
             response.setLockGroupId(existingLock.getIdempotencyKey());
             response.setExpiresAt(existingLock.getExpiresAt());
-            
+
             // Recalculate pricing for cached response
             try {
                 Trip trip = tripRepository.findById(request.getTripId()).orElse(null);
@@ -398,8 +423,124 @@ public class SeatLockServiceImpl implements SeatLockService {
             response.setStatus("REJECTED");
             response.setMessage("Seats not available (cached)");
         }
-        
+
         return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SeatValidateLockResponseDTO validateSeatsOnly(SeatValidateLockRequestDTO request) {
+        LOG.debug("Request to validate seats for trip: {}, seats: {}",
+                request.getTripId(), request.getSeatNumbers());
+
+        try {
+            // Step 1: Validate trip exists
+            Trip trip = tripRepository
+                    .findById(request.getTripId())
+                    .orElseThrow(() -> new EntityNotFoundException("Trip not found: " + request.getTripId()));
+
+            Instant now = Instant.now();
+
+            // Step 2: Validate seat existence and check for duplicates
+            List<Seat> existingSeats = seatQueryService.findByTripIdAndSeatNumbers(
+                    request.getTripId(), request.getSeatNumbers());
+
+            // Group all seats by normalized seatNo to detect duplicates in database
+            Map<String, List<Seat>> groupedSeats = existingSeats.stream()
+                    .filter(s -> s.getSeatNo() != null)
+                    .collect(Collectors.groupingBy(s -> s.getSeatNo().trim().toUpperCase()));
+
+            // Detect duplicates (same seat number, multiple seats) in database
+            List<String> duplicates = groupedSeats.entrySet().stream()
+                    .filter(e -> e.getValue().size() > 1)
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            if (!duplicates.isEmpty()) {
+                String message = "Duplicate seat numbers detected for trip " + request.getTripId()
+                        + ": " + String.join(", ", duplicates);
+                return new SeatValidateLockResponseDTO(
+                        "REJECTED",
+                        message,
+                        request.getTripId());
+            }
+
+            // Check for duplicate seat numbers in the request
+            List<String> uniqueSeatNumbers = request.getSeatNumbers().stream()
+                    .distinct()
+                    .toList();
+            
+            if (uniqueSeatNumbers.size() != request.getSeatNumbers().size()) {
+                List<String> duplicateSeats = request.getSeatNumbers().stream()
+                        .filter(seatNo -> request.getSeatNumbers().indexOf(seatNo) != request.getSeatNumbers().lastIndexOf(seatNo))
+                        .distinct()
+                        .toList();
+                
+                LOG.warn("Duplicate seat numbers found in request: {}", duplicateSeats);
+                return new SeatValidateLockResponseDTO(
+                        "REJECTED",
+                        "Duplicate seat numbers in request: " + String.join(", ", duplicateSeats),
+                        request.getTripId());
+            }
+
+            if (existingSeats.size() != request.getSeatNumbers().size()) {
+                // Find which seats don't exist
+                List<String> existingSeatNumbers = existingSeats.stream()
+                        .map(Seat::getSeatNo)
+                        .toList();
+                
+                List<String> missingSeats = request.getSeatNumbers().stream()
+                        .filter(seatNo -> !existingSeatNumbers.contains(seatNo))
+                        .toList();
+
+                LOG.warn("Seats {} do not exist for trip {}", missingSeats, request.getTripId());
+                return new SeatValidateLockResponseDTO(
+                        "REJECTED",
+                        "Unknown seat numbers: " + String.join(", ", missingSeats),
+                        request.getTripId());
+            }
+
+            // Step 3: Check for existing locks (informational only)
+            List<SeatLock> existingLocks = seatLockQueryService.findActiveLocksByTripAndSeats(
+                    request.getTripId(), request.getSeatNumbers(), LockStatus.HELD, now);
+
+            String message;
+            if (!existingLocks.isEmpty()) {
+                List<String> lockedSeats = existingLocks.stream()
+                        .map(SeatLock::getSeatNo)
+                        .distinct()
+                        .toList();
+
+                LOG.info("Seats {} are already locked for trip {} (validation only)", lockedSeats, request.getTripId());
+                message = "All seats exist but some are already locked: " + String.join(", ", lockedSeats);
+            } else {
+                message = "All seats are valid and available";
+            }
+
+            // Step 4: Create validation response (no locking, no pricing)
+            SeatValidateLockResponseDTO response = new SeatValidateLockResponseDTO();
+            response.setStatus("VALIDATED");
+            response.setMessage(message);
+            response.setTripId(request.getTripId());
+            // No lockGroupId, expiresAt, or pricing for validation-only response
+
+            LOG.info("Successfully validated {} seats for trip {}",
+                    request.getSeatNumbers().size(), request.getTripId());
+
+            return response;
+
+        } catch (EntityNotFoundException e) {
+            LOG.warn("Trip not found: {}", request.getTripId());
+            return new SeatValidateLockResponseDTO("REJECTED", "Trip not found", request.getTripId());
+
+        } catch (Exception e) {
+            LOG.error("Error processing seat validation request for trip {}: {}",
+                    request.getTripId(), e.getMessage(), e);
+
+            return new SeatValidateLockResponseDTO("REJECTED",
+                    "Internal error occurred while processing seat validation",
+                    request.getTripId());
+        }
     }
 
     private SeatValidateLockResponseDTO.PricingInfo calculatePricing(
