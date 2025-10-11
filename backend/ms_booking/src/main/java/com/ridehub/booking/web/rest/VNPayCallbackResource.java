@@ -1,6 +1,9 @@
 package com.ridehub.booking.web.rest;
 
+import com.ridehub.booking.domain.PaymentTransaction;
+import com.ridehub.booking.repository.PaymentTransactionRepository;
 import com.ridehub.booking.service.PaymentService;
+import com.ridehub.booking.service.VNPayPollingService;
 import com.ridehub.booking.service.payment.vnpay.VNPayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +26,14 @@ public class VNPayCallbackResource {
 
     private final PaymentService paymentService;
     private final VNPayService vnPayService;
+    private final VNPayPollingService vnPayPollingService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
-    public VNPayCallbackResource(PaymentService paymentService, VNPayService vnPayService) {
+    public VNPayCallbackResource(PaymentService paymentService, VNPayService vnPayService, VNPayPollingService vnPayPollingService, PaymentTransactionRepository paymentTransactionRepository) {
         this.paymentService = paymentService;
         this.vnPayService = vnPayService;
+        this.vnPayPollingService = vnPayPollingService;
+        this.paymentTransactionRepository = paymentTransactionRepository;
     }
 
     /**
@@ -102,17 +109,36 @@ public class VNPayCallbackResource {
     /**
      * Handle VNPay query transaction status
      * This endpoint is used for reconciliation and manual transaction status checking
+     * Now gets transactionDate and orderRef from database instead of parameters
      */
     @GetMapping("/query/{transactionId}")
     public ResponseEntity<Map<String, Object>> queryTransaction(@PathVariable String transactionId,
-                                                                @RequestParam(required = false) String transactionDate,
-                                                                @RequestParam(required = false) String orderRef,
                                                                 HttpServletRequest request) {
-        LOG.debug("Querying VNPay transaction status: {} for orderRef: {}", transactionId, orderRef);
+        LOG.debug("Querying VNPay transaction status: {}", transactionId);
 
         try {
+            // Get transaction from database to obtain orderRef and transactionDate
+            PaymentTransaction transaction = paymentTransactionRepository
+                .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(transactionId)
+                .orElse(null);
+
+            if (transaction == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("transactionId", transactionId);
+                errorResponse.put("success", false);
+                errorResponse.put("responseCode", "01");
+                errorResponse.put("message", "Transaction not found in database");
+                errorResponse.put("paymentMethod", "VNPAY");
+                errorResponse.put("queryTime", System.currentTimeMillis());
+                errorResponse.put("canSynthesizeWebhook", false);
+                return ResponseEntity.status(404).body(errorResponse);
+            }
+
             String ipAddress = getClientIpAddress(request);
-            VNPayService.VNPayQueryResult result = vnPayService.queryTransaction(transactionId, ipAddress, transactionDate, orderRef);
+            String orderRef = transaction.getOrderRef();
+            
+            // Use new method that gets data from PaymentTransaction object
+            VNPayService.VNPayQueryResult result = vnPayService.queryTransaction(transaction, ipAddress);
 
             Map<String, Object> response = new HashMap<>();
             response.put("transactionId", transactionId);
@@ -142,10 +168,9 @@ public class VNPayCallbackResource {
             }
 
         } catch (Exception e) {
-            LOG.error("Error querying VNPay transaction: {} for orderRef: {}", transactionId, orderRef, e);
+            LOG.error("Error querying VNPay transaction: {}", transactionId, e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("transactionId", transactionId);
-            errorResponse.put("orderRef", orderRef);
             errorResponse.put("success", false);
             errorResponse.put("responseCode", "99");
             errorResponse.put("message", "Internal server error: " + e.getMessage());
@@ -206,6 +231,43 @@ public class VNPayCallbackResource {
             errorResponse.put("success", false);
             errorResponse.put("responseCode", "99");
             errorResponse.put("message", "Internal server error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * Manually trigger polling for a specific transaction
+     * This endpoint is useful for testing and admin purposes when IPN is not available
+     */
+    @PostMapping("/poll/{transactionId}")
+    public ResponseEntity<Map<String, Object>> pollTransaction(@PathVariable String transactionId) {
+        LOG.info("Manual polling triggered for transaction: {}", transactionId);
+
+        try {
+            boolean updated = vnPayPollingService.pollSpecificTransaction(transactionId);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("transactionId", transactionId);
+            response.put("polled", true);
+            response.put("updated", updated);
+            response.put("timestamp", System.currentTimeMillis());
+            
+            if (updated) {
+                response.put("message", "Transaction status updated successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("message", "Transaction polled but no status change detected or transaction not found");
+                return ResponseEntity.ok(response);
+            }
+
+        } catch (Exception e) {
+            LOG.error("Error manually polling VNPay transaction: {}", transactionId, e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("transactionId", transactionId);
+            errorResponse.put("polled", false);
+            errorResponse.put("updated", false);
+            errorResponse.put("message", "Error polling transaction: " + e.getMessage());
+            errorResponse.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }

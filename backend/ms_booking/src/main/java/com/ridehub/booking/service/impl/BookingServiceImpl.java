@@ -137,6 +137,10 @@ public class BookingServiceImpl implements BookingService {
             // === 4️⃣ Store booking session state in Redis ===
             sessKey = "booking:sess:" + b.getId();
             redis.opsForValue().set(sessKey, "AWAITING_LOCK", Duration.ofMinutes(20));
+            
+            // === 4️⃣b Store seat list in Redis for payment processing ===
+            String seatsKey = "booking:seats:" + b.getId();
+            redis.opsForValue().set(seatsKey, String.join(",", req.getSeats()), Duration.ofMinutes(20));
 
             // === 5️⃣ Save pricing snapshot ===
             PricingSnapshotDTO ps = pricing.getPricingSnapshot();
@@ -205,6 +209,7 @@ public class BookingServiceImpl implements BookingService {
                 bookingRepository.save(b);
 
                 redis.delete(sessKey);
+                redis.delete("booking:seats:" + b.getId());
 
                 throw new SeatNotAvailableException("Seat not available: " + lockResult.getMessage());
             }
@@ -214,8 +219,11 @@ public class BookingServiceImpl implements BookingService {
             throw ex;
         } catch (Exception ex) {
             LOG.error("Booking draft failed: {}", ex.getMessage(), ex);
-            if (sessKey != null)
+            if (sessKey != null) {
                 redis.delete(sessKey);
+                // Also clean up seat list if booking was created
+                redis.delete("booking:seats:" + sessKey.substring("booking:sess:".length()));
+            }
             throw ex;
         }
     }

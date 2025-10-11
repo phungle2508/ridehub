@@ -78,7 +78,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request, String returnUrl, String ipAddress) {
+    public PaymentInitiationResultVM initiatePayment(InitiatePaymentRequestVM request, String returnUrl,
+            String ipAddress) {
         LOG.debug("Initiating payment for booking: {}", request.getBookingId());
 
         // 1) Validate booking exists and is in AWAITING_PAYMENT
@@ -108,7 +109,8 @@ public class PaymentServiceImpl implements PaymentService {
         transaction = paymentTransactionRepository.save(transaction);
 
         // 3) Generate payment URL based on method
-        String paymentUrl = generatePaymentUrl(request, transactionId, orderRef, booking.getTotalAmount(), returnUrl, ipAddress);
+        String paymentUrl = generatePaymentUrl(request, transactionId, orderRef, booking.getTotalAmount(), returnUrl,
+                ipAddress);
 
         // NOTE: keep booking in AWAITING_PAYMENT; do not flip to PAID here
         booking.setPaymentTransaction(transaction);
@@ -187,6 +189,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     private String processSuccessfulPayment(PaymentTransaction transaction, Booking booking,
             PaymentWebhookLog webhookLog) {
+
+        // Confirm seats in ms-route (authoritative)
+        List<String> seatNos = loadSeatNosForBooking(booking);
+        confirmSeatLocks(booking, seatNos);
+        
         // Update payment transaction
         transaction.setStatus(PaymentStatus.SUCCESS);
         transaction.setUpdatedAt(Instant.now());
@@ -196,11 +203,6 @@ public class PaymentServiceImpl implements PaymentService {
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(Instant.now());
         bookingRepository.save(booking);
-
-        // Confirm seats in ms-route (authoritative)
-        List<String> seatNos = loadSeatNosForBooking(booking);
-        confirmSeatLocks(booking, seatNos);
-
         // Create tickets
         createTicketsForBooking(booking, seatNos);
 
@@ -355,15 +357,16 @@ public class PaymentServiceImpl implements PaymentService {
      * Adjust the Redis key to your actual storage (e.g., set during draft
      * creation).
      */
-    @SuppressWarnings("unchecked")
     private List<String> loadSeatNosForBooking(Booking booking) {
-        // Try Redis first: e.g., "booking:seats:{bookingId}" holding List<String>
+        // Try Redis first: e.g., "booking:seats:{bookingId}" holding comma-separated string
         String key = "booking:seats:" + booking.getId();
-        Object obj = redis.opsForValue().get(key);
-        if (obj instanceof List<?> raw) {
-            List<String> seats = raw.stream().filter(Objects::nonNull).map(Object::toString).toList();
-            if (!seats.isEmpty())
-                return seats;
+        String seatsStr = redis.opsForValue().get(key);
+        if (seatsStr != null && !seatsStr.trim().isEmpty()) {
+            // Split comma-separated string into list of seat numbers
+            return Arrays.stream(seatsStr.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toList();
         }
 
         // If not in Redis, you can alternatively query ms-route seat locks by
@@ -396,7 +399,8 @@ public class PaymentServiceImpl implements PaymentService {
         if (request.getMethod() != null) {
             switch (request.getMethod().name()) {
                 case "VNPAY":
-                    return vnPayService.createPaymentUrl(request, transactionId, orderRef, amount, returnUrl, ipAddress);
+                    return vnPayService.createPaymentUrl(request, transactionId, orderRef, amount, returnUrl,
+                            ipAddress);
             }
         }
 
