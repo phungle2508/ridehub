@@ -30,7 +30,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for admin booking management.
@@ -151,11 +150,11 @@ public class AdminBookingController {
         if (booking.getStatus() == BookingStatus.CANCELED) {
             throw new BadRequestAlertException("Cannot confirm canceled booking", ENTITY_NAME, "bookingcanceled");
         }
-        
+
         // Update booking status
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(Instant.now());
-        
+
         // Create tickets if they don't exist
         createTicketsForBooking(booking);
 

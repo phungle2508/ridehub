@@ -49,5 +49,20 @@ public interface BookingService {
      */
     void delete(Long id);
 
-    BookingDraftResultVM createDraft(CreateBookingDraftRequestVM req);
+    /**
+     * Create a simple draft for price checking only (no database persistence).
+     *
+     * @param req the draft creation request
+     * @return the draft result with pricing information
+     */
+    BookingDraftResultVM createSimpleDraft(CreateBookingDraftRequestVM req);
+
+    /**
+     * Create a real booking with full database persistence and seat locking.
+     *
+     * @param req the booking creation request
+     * @return the booking result
+     */
+    BookingDraftResultVM createRealBooking(CreateBookingDraftRequestVM req);
+
 }

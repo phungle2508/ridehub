@@ -226,21 +226,25 @@ public class BookingResource {
      * 5. Returns 201 with AWAITING_PAYMENT status if seats locked successfully
      * 6. Returns 409 if seats are not available
      *
-     * @param req the booking draft request containing tripId, seats, promoCode, customerId, idemKey
-     * @return ResponseEntity with status 201 (Created) and booking details if successful,
+     * @param req the booking draft request containing tripId, seats, promoCode,
+     *            customerId, idemKey
+     * @return ResponseEntity with status 201 (Created) and booking details if
+     *         successful,
      *         or 409 (Conflict) if seats are not available
      */
     @PostMapping("/draft")
     public ResponseEntity<BookingDraftResultVM> createDraft(@Valid @RequestBody CreateBookingDraftRequestVM req) {
-        LOG.debug("REST request to create booking draft: {}", req);
+        var result = bookingService.createSimpleDraft(req);
 
-        BookingDraftResultVM result = bookingService.createDraft(req);
-
-        // Return 201 Created as per sequence diagram when seats are successfully locked
+        var code = result.getBookingCode();
+        if (code == null) {
+            return ResponseEntity.ok()
+                    .headers(HeaderUtil.createAlert(applicationName, "Booking draft calculated", "")) // empty param is
+                                                                                                      // safe
+                    .body(result);
+        }
         return ResponseEntity.status(201)
-                .headers(HeaderUtil.createAlert(applicationName,
-                    "Booking draft created with code: " + result.getBookingCode(),
-                    result.getBookingCode()))
+                .headers(HeaderUtil.createAlert(applicationName, "Booking draft created with code: " + code, code))
                 .body(result);
     }
 }
