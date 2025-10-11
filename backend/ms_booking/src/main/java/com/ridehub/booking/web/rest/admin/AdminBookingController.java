@@ -7,8 +7,12 @@ import com.ridehub.booking.repository.BookingRepository;
 import com.ridehub.booking.repository.TicketRepository;
 import com.ridehub.booking.web.rest.errors.BadRequestAlertException;
 import com.ridehub.msroute.client.api.SeatLockResourceMsrouteApi;
+import com.ridehub.msroute.client.api.TripResourceMsrouteApi;
+import com.ridehub.msroute.client.model.SeatDTO;
 import com.ridehub.msroute.client.model.SeatLockActionRequestDTO;
 import com.ridehub.msroute.client.model.SeatLockActionResponseDTO;
+import com.ridehub.msroute.client.model.TripDetailVM;
+import com.ridehub.msroute.client.model.TripDTO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,19 +20,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.criteria.Predicate;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for admin booking management.
@@ -48,16 +50,19 @@ public class AdminBookingController {
     private final BookingRepository bookingRepository;
     private final TicketRepository ticketRepository;
     private final SeatLockResourceMsrouteApi seatLockResourceMsrouteApi;
+    private final TripResourceMsrouteApi tripResourceMsrouteApi;
     private final StringRedisTemplate redisTemplate;
 
     public AdminBookingController(
             BookingRepository bookingRepository,
             TicketRepository ticketRepository,
             SeatLockResourceMsrouteApi seatLockResourceMsrouteApi,
+            TripResourceMsrouteApi tripResourceMsrouteApi,
             StringRedisTemplate redisTemplate) {
         this.bookingRepository = bookingRepository;
         this.ticketRepository = ticketRepository;
         this.seatLockResourceMsrouteApi = seatLockResourceMsrouteApi;
+        this.tripResourceMsrouteApi = tripResourceMsrouteApi;
         this.redisTemplate = redisTemplate;
     }
 
@@ -138,7 +143,7 @@ public class AdminBookingController {
         }
 
         Booking booking = bookingOpt.get();
-
+        System.out.println(booking.toString());
         if (booking.getStatus() == BookingStatus.CONFIRMED) {
             throw new BadRequestAlertException("Booking already confirmed", ENTITY_NAME, "alreadyconfirmed");
         }
@@ -146,12 +151,11 @@ public class AdminBookingController {
         if (booking.getStatus() == BookingStatus.CANCELED) {
             throw new BadRequestAlertException("Cannot confirm canceled booking", ENTITY_NAME, "bookingcanceled");
         }
-
+        
         // Update booking status
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(Instant.now());
-        bookingRepository.save(booking);
-
+        
         // Create tickets if they don't exist
         createTicketsForBooking(booking);
 
@@ -159,6 +163,8 @@ public class AdminBookingController {
         if (booking.getLockGroupId() != null && booking.getTripId() != null) {
             confirmSeatLocks(booking);
         }
+
+        bookingRepository.save(booking);
 
         log.info("Successfully confirmed booking: {}", booking.getBookingCode());
         return ResponseEntity.ok().build();
@@ -207,27 +213,66 @@ public class AdminBookingController {
             return;
         }
 
-        // Create tickets based on booking quantity
-        Integer quantity = booking.getQuantity();
-        if (quantity == null || quantity <= 0) {
-            quantity = 1; // Default to 1 ticket
+        try {
+            // 1) Fetch trip detail to get route information
+            TripDetailVM trip = tripResourceMsrouteApi.getTripDetail(booking.getTripId());
+            TripDTO tripDTO = trip.getTripDTO();
+
+            if (tripDTO == null || tripDTO.getRoute() == null) {
+                throw new IllegalStateException("Trip detail/route not found for trip " + booking.getTripId());
+            }
+
+            // 2) Load seat numbers for the booking from Redis
+            List<String> seatNos = loadSeatNosForBooking(booking);
+            if (seatNos.isEmpty()) {
+                log.error("No seat numbers found for booking: {}", booking.getBookingCode());
+                throw new IllegalStateException("No seat numbers found for booking: " + booking.getBookingCode()
+                        + ". Seat locks may not be properly established.");
+            }
+
+            // 3) Build seat number to seat ID map from trip detail
+            Map<String, Long> seatNoToId = buildSeatNoToId(trip);
+
+            // 4) Calculate per-seat price
+            BigDecimal perSeat = booking.getTotalAmount()
+                    .divide(BigDecimal.valueOf(seatNos.size()), 2, RoundingMode.HALF_UP);
+
+            // 5) Convert trip times
+            Instant dep = tripDTO.getDepartureTime().toInstant();
+            Instant arr = tripDTO.getArrivalTime().toInstant();
+
+            // 6) Create tickets for each seat
+            for (String rawSeatNo : seatNos) {
+                String seatNo = normalizeSeatNo(rawSeatNo);
+                Long seatId = seatNoToId.get(seatNo);
+                if (seatId == null) {
+                    throw new IllegalStateException(
+                            "SeatId not found for seat " + seatNo + " on trip " + tripDTO.getId());
+                }
+
+                Ticket ticket = new Ticket();
+                ticket.setTicketCode(generateTicketCode());
+                ticket.setPrice(perSeat);
+                ticket.setQrCode(null); // populate if you generate QR
+                ticket.setTimeFrom(dep);
+                ticket.setTimeTo(arr);
+                ticket.setCheckedIn(false);
+                ticket.setTripId(tripDTO.getId());
+                ticket.setRouteId(tripDTO.getRoute().getId()); // Derived from trip
+                ticket.setSeatId(seatId); // Derived from seat locks
+                ticket.setCreatedAt(Instant.now());
+                ticket.setBooking(booking);
+
+                ticketRepository.save(ticket);
+            }
+
+            log.info("Created {} tickets for booking: {}", seatNos.size(), booking.getBookingCode());
+
+        } catch (Exception e) {
+            log.error("Failed to create tickets for booking: {}", booking.getBookingCode(), e);
+            throw new BadRequestAlertException("Failed to create tickets: " + e.getMessage(), ENTITY_NAME,
+                    "ticketcreationerror");
         }
-
-        for (int i = 0; i < quantity; i++) {
-            Ticket ticket = new Ticket();
-            ticket.setTicketCode(generateTicketCode(booking.getBookingCode(), i + 1));
-            ticket.setPrice(booking.getTotalAmount().divide(java.math.BigDecimal.valueOf(quantity)));
-            ticket.setTripId(booking.getTripId());
-            ticket.setRouteId(1L); // Default route ID - should be derived from trip
-            ticket.setSeatId(1L + i); // Default seat ID - should be derived from seat locks
-            ticket.setCheckedIn(false);
-            ticket.setCreatedAt(Instant.now());
-            ticket.setBooking(booking);
-
-            ticketRepository.save(ticket);
-        }
-
-        log.info("Created {} tickets for booking: {}", quantity, booking.getBookingCode());
     }
 
     private void confirmSeatLocks(Booking booking) {
@@ -255,6 +300,36 @@ public class AdminBookingController {
 
     private String generateTicketCode(String bookingCode, int ticketNumber) {
         return bookingCode + "-T" + String.format("%02d", ticketNumber);
+    }
+
+    private String generateTicketCode() {
+        return "TKT-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
+    }
+
+    private Map<String, Long> buildSeatNoToId(TripDetailVM trip) {
+        if (trip == null || trip.getDetailVM() == null || trip.getDetailVM().getSeatsByFloorId() == null) {
+            return Map.of();
+        }
+        Map<String, List<SeatDTO>> byFloor = trip.getDetailVM().getSeatsByFloorId();
+        Map<String, Long> out = new LinkedHashMap<>();
+
+        byFloor.values().stream()
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .filter(Objects::nonNull)
+                .forEach(seat -> {
+                    String seatNo = seat.getSeatNo();
+                    Long id = seat.getId();
+                    if (seatNo != null && id != null) {
+                        out.putIfAbsent(normalizeSeatNo(seatNo), id);
+                    }
+                });
+
+        return out;
+    }
+
+    private static String normalizeSeatNo(String s) {
+        return s == null ? null : s.trim().toUpperCase();
     }
 
     /**

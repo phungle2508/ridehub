@@ -2,7 +2,6 @@ package com.ridehub.booking.service;
 
 import com.ridehub.booking.service.vm.InitiatePaymentRequestVM;
 import com.ridehub.booking.service.vm.PaymentInitiationResultVM;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Service Interface for managing Payment operations.

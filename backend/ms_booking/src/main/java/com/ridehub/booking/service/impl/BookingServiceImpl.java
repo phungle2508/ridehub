@@ -107,6 +107,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Transactional
+    @Override
     public BookingDraftResultVM createDraft(CreateBookingDraftRequestVM req) {
         String idemKey = "idem:booking:" + req.getIdemKey();
         String sessKey = null;
@@ -132,6 +133,7 @@ public class BookingServiceImpl implements BookingService {
             b.setCreatedAt(Instant.now());
             b.setUpdatedAt(Instant.now());
             b.setTripId(req.getTripId());
+            b.setExpiresAt(Instant.now());
             b = bookingRepository.save(b);
 
             // === 4️⃣ Store booking session state in Redis ===

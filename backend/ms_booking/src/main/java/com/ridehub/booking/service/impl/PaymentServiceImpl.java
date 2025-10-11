@@ -197,12 +197,10 @@ public class PaymentServiceImpl implements PaymentService {
         // Update payment transaction
         transaction.setStatus(PaymentStatus.SUCCESS);
         transaction.setUpdatedAt(Instant.now());
-        paymentTransactionRepository.save(transaction);
 
         // Update booking status to CONFIRMED
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(Instant.now());
-        bookingRepository.save(booking);
         // Create tickets
         createTicketsForBooking(booking, seatNos);
 
@@ -213,7 +211,10 @@ public class PaymentServiceImpl implements PaymentService {
         // Finalize webhook log
         webhookLog.setProcessingStatus("SUCCESS");
         webhookLog.setUpdatedAt(Instant.now());
+
+        paymentTransactionRepository.save(transaction);
         paymentWebhookLogRepository.save(webhookLog);
+        bookingRepository.save(booking);
 
         LOG.info("Payment confirmed for booking {}", booking.getBookingCode());
         return "SUCCESS";
@@ -233,7 +234,6 @@ public class PaymentServiceImpl implements PaymentService {
                 : BookingStatus.CANCELED;
         booking.setStatus(newBookingStatus);
         booking.setUpdatedAt(Instant.now());
-        bookingRepository.save(booking);
 
         // Cancel seats
         List<String> seatNos = loadSeatNosForBooking(booking);
@@ -247,6 +247,7 @@ public class PaymentServiceImpl implements PaymentService {
         webhookLog.setProcessingStatus(status.name());
         webhookLog.setUpdatedAt(Instant.now());
         paymentWebhookLogRepository.save(webhookLog);
+        bookingRepository.save(booking);
 
         LOG.info("Payment {} for booking {}", status.name().toLowerCase(Locale.ROOT), booking.getBookingCode());
         return status.name();

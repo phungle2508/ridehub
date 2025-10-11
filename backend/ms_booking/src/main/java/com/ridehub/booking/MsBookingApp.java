@@ -27,8 +27,6 @@ import tech.jhipster.config.JHipsterConstants;
 
 @SpringBootApplication
 @EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class })
-// @Import({ KafkaLibraryAutoConfiguration.class,
-// RidehubFeignScanProperties.class })
 public class MsBookingApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(MsBookingApp.class);

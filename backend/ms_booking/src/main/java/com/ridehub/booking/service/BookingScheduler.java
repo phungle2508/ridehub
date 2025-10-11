@@ -47,13 +47,12 @@ public class BookingScheduler {
      */
     @Scheduled(fixedRate = 60000) // Run every minute
     public void handleExpiredBookings() {
-        log.debug("Starting expired bookings cleanup task");
+        log.info("Starting expired bookings cleanup task at {}", Instant.now());
 
         try {
             // Find all AWAITING_PAYMENT bookings that have expired
             Instant now = Instant.now();
-            List<Booking> expiredBookings = bookingRepository.findExpiredAwaitingPaymentBookings(now);
-
+                List<Booking> expiredBookings = bookingRepository.findExpiredAwaitingPaymentBookings(now);
             if (expiredBookings.isEmpty()) {
                 log.debug("No expired bookings found");
                 return;
