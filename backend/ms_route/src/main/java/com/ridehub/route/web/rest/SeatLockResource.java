@@ -7,8 +7,10 @@ import com.ridehub.route.service.criteria.SeatLockCriteria;
 import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
 import com.ridehub.route.service.dto.request.SeatLockActionRequestDTO;
+import com.ridehub.route.service.dto.request.SeatValidateLockRequestDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
 import com.ridehub.route.service.dto.response.SeatLockActionResponseDTO;
+import com.ridehub.route.service.dto.response.SeatValidateLockResponseDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -244,5 +246,26 @@ public class SeatLockResource {
         SeatLockActionResponseDTO result = seatLockService.cancelSeatLocks(request);
         return ResponseEntity.ok(result);
     }
-}
 
+    // ===========================
+    // NEW: Validate and lock endpoint
+    // ===========================
+    @PostMapping("/validate-lock")
+    public ResponseEntity<SeatValidateLockResponseDTO> validateAndLockSeats(@Valid @RequestBody SeatValidateLockRequestDTO request) {
+        LOG.debug("REST request to validateAndLockSeats: tripId={}, seats={}, promoCode={}",
+                request.getTripId(), request.getSeatNumbers(), request.getPromoCode());
+
+        if (request.getSeatNumbers() == null || request.getSeatNumbers().isEmpty()) {
+            throw new BadRequestAlertException("Seat list must not be empty", ENTITY_NAME, "emptyseats");
+        }
+        if (request.getTripId() == null) {
+            throw new BadRequestAlertException("TripId is required", ENTITY_NAME, "tripidnull");
+        }
+        if (request.getIdemKey() == null || request.getIdemKey().isBlank()) {
+            throw new BadRequestAlertException("Idempotency key is required", ENTITY_NAME, "idemkeynull");
+        }
+
+        SeatValidateLockResponseDTO result = seatLockService.validateAndLockSeats(request);
+        return ResponseEntity.ok(result);
+    }
+}

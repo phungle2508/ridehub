@@ -312,17 +312,34 @@ if (!isHeld(lockResult)) {
 }
 ```
 
-### Booking Method Differences
+### Booking Method Differences: Why Draft vs Real Booking Have Different Validation
 
-| Method | Seat Validation | Database Operations | Use Case |
-|--------|----------------|-------------------|----------|
-| **createSimpleDraft()** | ❌ No validation | ❌ No persistence | Price calculation only |
-| **createRealBooking()** | ✅ Both levels | ✅ Full persistence | Real booking creation |
+#### **Core Design Principle**
+The system implements two distinct booking approaches based on user intent:
+
+| Method | Seat Validation | Seat Holding | Database Operations | Use Case | Performance |
+|--------|----------------|--------------|-------------------|----------|-------------|
+| **createSimpleDraft()** | ❌ No validation | ❌ No holding | ❌ No persistence | **Price inquiry only** | ⚡ Fast |
+| **createRealBooking()** | ✅ Both levels | ✅ Atomic lock | ✅ Full persistence | **Actual reservation** | 🛡️ Reliable |
+
+#### **Why This Separation Makes Sense**
+
+**Draft Flow (`createSimpleDraft`)**
+- **Purpose**: Users exploring pricing options without commitment
+- **No Resource Impact**: Seats aren't limited resources during price exploration
+- **Performance Priority**: Fast response times for better user experience
+- **Business Logic**: No need to validate/hold seats for what might be just browsing
+
+**Real Booking Flow (`createRealBooking`)**
+- **Purpose**: Users committing to purchase limited resources
+- **Resource Management**: Seats are valuable, limited assets that must be protected
+- **Data Integrity**: Prevent double bookings and race conditions
+- **Business Logic**: Can't sell already booked seats to multiple customers
 
 #### createSimpleDraft() Flow
 ```mermaid
 flowchart LR
-    A[Request] --> B[Calculate Price]
+    A[Price Inquiry] --> B[Calculate Base Price]
     B --> C[Apply Promotions]
     C --> D[Return Pricing Result]
     
@@ -330,18 +347,24 @@ flowchart LR
     style D fill:#c8e6c9
 ```
 
+**Key Characteristics:**
+- ⚡ **Fast**: No external API calls to Route MS
+- 💰 **Cost-effective**: No resource consumption
+- 🔍 **Exploratory**: Users can check multiple scenarios
+- 📊 **Pricing-focused**: Only concerned with cost calculation
+
 #### createRealBooking() Flow
 ```mermaid
 flowchart TD
-    A[Request] --> B[Idempotency Check]
-    B --> C[Pricing + Seat Validation]
-    C --> D{Seats Available?}
-    D -->|No| E[Throw Exception]
-    D -->|Yes| F[Lock Seats via API]
+    A[Booking Commitment] --> B[Idempotency Check]
+    B --> C[Level 1: Seat Validation]
+    C --> D{Seats Exist & Available?}
+    D -->|No| E[Fail Fast: Invalid Seats]
+    D -->|Yes| F[Level 2: Atomic Seat Lock]
     F --> G{Lock Success?}
     G -->|No| H[SeatNotAvailableException]
-    G -->|Yes| I[Create Booking]
-    I --> J[Store in Database]
+    G -->|Yes| I[Create Booking Record]
+    I --> J[Persist to Database]
     J --> K[Return Success]
     
     style A fill:#e1f5fe
@@ -349,6 +372,25 @@ flowchart TD
     style E fill:#ffcdd2
     style H fill:#ffcdd2
 ```
+
+**Key Characteristics:**
+- 🛡️ **Reliable**: Two-level validation prevents issues
+- 🔒 **Resource-aware**: Holds seats to prevent double booking
+- 💾 **Persistent**: Creates actual booking records
+- 🔄 **Transactional**: Ensures data consistency
+
+#### **Real-World Analogy**
+- **Draft**: Like browsing a hotel website to check room prices
+- **Real Booking**: Like actually booking a room and getting a confirmation number
+
+#### **Performance vs Reliability Trade-off**
+
+| Aspect | Draft (Performance) | Real Booking (Reliability) |
+|--------|---------------------|----------------------------|
+| **Response Time** | ~50ms | ~200-500ms |
+| **Resource Usage** | Minimal | Seat locks + DB writes |
+| **User Experience** | Instant price feedback | Confirmed reservation |
+| **Business Impact** | None | Actual revenue transaction |
 
 ### Seat Validation Benefits
 

@@ -1,5 +1,6 @@
 package com.ridehub.route.service.impl;
 
+import com.ridehub.route.domain.Seat;
 import com.ridehub.route.domain.SeatLock;
 import com.ridehub.route.domain.Trip;
 import com.ridehub.route.domain.enumeration.LockStatus;
@@ -7,15 +8,19 @@ import com.ridehub.route.repository.SeatLockRepository;
 import com.ridehub.route.repository.TripRepository;
 import com.ridehub.route.service.SeatLockQueryService;
 import com.ridehub.route.service.SeatLockService;
+import com.ridehub.route.service.SeatQueryService;
 import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.request.SeatLockActionRequestDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
+import com.ridehub.route.service.dto.request.SeatValidateLockRequestDTO;
 import com.ridehub.route.service.dto.response.SeatLockActionResponseDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
+import com.ridehub.route.service.dto.response.SeatValidateLockResponseDTO;
 import com.ridehub.route.service.mapper.SeatLockMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -38,15 +43,17 @@ public class SeatLockServiceImpl implements SeatLockService {
 
     private final SeatLockRepository seatLockRepository;
     private final TripRepository tripRepository;
+    private final SeatQueryService seatQueryService;
     private final SeatLockMapper seatLockMapper;
     private final SeatLockQueryService seatLockQueryService;
 
     private static final int LOCK_DURATION_MINUTES = 20; // 20 minutes lock duration as per PlantUML
 
     public SeatLockServiceImpl(SeatLockRepository seatLockRepository, TripRepository tripRepository,
-            SeatLockMapper seatLockMapper, SeatLockQueryService seatLockQueryService) {
+            SeatQueryService seatQueryService, SeatLockMapper seatLockMapper, SeatLockQueryService seatLockQueryService) {
         this.seatLockRepository = seatLockRepository;
         this.tripRepository = tripRepository;
+        this.seatQueryService = seatQueryService;
         this.seatLockMapper = seatLockMapper;
         this.seatLockQueryService = seatLockQueryService;
     }
@@ -245,6 +252,177 @@ public class SeatLockServiceImpl implements SeatLockService {
         seatLockRepository.saveAll(seatLocks);
 
         return new SeatLockActionResponseDTO("CANCELLED", "Seat locks cancelled successfully");
+    }
+
+    @Override
+    @Transactional
+    public SeatValidateLockResponseDTO validateAndLockSeats(SeatValidateLockRequestDTO request) {
+        LOG.debug("Request to validate and lock seats for trip: {}, seats: {}",
+                request.getTripId(), request.getSeatNumbers());
+
+        // Idempotency fast-path
+        SeatLock existingLock = seatLockQueryService
+                .findByIdempotencyKey(request.getIdemKey())
+                .orElse(null);
+
+        if (existingLock != null) {
+            LOG.info("Idempotent request detected for key: {}", request.getIdemKey());
+            return createValidateLockResponseFromExistingLock(existingLock, request);
+        }
+
+        try {
+            // Step 1: Validate trip exists
+            Trip trip = tripRepository
+                    .findById(request.getTripId())
+                    .orElseThrow(() -> new EntityNotFoundException("Trip not found: " + request.getTripId()));
+
+            Instant now = Instant.now();
+
+            // Step 2: Validate seat existence
+            List<Seat> existingSeats = seatQueryService.findByTripIdAndSeatNumbers(
+                    request.getTripId(), request.getSeatNumbers());
+
+            if (existingSeats.size() != request.getSeatNumbers().size()) {
+                // Find which seats don't exist
+                List<String> existingSeatNumbers = existingSeats.stream()
+                        .map(Seat::getSeatNo)
+                        .toList();
+                
+                List<String> missingSeats = request.getSeatNumbers().stream()
+                        .filter(seatNo -> !existingSeatNumbers.contains(seatNo))
+                        .toList();
+
+                LOG.warn("Seats {} do not exist for trip {}", missingSeats, request.getTripId());
+                return new SeatValidateLockResponseDTO(
+                        "REJECTED",
+                        "Unknown seat numbers: " + String.join(", ", missingSeats),
+                        request.getTripId());
+            }
+
+            // Step 3: Check for conflicting locks
+            List<SeatLock> conflictingLocks = seatLockQueryService.findActiveLocksByTripAndSeats(
+                    request.getTripId(), request.getSeatNumbers(), LockStatus.HELD, now);
+
+            if (!conflictingLocks.isEmpty()) {
+                List<String> unavailableSeats = conflictingLocks.stream()
+                        .map(SeatLock::getSeatNo)
+                        .distinct()
+                        .toList();
+
+                LOG.warn("Seats {} are not available for trip {}", unavailableSeats, request.getTripId());
+                return new SeatValidateLockResponseDTO(
+                        "REJECTED",
+                        "Seats not available: " + String.join(", ", unavailableSeats),
+                        request.getTripId());
+            }
+
+            // Step 4: Calculate pricing (basic implementation)
+            SeatValidateLockResponseDTO.PricingInfo pricing = calculatePricing(trip, existingSeats, request.getPromoCode());
+
+            // Step 5: Lock seats atomically
+            String lockGroupId = request.getIdemKey();
+            Instant expiresAt = now.plus(LOCK_DURATION_MINUTES, ChronoUnit.MINUTES);
+
+            for (String seatNumber : request.getSeatNumbers()) {
+                SeatLock seatLock = new SeatLock();
+                seatLock.setSeatNo(seatNumber);
+                seatLock.setBookingId(null); // Will be set when actual booking is created
+                seatLock.setStatus(LockStatus.HELD);
+                seatLock.setExpiresAt(expiresAt);
+                seatLock.setIdempotencyKey(request.getIdemKey());
+                seatLock.setCreatedAt(now);
+                seatLock.setIsDeleted(false);
+                seatLock.setTrip(trip);
+
+                seatLockRepository.save(seatLock);
+            }
+
+            // Step 6: Create response
+            SeatValidateLockResponseDTO response = new SeatValidateLockResponseDTO();
+            response.setStatus("HELD");
+            response.setMessage("Seats successfully validated and locked");
+            response.setLockGroupId(lockGroupId);
+            response.setTripId(request.getTripId());
+            response.setExpiresAt(expiresAt);
+            response.setPricing(pricing);
+
+            LOG.info("Successfully validated and locked {} seats for trip {} with lockGroupId {}",
+                    request.getSeatNumbers().size(), request.getTripId(), lockGroupId);
+
+            return response;
+
+        } catch (EntityNotFoundException e) {
+            LOG.warn("Trip not found: {}", request.getTripId());
+            return new SeatValidateLockResponseDTO("REJECTED", "Trip not found", request.getTripId());
+
+        } catch (Exception e) {
+            LOG.error("Error processing seat validate and lock request for trip {}: {}",
+                    request.getTripId(), e.getMessage(), e);
+
+            return new SeatValidateLockResponseDTO("REJECTED",
+                    "Internal error occurred while processing seat validation and lock",
+                    request.getTripId());
+        }
+    }
+
+    private SeatValidateLockResponseDTO createValidateLockResponseFromExistingLock(
+            SeatLock existingLock, SeatValidateLockRequestDTO request) {
+        
+        SeatValidateLockResponseDTO response = new SeatValidateLockResponseDTO();
+        response.setTripId(request.getTripId());
+
+        Instant now = Instant.now();
+
+        boolean valid = existingLock.getExpiresAt().isAfter(now)
+                && LockStatus.HELD.equals(existingLock.getStatus())
+                && (existingLock.getIsDeleted() == null || !existingLock.getIsDeleted());
+
+        if (valid) {
+            response.setStatus("HELD");
+            response.setMessage("Seats successfully validated and locked (cached)");
+            response.setLockGroupId(existingLock.getIdempotencyKey());
+            response.setExpiresAt(existingLock.getExpiresAt());
+            
+            // Recalculate pricing for cached response
+            try {
+                Trip trip = tripRepository.findById(request.getTripId()).orElse(null);
+                if (trip != null) {
+                    List<Seat> seats = seatQueryService.findByTripIdAndSeatNumbers(
+                            request.getTripId(), request.getSeatNumbers());
+                    response.setPricing(calculatePricing(trip, seats, request.getPromoCode()));
+                }
+            } catch (Exception e) {
+                LOG.warn("Failed to recalculate pricing for cached response: {}", e.getMessage());
+            }
+        } else {
+            response.setStatus("REJECTED");
+            response.setMessage("Seats not available (cached)");
+        }
+        
+        return response;
+    }
+
+    private SeatValidateLockResponseDTO.PricingInfo calculatePricing(
+            Trip trip, List<Seat> seats, String promoCode) {
+        
+        // Basic pricing calculation - can be enhanced with promotion logic
+        BigDecimal baseFare = trip.getBaseFare();
+        BigDecimal seatFactor = seats.stream()
+                .map(seat -> seat.getPriceFactor() != null ? seat.getPriceFactor() : BigDecimal.ONE)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal finalPrice = baseFare.multiply(seatFactor);
+        
+        // Apply promo code if provided (basic implementation)
+        List<String> appliedPromotions = List.of();
+        if (promoCode != null && !promoCode.trim().isEmpty()) {
+            // Simple 10% discount for demo purposes
+            finalPrice = finalPrice.multiply(BigDecimal.valueOf(0.9));
+            appliedPromotions = List.of(promoCode + " (10% discount)");
+        }
+        
+        return new SeatValidateLockResponseDTO.PricingInfo(
+                baseFare, finalPrice, appliedPromotions, "USD");
     }
 
 }

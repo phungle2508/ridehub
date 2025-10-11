@@ -5,7 +5,9 @@ import com.ridehub.route.repository.SeatRepository;
 import com.ridehub.route.service.criteria.SeatCriteria;
 import com.ridehub.route.service.dto.SeatDTO;
 import com.ridehub.route.service.mapper.SeatMapper;
+import jakarta.persistence.criteria.Join;
 
+import java.util.Optional;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Tuple;
@@ -175,6 +177,90 @@ public class SeatQueryService extends QueryService<Seat> {
                 .collect(Collectors.toMap(
                         t -> (Long) t.get("vehicleId"),
                         t -> (Long) t.get("seatCount")));
+    }
+
+    /**
+     * Find seats by trip ID and seat numbers using Criteria API.
+     * This joins through the floor -> seatMap -> vehicle relationship and then filters by trip.
+     */
+    @Transactional(readOnly = true)
+    public List<Seat> findByTripIdAndSeatNumbers(Long tripId, List<String> seatNumbers) {
+        if (tripId == null || seatNumbers == null || seatNumbers.isEmpty()) {
+            return List.of();
+        }
+
+        var cb = entityManager.getCriteriaBuilder();
+        var cq = cb.createQuery(Seat.class);
+        var seat = cq.from(Seat.class);
+
+        // Join through floor -> seatMap
+        var floor = seat.join(Seat_.floor, JoinType.INNER);
+        var seatMap = floor.join(Floor_.seatMap, JoinType.INNER);
+
+        // Subquery to get vehicle ID from trip
+        var tripSubquery = cq.subquery(Long.class);
+        var trip = tripSubquery.from(Trip.class);
+        tripSubquery.select(trip.get(Trip_.vehicle).get(Vehicle_.id))
+                     .where(cb.equal(trip.get(Trip_.id), tripId));
+
+        cq.where(cb.and(
+                // Match vehicle from trip
+                cb.equal(seatMap.get(SeatMap_.id), tripSubquery),
+                
+                // Match seat numbers
+                seat.get(Seat_.seatNo).in(seatNumbers),
+                
+                // Soft-delete guards
+                cb.or(cb.isFalse(seat.get(Seat_.isDeleted)), cb.isNull(seat.get(Seat_.isDeleted))),
+                cb.or(cb.isFalse(floor.get(Floor_.isDeleted)), cb.isNull(floor.get(Floor_.isDeleted))),
+                cb.or(cb.isFalse(seatMap.get(SeatMap_.isDeleted)), cb.isNull(seatMap.get(SeatMap_.isDeleted)))
+        ));
+
+        return entityManager.createQuery(cq).getResultList();
+    }
+
+    /**
+     * Find a single seat by trip ID and seat number using Criteria API.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Seat> findByTripIdAndSeatNumber(Long tripId, String seatNumber) {
+        if (tripId == null || seatNumber == null || seatNumber.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        var cb = entityManager.getCriteriaBuilder();
+        var cq = cb.createQuery(Seat.class);
+        var seat = cq.from(Seat.class);
+
+        // Join through floor -> seatMap
+        var floor = seat.join(Seat_.floor, JoinType.INNER);
+        var seatMap = floor.join(Floor_.seatMap, JoinType.INNER);
+
+        // Subquery to get vehicle ID from trip
+        var tripSubquery = cq.subquery(Long.class);
+        var trip = tripSubquery.from(Trip.class);
+        tripSubquery.select(trip.get(Trip_.vehicle).get(Vehicle_.id))
+                     .where(cb.equal(trip.get(Trip_.id), tripId));
+
+        cq.where(cb.and(
+                // Match vehicle from trip
+                cb.equal(seatMap.get(SeatMap_.id), tripSubquery),
+                
+                // Match seat number
+                cb.equal(seat.get(Seat_.seatNo), seatNumber),
+                
+                // Soft-delete guards
+                cb.or(cb.isFalse(seat.get(Seat_.isDeleted)), cb.isNull(seat.get(Seat_.isDeleted))),
+                cb.or(cb.isFalse(floor.get(Floor_.isDeleted)), cb.isNull(floor.get(Floor_.isDeleted))),
+                cb.or(cb.isFalse(seatMap.get(SeatMap_.isDeleted)), cb.isNull(seatMap.get(SeatMap_.isDeleted)))
+        ));
+
+        try {
+            Seat result = entityManager.createQuery(cq).getSingleResult();
+            return Optional.of(result);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
 }

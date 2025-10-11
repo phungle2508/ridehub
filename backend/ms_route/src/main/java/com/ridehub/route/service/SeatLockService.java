@@ -3,8 +3,10 @@ package com.ridehub.route.service;
 import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
 import com.ridehub.route.service.dto.request.SeatLockActionRequestDTO;
+import com.ridehub.route.service.dto.request.SeatValidateLockRequestDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
 import com.ridehub.route.service.dto.response.SeatLockActionResponseDTO;
+import com.ridehub.route.service.dto.response.SeatValidateLockResponseDTO;
 import java.util.Optional;
 
 /**
@@ -73,5 +75,13 @@ public interface SeatLockService {
      * @return the seat lock action response.
      */
     SeatLockActionResponseDTO cancelSeatLocks(SeatLockActionRequestDTO request);
-}
 
+    /**
+     * Validate seat existence and lock seats atomically.
+     * This is the recommended approach for seat validation and locking.
+     *
+     * @param request the seat validate and lock request containing trip details and seat numbers.
+     * @return the seat validate lock response with validation results, lock status, and pricing.
+     */
+    SeatValidateLockResponseDTO validateAndLockSeats(SeatValidateLockRequestDTO request);
+}
