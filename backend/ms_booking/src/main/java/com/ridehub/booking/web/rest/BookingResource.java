@@ -247,4 +247,20 @@ public class BookingResource {
                 .headers(HeaderUtil.createAlert(applicationName, "Booking draft created with code: " + code, code))
                 .body(result);
     }
+
+    @PostMapping("/real-booking")
+    public ResponseEntity<BookingDraftResultVM> createRealBooking(@Valid @RequestBody CreateBookingDraftRequestVM req) {
+        var result = bookingService.createRealBooking(req);
+
+        var code = result.getBookingCode();
+        if (code == null) {
+            return ResponseEntity.ok()
+                    .headers(HeaderUtil.createAlert(applicationName, "Booking  calculated", "")) // empty param is
+                                                                                                 // safe
+                    .body(result);
+        }
+        return ResponseEntity.status(201)
+                .headers(HeaderUtil.createAlert(applicationName, "Booking  created with code: " + code, code))
+                .body(result);
+    }
 }

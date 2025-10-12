@@ -8,9 +8,14 @@ import com.ridehub.route.service.dto.SeatLockDTO;
 import com.ridehub.route.service.dto.request.SeatLockRequestDTO;
 import com.ridehub.route.service.dto.request.SeatLockActionRequestDTO;
 import com.ridehub.route.service.dto.request.SeatValidateLockRequestDTO;
+import com.ridehub.route.service.dto.request.SeatHoldRequestDTO;
+import com.ridehub.route.service.dto.request.AttachBookingRequestDTO;
+import com.ridehub.route.service.dto.request.CancelGroupRequestDTO;
+import com.ridehub.route.service.dto.request.ConfirmGroupRequestDTO;
 import com.ridehub.route.service.dto.response.SeatLockResponseDTO;
 import com.ridehub.route.service.dto.response.SeatLockActionResponseDTO;
 import com.ridehub.route.service.dto.response.SeatValidateLockResponseDTO;
+import com.ridehub.route.service.dto.response.SeatHoldResponseDTO;
 import com.ridehub.route.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -288,6 +293,120 @@ public class SeatLockResource {
         }
 
         SeatValidateLockResponseDTO result = seatLockService.validateSeatsOnly(request);
+        return ResponseEntity.ok(result);
+    }
+
+    // ===========================
+    // NEW: Seat Hold Management Endpoints
+    // ===========================
+
+    /**
+     * {@code POST  /seat-locks/hold} : Hold seats without bookingId yet.
+     *
+     * @param request the seat hold request containing trip details, seat numbers, and lock group info.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the seat hold response.
+     */
+    @PostMapping("/hold")
+    public ResponseEntity<SeatHoldResponseDTO> holdSeats(@Valid @RequestBody SeatHoldRequestDTO request) {
+        LOG.debug("REST request to hold seats: tripId={}, seats={}, lockGroupId={}, userId={}",
+                request.getTripId(), request.getSeatNumbers(), request.getLockGroupId(), request.getUserId());
+
+        if (request.getSeatNumbers() == null || request.getSeatNumbers().isEmpty()) {
+            throw new BadRequestAlertException("Seat list must not be empty", ENTITY_NAME, "emptyseats");
+        }
+        if (request.getTripId() == null) {
+            throw new BadRequestAlertException("TripId is required", ENTITY_NAME, "tripidnull");
+        }
+        if (request.getLockGroupId() == null || request.getLockGroupId().isBlank()) {
+            throw new BadRequestAlertException("LockGroupId is required", ENTITY_NAME, "lockgroupidnull");
+        }
+        if (request.getIdemKey() == null || request.getIdemKey().isBlank()) {
+            throw new BadRequestAlertException("Idempotency key is required", ENTITY_NAME, "idemkeynull");
+        }
+
+        SeatHoldResponseDTO result = seatLockService.tryHold(request);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * {@code POST  /seat-locks/attach-booking} : Attach bookingId to a seat hold group.
+     *
+     * @param request the attach booking request containing lockGroupId and bookingId.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the action response.
+     */
+    @PostMapping("/attach-booking")
+    public ResponseEntity<SeatLockActionResponseDTO> attachBooking(@Valid @RequestBody AttachBookingRequestDTO request) {
+        LOG.debug("REST request to attach booking: lockGroupId={}, bookingId={}",
+                request.getLockGroupId(), request.getBookingId());
+
+        if (request.getLockGroupId() == null || request.getLockGroupId().isBlank()) {
+            throw new BadRequestAlertException("LockGroupId is required", ENTITY_NAME, "lockgroupidnull");
+        }
+        if (request.getBookingId() == null) {
+            throw new BadRequestAlertException("BookingId is required", ENTITY_NAME, "bookingidnull");
+        }
+
+        SeatLockActionResponseDTO result = seatLockService.attachBooking(request);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * {@code POST  /seat-locks/cancel-group} : Cancel seat holds by group or booking.
+     *
+     * @param request the cancel group request containing lockGroupId or bookingId.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the action response.
+     */
+    @PostMapping("/cancel-group")
+    public ResponseEntity<SeatLockActionResponseDTO> cancelGroup(@Valid @RequestBody CancelGroupRequestDTO request) {
+        LOG.debug("REST request to cancel group: lockGroupId={}, bookingId={}",
+                request.getLockGroupId(), request.getBookingId());
+
+        if ((request.getLockGroupId() == null || request.getLockGroupId().isBlank()) && 
+            (request.getBookingId() == null)) {
+            throw new BadRequestAlertException("Either lockGroupId or bookingId must be provided", ENTITY_NAME, "nocriteria");
+        }
+
+        SeatLockActionResponseDTO result = seatLockService.cancelGroup(request);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * {@code POST  /seat-locks/confirm-group} : Confirm seat holds by booking (preferred) or group.
+     *
+     * @param request the confirm group request containing bookingId (preferred) or lockGroupId.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the action response.
+     */
+    @PostMapping("/confirm-group")
+    public ResponseEntity<SeatLockActionResponseDTO> confirmGroup(@Valid @RequestBody ConfirmGroupRequestDTO request) {
+        LOG.debug("REST request to confirm group: lockGroupId={}, bookingId={}",
+                request.getLockGroupId(), request.getBookingId());
+
+        if ((request.getLockGroupId() == null || request.getLockGroupId().isBlank()) && 
+            (request.getBookingId() == null)) {
+            throw new BadRequestAlertException("Either lockGroupId or bookingId must be provided", ENTITY_NAME, "nocriteria");
+        }
+
+        SeatLockActionResponseDTO result = seatLockService.confirmGroup(request);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * {@code GET  /seat-locks/active} : Get active seat locks by trip, booking, or lock group.
+     *
+     * @param tripId the trip ID to filter by (optional).
+     * @param bookingId the booking ID to filter by (optional).
+     * @param lockGroupId the lock group ID to filter by (optional).
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the list of active seat locks.
+     */
+    @GetMapping("/active")
+    public ResponseEntity<List<SeatLockDTO>> getActiveSeatLocks(
+            @RequestParam(required = false) Long tripId,
+            @RequestParam(required = false) Long bookingId,
+            @RequestParam(required = false) String lockGroupId) {
+        LOG.debug("REST request to get active seat locks: tripId={}, bookingId={}, lockGroupId={}",
+                tripId, bookingId, lockGroupId);
+
+        List<SeatLockDTO> result = seatLockService.findActive(tripId, bookingId, lockGroupId);
         return ResponseEntity.ok(result);
     }
 }

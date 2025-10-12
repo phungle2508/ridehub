@@ -19,6 +19,8 @@ import com.ridehub.msroute.client.api.SeatLockResourceMsrouteApi;
 import com.ridehub.msroute.client.model.SeatLockActionRequestDTO;
 import com.ridehub.msroute.client.model.SeatLockRequestDTO;
 import com.ridehub.msroute.client.model.SeatLockResponseDTO;
+import com.ridehub.msroute.client.model.SeatValidateLockRequestDTO;
+import com.ridehub.msroute.client.model.SeatValidateLockResponseDTO;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -110,12 +112,24 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public BookingDraftResultVM createSimpleDraft(CreateBookingDraftRequestVM req) {
-        LOG.debug("Creating simple draft for price check - tripId: {}, seats: {}, promoCode: {}", 
-                 req.getTripId(), req.getSeats(), req.getPromoCode());
+        LOG.debug("Creating simple draft for price check - tripId: {}, seats: {}, promoCode: {}",
+                req.getTripId(), req.getSeats(), req.getPromoCode());
+        // === 1️⃣ Validate seat availability before pricing ===
+        SeatValidateLockRequestDTO validateRequest = new SeatValidateLockRequestDTO();
+        validateRequest.setTripId(req.getTripId());
+        validateRequest.setSeatNumbers(req.getSeats());
+        validateRequest.setIdemKey(req.getIdemKey());
         
-        // Only calculate price and validate promotion - no persistence
+        SeatValidateLockResponseDTO validationResult = seatLockResourceMsrouteApi.validateSeatsOnly(validateRequest);
+        
+        // Check validation result - seats must be VALIDATED before proceeding
+        if (!isValidated(validationResult)) {
+            throw new SeatNotAvailableException("Seat validation failed: " + validationResult.getMessage());
+        }
+        
+        // === 2️⃣ Calculate price and validate promotion - no persistence
         var pricing = pricingService.computePrice(req.getTripId(), req.getSeats(), req.getPromoCode());
-        
+
         // Build result without database operations
         BookingDraftResultVM vm = new BookingDraftResultVM();
         vm.setBookingId(null); // No booking created yet
@@ -129,7 +143,7 @@ public class BookingServiceImpl implements BookingService {
         vm.setPricingSnapshot(pricing.getPricingSnapshot());
         vm.setAppliedPromotion(pricing.getAppliedPromotion());
         vm.setPromoApplied(pricing.isPromoApplied());
-        
+
         return vm;
     }
 
@@ -146,10 +160,24 @@ public class BookingServiceImpl implements BookingService {
         }
 
         try {
-            // === 2️⃣ Compute pricing (includes promo caching in PricingService) ===
+            // === 2️⃣ Validate seat availability before pricing ===
+            SeatValidateLockRequestDTO validateRequest = new SeatValidateLockRequestDTO();
+            validateRequest.setTripId(req.getTripId());
+            validateRequest.setSeatNumbers(req.getSeats());
+            validateRequest.setIdemKey(req.getIdemKey());
+            
+            SeatValidateLockResponseDTO validationResult = seatLockResourceMsrouteApi.validateSeatsOnly(validateRequest);
+            
+            // Check validation result - seats must be VALIDATED before proceeding
+            if (!isValidated(validationResult)) {
+                throw new SeatNotAvailableException("Seat validation failed: " + validationResult.getMessage());
+            }
+
+            // === 3️⃣ Compute pricing (includes promo caching in PricingService) ===
             var pricing = pricingService.computePrice(req.getTripId(), req.getSeats(), req.getPromoCode());
 
-            // === 3️⃣ Try to lock seats with ms-route FIRST (before any database operations) ===
+            // === 4️⃣ Try to lock seats with ms-route FIRST (before any database
+            // operations) ===
             SeatLockRequestDTO lockRequest = new SeatLockRequestDTO();
             lockRequest.setBookingId(null); // Will be set after booking creation
             lockRequest.setTripId(req.getTripId());
@@ -162,7 +190,7 @@ public class BookingServiceImpl implements BookingService {
                 throw new SeatNotAvailableException("Seat not available: " + lockResult.getMessage());
             }
 
-            // === 4️⃣ Persist DRAFT booking (only after successful seat lock) ===
+            // === 5️⃣ Persist DRAFT booking (only after successful seat lock) ===
             Booking b = new Booking();
             b.setBookingCode(generateBookingCode());
             b.setStatus(BookingStatus.DRAFT);
@@ -174,28 +202,30 @@ public class BookingServiceImpl implements BookingService {
             b.setUpdatedAt(Instant.now());
             b.setTripId(req.getTripId());
             b.setExpiresAt(Instant.now());
-            
-            // IMPORTANT: Set lockGroupId using idempotency key for proper seat lock management
+
+            // IMPORTANT: Set lockGroupId using idempotency key for proper seat lock
+            // management
             // The idempotency key is used to group related seat locks together
             String lockGroupId = req.getIdemKey();
             if (lockGroupId != null && !lockGroupId.trim().isEmpty()) {
                 b.setLockGroupId(lockGroupId);
                 LOG.debug("Set lockGroupId {} for booking {} using idempotency key", lockGroupId, b.getBookingCode());
             } else {
-                LOG.warn("No idempotency key available for booking {}, seat lock management may be impaired", b.getBookingCode());
+                LOG.warn("No idempotency key available for booking {}, seat lock management may be impaired",
+                        b.getBookingCode());
             }
-            
+
             b = bookingRepository.save(b);
 
-            // === 5️⃣ Store booking session state in Redis ===
+            // === 6️⃣ Store booking session state in Redis ===
             sessKey = "booking:sess:" + b.getId();
             redis.opsForValue().set(sessKey, "AWAITING_LOCK", Duration.ofMinutes(20));
-            
-            // === 5️⃣b Store seat list in Redis for payment processing ===
+
+            // === 6️⃣b Store seat list in Redis for payment processing ===
             String seatsKey = "booking:seats:" + b.getId();
             redis.opsForValue().set(seatsKey, String.join(",", req.getSeats()), Duration.ofMinutes(20));
 
-            // === 6️⃣ Save pricing snapshot ===
+            // === 7️⃣ Save pricing snapshot ===
             PricingSnapshotDTO ps = pricing.getPricingSnapshot();
             PricingSnapshot snap = new PricingSnapshot();
             snap.setBaseFare(ps.getBaseFare());
@@ -207,7 +237,7 @@ public class BookingServiceImpl implements BookingService {
             snap.setBooking(b);
             pricingSnapRepo.save(snap);
 
-            // === 7️⃣ Save applied promotion (if any) ===
+            // === 8️⃣ Save applied promotion (if any) ===
             if (pricing.isPromoApplied() && pricing.getAppliedPromotion() != null) {
                 AppliedPromotionDTO ap = pricing.getAppliedPromotion();
                 AppliedPromotion apEntity = new AppliedPromotion();
@@ -223,16 +253,17 @@ public class BookingServiceImpl implements BookingService {
                 appliedPromoRepo.save(apEntity);
             }
 
-            // === 8️⃣ Update seat lock with actual booking ID ===
+            // === 9️⃣ Update seat lock with actual booking ID ===
             SeatLockActionRequestDTO updateLockRequest = new SeatLockActionRequestDTO();
             updateLockRequest.setBookingId(b.getId());
             updateLockRequest.setTripId(req.getTripId());
             updateLockRequest.setSeatNumbers(req.getSeats());
-            
-            // Note: This assumes ms-route has an endpoint to update lock with booking ID
-            // If not available, we might need to include booking ID in the initial lock request
 
-            // === 9️⃣ Update booking status to AWAITING_PAYMENT ===
+            // Note: This assumes ms-route has an endpoint to update lock with booking ID
+            // If not available, we might need to include booking ID in the initial lock
+            // request
+
+            // === 🔟 Update booking status to AWAITING_PAYMENT ===
             b.setStatus(BookingStatus.AWAITING_PAYMENT);
             b.setUpdatedAt(Instant.now());
             b = bookingRepository.save(b);
@@ -259,16 +290,16 @@ public class BookingServiceImpl implements BookingService {
             throw ex;
         } catch (Exception ex) {
             LOG.error("Real booking creation failed: {}", ex.getMessage(), ex);
-            
+
             // Cleanup Redis session if it was created
             if (sessKey != null) {
                 redis.delete(sessKey);
                 redis.delete("booking:seats:" + sessKey.substring("booking:sess:".length()));
             }
-            
+
             // Note: We should also cancel the seat lock if it was created
             // This would require additional error handling logic
-            
+
             throw ex;
         }
     }
@@ -284,6 +315,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private static boolean isRejected(SeatLockResponseDTO r) {
+        return r != null && "REJECTED".equalsIgnoreCase(r.getStatus());
+    }
+
+    private static boolean isValidated(SeatValidateLockResponseDTO r) {
+        return r != null && "VALIDATED".equalsIgnoreCase(r.getStatus());
+    }
+
+    private static boolean isValidationRejected(SeatValidateLockResponseDTO r) {
         return r != null && "REJECTED".equalsIgnoreCase(r.getStatus());
     }
 }

@@ -301,6 +301,10 @@ package "ms-booking\n(Bookings, Tickets, Payments, Invoices)" as MS_BOOK {
     +bookedAt: Instant
     +customerId: UUID
     +idempotencyKey: String
+    +tripId: Long
+    +lockGroupId: String
+    +expiresAt: Instant
+    +timeoutMinutes: Integer
   }
 
   class Ticket extends BaseEntity {
@@ -330,6 +334,7 @@ package "ms-booking\n(Bookings, Tickets, Payments, Invoices)" as MS_BOOK {
     +status: PaymentStatus
     +amount: BigDecimal
     +time: Instant
+    +gatewayCreateDate: String
     +gatewayNote: String
   }
 

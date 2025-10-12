@@ -9,3 +9,6 @@ microservices/kafka/ssl/*
 
 # SPI directory is part of main repo - ensure it's tracked
 # spi/ should be included in version control
+.serena/*
+./*/serena/*
+backend/*/.serena/*

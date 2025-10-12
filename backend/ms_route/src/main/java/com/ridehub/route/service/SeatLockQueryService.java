@@ -174,4 +174,5 @@ public class SeatLockQueryService extends QueryService<SeatLock> {
 
         return seatLockRepository.findAll(specification);
     }
+    
 }
