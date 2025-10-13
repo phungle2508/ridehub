@@ -66,18 +66,6 @@ public class PricingService {
         Long routeId = tripVM.getTripDTO().getRoute().getId();
         LocalDate travelDate = toLocalDate(tripVM.getTripDTO().getDepartureTime());
 
-        // === 2️⃣ Validate seat availability ===
-        if (tripVM.getSeatLockDTOs() != null && !tripVM.getSeatLockDTOs().isEmpty()) {
-            Set<String> taken = tripVM.getSeatLockDTOs().stream()
-                    .filter(l -> eqAnyIgnoreCase(l.getStatus(), "HELD", "COMMITTED"))
-                    .map(SeatLockDTO::getSeatNo)
-                    .collect(Collectors.toSet());
-            for (String s : seatNos) {
-                if (taken.contains(s))
-                    throw new IllegalStateException("Seat " + s + " is not available");
-            }
-        }
-
         // === 3️⃣ Compute total base price ===
         List<BigDecimal> perSeatPrices = computeSeatPrices(tripVM, seatNos, baseFare, vehicleFactor);
         BigDecimal total = perSeatPrices.stream().reduce(BigDecimal.ZERO, BigDecimal::add);

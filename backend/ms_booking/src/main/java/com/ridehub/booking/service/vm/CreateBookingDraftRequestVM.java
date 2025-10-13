@@ -3,7 +3,6 @@ package com.ridehub.booking.service.vm;
 
 import jakarta.validation.constraints.*;
 import java.util.List;
-import java.util.UUID;
 
 public class CreateBookingDraftRequestVM {
     @NotNull
@@ -12,20 +11,13 @@ public class CreateBookingDraftRequestVM {
     private List<@NotBlank String> seats; // not persisted yet, used only for pricing
     private String promoCode; // optional
     @NotNull
-    private UUID customerId; // UUID string (matches JDL)
-    @NotBlank
+    private Long customerId; // UUID string (matches JDL)
+    @NotNull
     private String idemKey; // prevent duplicate POSTs
+    @NotNull
+    private Integer holdTtlSec;
 
     public CreateBookingDraftRequestVM() {
-    }
-
-    public CreateBookingDraftRequestVM(@NotNull Long tripId, @NotEmpty List<@NotBlank String> seats, String promoCode,
-            @NotNull UUID customerId, @NotBlank String idemKey) {
-        this.tripId = tripId;
-        this.seats = seats;
-        this.promoCode = promoCode;
-        this.customerId = customerId;
-        this.idemKey = idemKey;
     }
 
     public Long getTripId() {
@@ -52,20 +44,28 @@ public class CreateBookingDraftRequestVM {
         this.promoCode = promoCode;
     }
 
-    public UUID getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(UUID customerId) {
-        this.customerId = customerId;
-    }
-
     public String getIdemKey() {
         return idemKey;
     }
 
     public void setIdemKey(String idemKey) {
         this.idemKey = idemKey;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public Integer getHoldTtlSec() {
+        return holdTtlSec;
+    }
+
+    public void setHoldTtlSec(Integer holdTtlSec) {
+        this.holdTtlSec = holdTtlSec;
     }
 
 }

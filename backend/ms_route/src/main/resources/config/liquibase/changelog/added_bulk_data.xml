@@ -118,32 +118,38 @@
   <changeSet id="msroute-00004-address" author="jhipster">
     <comment>Load address</comment>
     <sql>
-      LOAD DATA LOCAL INFILE '${csv_path}/msroute/address.csv'
-      INTO TABLE address
-      FIELDS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\'
-      LINES TERMINATED BY '\n'
-      IGNORE 1 LINES
-      (
-        @id,
-        street_address,
-        @latitude,
-        @longitude,
-        created_at,
-        @updated_at,
-        @is_deleted,
-        @deleted_at,
-        @deleted_by,
-        ward_id
-      )
-      SET latitude   = NULLIF(@latitude,''),
-          longitude  = NULLIF(@longitude,''),
-          updated_at = NULLIF(@updated_at,''),
-          is_deleted = CASE WHEN LOWER(@is_deleted) IN ('1','true','t','yes','y') THEN 1
-                            WHEN LOWER(@is_deleted) IN ('0','false','f','no','n','') THEN 0
-                            ELSE NULL END,
-          deleted_at = NULLIF(@deleted_at,''),
-          deleted_by = CASE WHEN @deleted_by IN ('','\\N') THEN NULL ELSE @deleted_by END;
-    </sql>
+    LOAD DATA LOCAL INFILE '${csv_path}/msroute/address.csv'
+    IGNORE                 -- skip rows that would violate PK/unique instead of failing the batch
+    INTO TABLE address
+    FIELDS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\'
+    LINES TERMINATED BY '\n'
+    IGNORE 1 LINES
+    (
+      @id,
+      street_address,
+      @latitude,
+      @longitude,
+      created_at,
+      @updated_at,
+      @is_deleted,
+      @deleted_at,
+      @deleted_by,
+      ward_id
+    )
+    SET
+      id         = NULLIF(@id,''),                                          -- persist CSV id
+      latitude   = NULLIF(NULLIF(@latitude,''),'\\N'),                      -- '' or \N -> NULL
+      longitude  = NULLIF(NULLIF(@longitude,''),'\\N'),
+      updated_at = NULLIF(NULLIF(@updated_at,''),'\\N'),
+      is_deleted = CASE
+                     WHEN LOWER(@is_deleted) IN ('1','true','t','yes','y') THEN 1
+                     WHEN LOWER(@is_deleted) IN ('0','false','f','no','n','') THEN 0
+                     WHEN @is_deleted = '\\N' THEN NULL
+                     ELSE NULL
+                   END,
+      deleted_at = NULLIF(NULLIF(@deleted_at,''),'\\N'),
+      deleted_by = NULLIF(NULLIF(@deleted_by,''),'\\N');
+  </sql>
   </changeSet>
   <!-- 5) station -->
   <changeSet id="msroute-00005-station" author="jhipster">
