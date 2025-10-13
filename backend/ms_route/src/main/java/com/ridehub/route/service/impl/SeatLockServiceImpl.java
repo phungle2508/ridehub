@@ -332,8 +332,8 @@ public class SeatLockServiceImpl implements SeatLockService {
         holdRequest.setSeatNumbers(request.getSeatNumbers());
         holdRequest.setLockGroupId(request.getIdemKey()); // Use idemKey as lockGroupId
         holdRequest.setIdemKey(request.getIdemKey());
-        holdRequest.setUserId(null); // Not available in legacy request
-        holdRequest.setHoldTtlSec(null); // Use default
+        holdRequest.setUserId(request.getUserId()); // Not available in legacy request
+        holdRequest.setHoldTtlSec(request.getHoldTtlSec()); // Use default
 
         SeatHoldResponseDTO holdResponse = tryHold(holdRequest);
         

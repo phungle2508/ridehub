@@ -23,6 +23,10 @@ public class SeatLockRequestDTO implements Serializable {
     @NotBlank
     private String idemKey;
 
+    private Integer holdTtlSec; // default 180..300
+
+    private Long userId;
+
     public Long getBookingId() {
         return bookingId;
     }
@@ -55,13 +59,26 @@ public class SeatLockRequestDTO implements Serializable {
         this.idemKey = idemKey;
     }
 
+    public Integer getHoldTtlSec() {
+        return holdTtlSec;
+    }
+
+    public void setHoldTtlSec(Integer holdTtlSec) {
+        this.holdTtlSec = holdTtlSec;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
-        return "SeatLockRequest{" +
-            "bookingId=" + bookingId +
-            ", tripId=" + tripId +
-            ", seatNumbers=" + seatNumbers +
-            ", idemKey='" + idemKey + '\'' +
-            '}';
+        return "SeatLockRequestDTO [bookingId=" + bookingId + ", tripId=" + tripId + ", seatNumbers=" + seatNumbers
+                + ", idemKey=" + idemKey + ", holdTtlSec=" + holdTtlSec + ", userId=" + userId + "]";
     }
+
 }
