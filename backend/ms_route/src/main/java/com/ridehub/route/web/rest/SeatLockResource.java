@@ -409,4 +409,22 @@ public class SeatLockResource {
         List<SeatLockDTO> result = seatLockService.findActive(tripId, bookingId, lockGroupId);
         return ResponseEntity.ok(result);
     }
+
+    /**
+     * {@code POST  /seat-locks/reclaim-expired} : Reclaim expired seats for a booking.
+     *
+     * @param request the reclaim request containing bookingId.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the action response.
+     */
+    @PostMapping("/reclaim-expired")
+    public ResponseEntity<SeatLockActionResponseDTO> reclaimExpiredSeats(@Valid @RequestBody ConfirmGroupRequestDTO request) {
+        LOG.debug("REST request to reclaim expired seats for booking: {}", request.getBookingId());
+
+        if (request.getBookingId() == null) {
+            throw new BadRequestAlertException("BookingId is required", ENTITY_NAME, "bookingidnull");
+        }
+
+        SeatLockActionResponseDTO result = seatLockService.reclaimExpiredSeats(request);
+        return ResponseEntity.ok(result);
+    }
 }
