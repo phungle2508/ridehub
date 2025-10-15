@@ -87,8 +87,9 @@ public class BookingScheduler {
 
                 } catch (Exception e) {
                     failedCount++;
-                    log.error("Failed to cancel expired booking: {} - Error: {}", booking.getBookingCode(), e.getMessage(), e);
-                    
+                    log.error("Failed to cancel expired booking: {} - Error: {}", booking.getBookingCode(),
+                            e.getMessage(), e);
+
                     // Mark for manual review if seat lock cancellation failed
                     markForManualReview(booking, "Scheduler cleanup failed: " + e.getMessage());
                 }
@@ -157,6 +158,9 @@ public class BookingScheduler {
         try {
             // Load seat numbers for the booking from Redis
             List<String> seatNos = loadSeatNosForBooking(booking);
+            
+            if (seatNos.isEmpty())
+                return;
 
             SeatLockActionRequestDTO body = new SeatLockActionRequestDTO();
             body.setBookingId(booking.getId());
@@ -208,7 +212,7 @@ public class BookingScheduler {
             String reviewKey = "booking:review:" + booking.getId();
             String reviewData = String.format("{\"bookingCode\":\"%s\",\"reason\":\"%s\",\"timestamp\":\"%s\"}",
                     booking.getBookingCode(), reason.replace("\"", "\\\""), Instant.now().toString());
-            
+
             redisTemplate.opsForValue().set(reviewKey, reviewData, Duration.ofDays(7)); // Keep for 7 days
             log.warn("Marked booking {} for manual review: {}", booking.getBookingCode(), reason);
         } catch (Exception e) {
@@ -216,25 +220,4 @@ public class BookingScheduler {
         }
     }
 
-    /**
-     * Compensation job to reconcile inconsistent booking states.
-     * Runs every 5 minutes to find and fix inconsistent states.
-     */
-    @Scheduled(fixedRate = 300000) // Every 5 minutes
-    public void reconcileInconsistentStates() {
-        log.debug("Starting booking state reconciliation task");
-        
-        try {
-            // Find bookings marked CANCELED but with active seat locks
-            // This would require a custom repository method
-            // For now, we'll log the concept and implement the basic structure
-            
-            // TODO: Implement actual inconsistent state detection
-            // List<Booking> inconsistentBookings = bookingRepository.findCanceledBookingsWithActiveLocks();
-            
-            log.debug("Booking state reconciliation completed");
-        } catch (Exception e) {
-            log.error("Error during booking state reconciliation", e);
-        }
-    }
 }

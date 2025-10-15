@@ -5,6 +5,8 @@ import com.ridehub.booking.domain.enumeration.PaymentMethod;
 import com.ridehub.booking.domain.enumeration.PaymentStatus;
 import com.ridehub.booking.repository.PaymentTransactionRepository;
 import com.ridehub.booking.service.payment.vnpay.VNPayService;
+import com.ridehub.booking.domain.Booking;
+import com.ridehub.booking.domain.enumeration.BookingStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -75,6 +77,18 @@ public class VNPayPollingService {
             
             for (PaymentTransaction transaction : pendingTransactions) {
                 try {
+                    // Check if the associated booking has expired before polling
+                    if (isBookingExpired(transaction)) {
+                        LOG.info("Skipping polling for transaction {} - associated booking has expired", 
+                            transaction.getTransactionId());
+                        
+                        // Mark the transaction as failed since the booking expired
+                        markTransactionAsFailedForExpiredBooking(transaction);
+                        processedCount++;
+                        failedCount++;
+                        continue;
+                    }
+                    
                     if (shouldPollTransaction(transaction)) {
                         boolean updated = pollAndUpdateTransaction(transaction);
                         if (updated) {
@@ -158,17 +172,7 @@ public class VNPayPollingService {
                     LOG.info("Updating transaction {} status from {} to {}", 
                         transactionId, transaction.getStatus(), newStatus);
                     
-                    // Update transaction
-                    transaction.setStatus(newStatus);
-                    transaction.setUpdatedAt(Instant.now());
-                    
-                    // Set gateway information if available
-                    if (queryResult.getAmount() != null) {
-                        transaction.setAmount(queryResult.getAmount());
-                    }
-                    
-                    // Save the updated transaction
-                    paymentTransactionRepository.save(transaction);
+           
                     
                     // Synthesize webhook event for the status change
                     synthesizeWebhookEvent(transaction, queryResult);
@@ -298,6 +302,95 @@ public class VNPayPollingService {
                 }
             })
             .orElse(false);
+    }
+
+    /**
+     * Check if the booking associated with a payment transaction has expired.
+     * A booking is considered expired if:
+     * 1. It has an expiresAt timestamp that is in the past
+     * 2. The booking status is still AWAITING_PAYMENT
+     * 3. The booking is not deleted
+     */
+    private boolean isBookingExpired(PaymentTransaction transaction) {
+        try {
+            Booking booking = transaction.getBooking();
+            if (booking == null) {
+                LOG.debug("No booking associated with transaction {}", transaction.getTransactionId());
+                return false;
+            }
+            
+            // Check if booking is in a state that can expire
+            if (booking.getStatus() != BookingStatus.AWAITING_PAYMENT) {
+                LOG.debug("Booking {} is not in AWAITING_PAYMENT status (current: {})", 
+                    booking.getBookingCode(), booking.getStatus());
+                return false;
+            }
+            
+            // Check if booking is deleted
+            if (Boolean.TRUE.equals(booking.getIsDeleted())) {
+                LOG.debug("Booking {} is deleted", booking.getBookingCode());
+                return false;
+            }
+            
+            // Check if booking has expired
+            Instant expiresAt = booking.getExpiresAt();
+            if (expiresAt == null) {
+                LOG.debug("Booking {} has no expiration time", booking.getBookingCode());
+                return false;
+            }
+            
+            boolean isExpired = expiresAt.isBefore(Instant.now());
+            if (isExpired) {
+                LOG.info("Booking {} has expired (expired at: {}, current time: {})", 
+                    booking.getBookingCode(), expiresAt, Instant.now());
+            }
+            
+            return isExpired;
+            
+        } catch (Exception e) {
+            LOG.error("Error checking booking expiration for transaction {}: {}", 
+                transaction.getTransactionId(), e.getMessage(), e);
+            return false;
+        }
+    }
+    
+    /**
+     * Mark a payment transaction as failed due to booking expiration.
+     * This will update the transaction status and clean up polling tracking.
+     */
+    private void markTransactionAsFailedForExpiredBooking(PaymentTransaction transaction) {
+        try {
+            LOG.info("Marking transaction {} as failed due to booking expiration", 
+                transaction.getTransactionId());
+            
+            // Update transaction status
+            transaction.setStatus(PaymentStatus.FAILED);
+            transaction.setUpdatedAt(Instant.now());
+            
+            // Add a note about the expiration
+            String existingNote = transaction.getGatewayNote();
+            String expirationNote = "Booking expired - payment automatically marked as failed";
+            if (existingNote != null && !existingNote.isEmpty()) {
+                transaction.setGatewayNote(existingNote + "; " + expirationNote);
+            } else {
+                transaction.setGatewayNote(expirationNote);
+            }
+            
+            // Save the updated transaction
+            paymentTransactionRepository.save(transaction);
+            
+            // Clean up polling tracking
+            String transactionId = transaction.getTransactionId();
+            pollingAttempts.remove(transactionId);
+            lastPollTime.remove(transactionId);
+            
+            LOG.info("Successfully marked transaction {} as failed due to booking expiration", 
+                transaction.getTransactionId());
+            
+        } catch (Exception e) {
+            LOG.error("Error marking transaction {} as failed for expired booking: {}", 
+                transaction.getTransactionId(), e.getMessage(), e);
+        }
     }
 
     /**

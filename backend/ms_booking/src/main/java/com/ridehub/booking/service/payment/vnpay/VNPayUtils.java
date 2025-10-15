@@ -7,6 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
@@ -80,9 +83,18 @@ public class VNPayUtils {
      */
     public static String getVNPayExpireDate() {
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, 15);
+        calendar.add(Calendar.MINUTE, 5);
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         return formatter.format(calendar.getTime());
+    }
+    
+    /**
+     * Generate VNPay expire date (yyyyMMddHHmmss) - 5 minutes from the given instant
+     */
+    public static String getVNPayExpireDate(Instant bookingExpiresAt) {
+        ZonedDateTime expireDateTime = bookingExpiresAt.atZone(ZoneId.systemDefault());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        return formatter.format(Date.from(expireDateTime.toInstant()));
     }
     
     /**

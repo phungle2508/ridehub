@@ -205,7 +205,6 @@ public class BookingServiceImpl implements BookingService {
             b.setQuantity(req.getSeats() != null ? req.getSeats().size() : 0);
             b.setTotalAmount(pricing.getFinalPrice());
             b.setBookedAt(Instant.now());
-            // TODO you will need to change customerID in future
             b.setCustomerId(UUID.randomUUID()); 
             b.setCreatedAt(Instant.now());
             b.setUpdatedAt(Instant.now());
@@ -221,9 +220,9 @@ public class BookingServiceImpl implements BookingService {
             // Set expiresAt = min(hold.expiresAt, now + 3–5 min)
             Instant holdExpiresAt = null;
             if (lockResult.getExpiresAt() != null) {
-                holdExpiresAt = Instant.ofEpochMilli(lockResult.getExpiresAt());
+                holdExpiresAt = Instant.ofEpochSecond(lockResult.getExpiresAt());
             }
-            Instant bookingExpiresAt = Instant.now().plus(java.time.Duration.ofMinutes(3)); // 3 minutes default
+            Instant bookingExpiresAt = Instant.now().plus(java.time.Duration.ofMinutes(5)); // 3 minutes default
             if (holdExpiresAt != null && holdExpiresAt.isBefore(bookingExpiresAt)) {
                 bookingExpiresAt = holdExpiresAt;
             }
@@ -234,11 +233,11 @@ public class BookingServiceImpl implements BookingService {
             // === 6️⃣ Store session: booking:sess:{bookingId} = AWAITING_LOCK (TTL ~20m)
             // ===
             sessKey = "booking:sess:" + b.getId();
-            redis.opsForValue().set(sessKey, "AWAITING_LOCK", Duration.ofMinutes(20));
+            redis.opsForValue().set(sessKey, "AWAITING_LOCK", Duration.ofMinutes(5));
 
             // === 6️⃣b Store booking:seats:{bookingId} = join(seats) (TTL ~20m) ===
             String seatsKey = "booking:seats:" + b.getId();
-            redis.opsForValue().set(seatsKey, String.join(",", req.getSeats()), Duration.ofMinutes(20));
+            redis.opsForValue().set(seatsKey, String.join(",", req.getSeats()), Duration.ofMinutes(5));
 
             // === 7️⃣ Attach booking to held seats ===
             AttachBookingRequestDTO attachRequest = new AttachBookingRequestDTO();

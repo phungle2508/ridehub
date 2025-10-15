@@ -142,7 +142,6 @@ public class AdminBookingController {
         }
 
         Booking booking = bookingOpt.get();
-        System.out.println(booking.toString());
         if (booking.getStatus() == BookingStatus.CONFIRMED) {
             throw new BadRequestAlertException("Booking already confirmed", ENTITY_NAME, "alreadyconfirmed");
         }

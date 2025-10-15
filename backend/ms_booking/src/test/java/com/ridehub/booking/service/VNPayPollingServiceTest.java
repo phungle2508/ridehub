@@ -1,8 +1,10 @@
 package com.ridehub.booking.service;
 
 import com.ridehub.booking.domain.PaymentTransaction;
+import com.ridehub.booking.domain.Booking;
 import com.ridehub.booking.domain.enumeration.PaymentMethod;
 import com.ridehub.booking.domain.enumeration.PaymentStatus;
+import com.ridehub.booking.domain.enumeration.BookingStatus;
 import com.ridehub.booking.repository.PaymentTransactionRepository;
 import com.ridehub.booking.service.payment.vnpay.VNPayService;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +40,7 @@ class VNPayPollingServiceTest {
     private VNPayPollingService vnPayPollingService;
 
     private PaymentTransaction testTransaction;
+    private Booking testBooking;
     private VNPayService.VNPayQueryResult successfulQueryResult;
     private VNPayService.VNPayQueryResult failedQueryResult;
 
@@ -53,6 +56,18 @@ class VNPayPollingServiceTest {
         testTransaction.setCreatedAt(Instant.now());
         testTransaction.setUpdatedAt(Instant.now());
 
+        // Create test booking
+        testBooking = new Booking();
+        testBooking.setId(1L);
+        testBooking.setBookingCode("BOOKING_123");
+        testBooking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        testBooking.setExpiresAt(Instant.now().plus(30, java.time.temporal.ChronoUnit.MINUTES));
+        testBooking.setCreatedAt(Instant.now());
+        testBooking.setIsDeleted(false);
+
+        // Link transaction to booking
+        testTransaction.setBooking(testBooking);
+
         successfulQueryResult = new VNPayService.VNPayQueryResult(
             true, "00", "Transaction successful", "00", new BigDecimal("100000")
         );
@@ -67,7 +82,7 @@ class VNPayPollingServiceTest {
         // Given
         when(paymentTransactionRepository.findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull("TEST_TXN_123"))
             .thenReturn(Optional.of(testTransaction));
-        when(vnPayService.queryTransaction(eq("TEST_TXN_123"), eq("127.0.0.1"), isNull(), eq("ORDER_456")))
+        when(vnPayService.queryTransaction(eq(testTransaction), eq("127.0.0.1")))
             .thenReturn(successfulQueryResult);
         when(paymentService.processWebhook(eq("VNPAY"), anyString(), anyString()))
             .thenReturn("SUCCESS");
@@ -93,7 +108,7 @@ class VNPayPollingServiceTest {
 
         // Then
         assertThat(result).isFalse();
-        verify(vnPayService, never()).queryTransaction(anyString(), anyString(), any(), anyString());
+        verify(vnPayService, never()).queryTransaction(any(PaymentTransaction.class), anyString());
     }
 
     @Test
@@ -108,7 +123,7 @@ class VNPayPollingServiceTest {
 
         // Then
         assertThat(result).isFalse();
-        verify(vnPayService, never()).queryTransaction(anyString(), anyString(), any(), anyString());
+        verify(vnPayService, never()).queryTransaction(any(PaymentTransaction.class), anyString());
     }
 
     @Test
@@ -116,7 +131,7 @@ class VNPayPollingServiceTest {
         // Given
         when(paymentTransactionRepository.findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull("TEST_TXN_123"))
             .thenReturn(Optional.of(testTransaction));
-        when(vnPayService.queryTransaction(eq("TEST_TXN_123"), eq("127.0.0.1"), isNull(), eq("ORDER_456")))
+        when(vnPayService.queryTransaction(eq(testTransaction), eq("127.0.0.1")))
             .thenReturn(failedQueryResult);
 
         // When
@@ -177,7 +192,7 @@ class VNPayPollingServiceTest {
             eq(cutoffTime)
         )).thenReturn(pendingTransactions);
         
-        when(vnPayService.queryTransaction(eq("TEST_TXN_123"), eq("127.0.0.1"), isNull(), eq("ORDER_456")))
+        when(vnPayService.queryTransaction(eq(testTransaction), eq("127.0.0.1")))
             .thenReturn(successfulQueryResult);
         when(paymentService.processWebhook(eq("VNPAY"), anyString(), anyString()))
             .thenReturn("SUCCESS");
@@ -187,6 +202,174 @@ class VNPayPollingServiceTest {
 
         // Then
         verify(paymentTransactionRepository).save(testTransaction);
+        verify(paymentService).processWebhook(eq("VNPAY"), anyString(), anyString());
+    }
+
+    @Test
+    void testIsBookingExpired_BookingExpired() {
+        // Given
+        testBooking.setExpiresAt(Instant.now().minus(10, java.time.temporal.ChronoUnit.MINUTES)); // Expired 10 minutes ago
+        testBooking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        testBooking.setIsDeleted(false);
+
+        // When
+        boolean isExpired = callPrivateMethod("isBookingExpired", testTransaction);
+
+        // Then
+        assertThat(isExpired).isTrue();
+    }
+
+    @Test
+    void testIsBookingExpired_BookingNotExpired() {
+        // Given
+        testBooking.setExpiresAt(Instant.now().plus(30, java.time.temporal.ChronoUnit.MINUTES)); // Expires in 30 minutes
+        testBooking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        testBooking.setIsDeleted(false);
+
+        // When
+        boolean isExpired = callPrivateMethod("isBookingExpired", testTransaction);
+
+        // Then
+        assertThat(isExpired).isFalse();
+    }
+
+    @Test
+    void testIsBookingExpired_NoBookingAssociated() {
+        // Given
+        testTransaction.setBooking(null);
+
+        // When
+        boolean isExpired = callPrivateMethod("isBookingExpired", testTransaction);
+
+        // Then
+        assertThat(isExpired).isFalse();
+    }
+
+    @Test
+    void testIsBookingExpired_BookingNotAwaitingPayment() {
+        // Given
+        testBooking.setExpiresAt(Instant.now().minus(10, java.time.temporal.ChronoUnit.MINUTES)); // Expired
+        testBooking.setStatus(BookingStatus.CONFIRMED); // Not awaiting payment
+        testBooking.setIsDeleted(false);
+
+        // When
+        boolean isExpired = callPrivateMethod("isBookingExpired", testTransaction);
+
+        // Then
+        assertThat(isExpired).isFalse();
+    }
+
+    @Test
+    void testIsBookingExpired_BookingDeleted() {
+        // Given
+        testBooking.setExpiresAt(Instant.now().minus(10, java.time.temporal.ChronoUnit.MINUTES)); // Expired
+        testBooking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        testBooking.setIsDeleted(true); // Deleted
+
+        // When
+        boolean isExpired = callPrivateMethod("isBookingExpired", testTransaction);
+
+        // Then
+        assertThat(isExpired).isFalse();
+    }
+
+    @Test
+    void testIsBookingExpired_NoExpirationTime() {
+        // Given
+        testBooking.setExpiresAt(null); // No expiration time
+        testBooking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        testBooking.setIsDeleted(false);
+
+        // When
+        boolean isExpired = callPrivateMethod("isBookingExpired", testTransaction);
+
+        // Then
+        assertThat(isExpired).isFalse();
+    }
+
+    @Test
+    void testMarkTransactionAsFailedForExpiredBooking() {
+        // Given
+        testTransaction.setGatewayNote("Original note");
+
+        // When
+        callPrivateMethod("markTransactionAsFailedForExpiredBooking", testTransaction);
+
+        // Then
+        assertThat(testTransaction.getStatus()).isEqualTo(PaymentStatus.FAILED);
+        assertThat(testTransaction.getGatewayNote()).contains("Booking expired - payment automatically marked as failed");
+        assertThat(testTransaction.getGatewayNote()).contains("Original note");
+        verify(paymentTransactionRepository).save(testTransaction);
+    }
+
+    @Test
+    void testMarkTransactionAsFailedForExpiredBooking_NoExistingNote() {
+        // Given
+        testTransaction.setGatewayNote(null);
+
+        // When
+        callPrivateMethod("markTransactionAsFailedForExpiredBooking", testTransaction);
+
+        // Then
+        assertThat(testTransaction.getStatus()).isEqualTo(PaymentStatus.FAILED);
+        assertThat(testTransaction.getGatewayNote()).isEqualTo("Booking expired - payment automatically marked as failed");
+        verify(paymentTransactionRepository).save(testTransaction);
+    }
+
+    @Test
+    void testPollPendingTransactions_WithExpiredBooking() {
+        // Given
+        testBooking.setExpiresAt(Instant.now().minus(10, java.time.temporal.ChronoUnit.MINUTES)); // Expired
+        testBooking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        testBooking.setIsDeleted(false);
+
+        List<PaymentTransaction> pendingTransactions = Arrays.asList(testTransaction);
+        Instant cutoffTime = Instant.now().minus(24, java.time.temporal.ChronoUnit.HOURS);
+
+        when(paymentTransactionRepository.findByMethodAndStatusInAndCreatedAtAfterAndIsDeletedFalseOrIsDeletedIsNull(
+            eq(PaymentMethod.VNPAY), 
+            eq(Arrays.asList(PaymentStatus.INITIATED, PaymentStatus.PROCESSING)), 
+            eq(cutoffTime)
+        )).thenReturn(pendingTransactions);
+
+        // When
+        vnPayPollingService.pollPendingTransactions();
+
+        // Then
+        verify(paymentTransactionRepository).save(testTransaction);
+        assertThat(testTransaction.getStatus()).isEqualTo(PaymentStatus.FAILED);
+        assertThat(testTransaction.getGatewayNote()).contains("Booking expired");
+        // Verify that VNPay service was NOT called since booking is expired
+        verify(vnPayService, never()).queryTransaction(any(PaymentTransaction.class), anyString());
+    }
+
+    @Test
+    void testPollPendingTransactions_WithNonExpiredBooking() {
+        // Given
+        testBooking.setExpiresAt(Instant.now().plus(30, java.time.temporal.ChronoUnit.MINUTES)); // Not expired
+        testBooking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        testBooking.setIsDeleted(false);
+
+        List<PaymentTransaction> pendingTransactions = Arrays.asList(testTransaction);
+        Instant cutoffTime = Instant.now().minus(24, java.time.temporal.ChronoUnit.HOURS);
+
+        when(paymentTransactionRepository.findByMethodAndStatusInAndCreatedAtAfterAndIsDeletedFalseOrIsDeletedIsNull(
+            eq(PaymentMethod.VNPAY), 
+            eq(Arrays.asList(PaymentStatus.INITIATED, PaymentStatus.PROCESSING)), 
+            eq(cutoffTime)
+        )).thenReturn(pendingTransactions);
+        
+        when(vnPayService.queryTransaction(eq(testTransaction), eq("127.0.0.1")))
+            .thenReturn(successfulQueryResult);
+        when(paymentService.processWebhook(eq("VNPAY"), anyString(), anyString()))
+            .thenReturn("SUCCESS");
+
+        // When
+        vnPayPollingService.pollPendingTransactions();
+
+        // Then
+        verify(paymentTransactionRepository).save(testTransaction);
+        verify(vnPayService).queryTransaction(eq(testTransaction), eq("127.0.0.1"));
         verify(paymentService).processWebhook(eq("VNPAY"), anyString(), anyString());
     }
 

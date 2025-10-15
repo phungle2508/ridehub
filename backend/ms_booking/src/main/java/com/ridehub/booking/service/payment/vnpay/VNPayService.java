@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -30,9 +31,10 @@ public class VNPayService {
 
     /**
      * Create VNPay payment URL
+     * @param bookingExpiresAt 
      */
     public String createPaymentUrl(InitiatePaymentRequestVM request, String transactionId,
-            String orderRef, BigDecimal amount, String returnUrl, String ipAddress) {
+            String orderRef, BigDecimal amount, String returnUrl, String ipAddress, Instant bookingExpiresAt) {
         LOG.debug("Creating VNPay payment URL for transaction: {}", transactionId);
 
         Map<String, String> vnpParams = new HashMap<>();
@@ -48,7 +50,7 @@ public class VNPayService {
         vnpParams.put("vnp_ReturnUrl", returnUrl);
         vnpParams.put("vnp_IpAddr", ipAddress);
         vnpParams.put("vnp_CreateDate", VNPayUtils.getVNPayDate());
-        vnpParams.put("vnp_ExpireDate", VNPayUtils.getVNPayExpireDate());
+        vnpParams.put("vnp_ExpireDate", VNPayUtils.getVNPayExpireDate(bookingExpiresAt));
 
         // Build query string
         String query = VNPayUtils.buildQuery(vnpParams);

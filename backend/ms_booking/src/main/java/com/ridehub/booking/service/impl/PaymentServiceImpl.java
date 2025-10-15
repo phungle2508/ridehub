@@ -111,7 +111,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 3) Generate payment URL based on method
         String paymentUrl = generatePaymentUrl(request, transactionId, orderRef, booking.getTotalAmount(), returnUrl,
-                ipAddress);
+                ipAddress, booking.getExpiresAt());
 
         // NOTE: keep booking in AWAITING_PAYMENT; do not flip to PAID here
         booking.setPaymentTransaction(transaction);
@@ -137,65 +137,81 @@ public class PaymentServiceImpl implements PaymentService {
             // 2) Payload hash for idempotency
             String payloadHash = generateHash(payload);
 
-            // 3) IMPROVED: Use database-level lock for idempotency
-            // Create log entry immediately with PROCESSING status to prevent race conditions
+            // 3) Check for duplicate processing first
+            Optional<PaymentWebhookLog> existingLog = paymentWebhookLogRepository.findByPayloadHash(payloadHash);
+            if (existingLog.isPresent()) {
+                LOG.debug("Webhook already processed: {} with status: {}", payloadHash,
+                        existingLog.get().getProcessingStatus());
+                return existingLog.get().getProcessingStatus();
+            }
+
+            // 4) Parse gateway payload first to get transaction ID
+            WebhookData webhookData = parseWebhookPayload(payload, provider);
+
+            // 5) Find payment transaction BEFORE creating webhook log
+            Optional<PaymentTransaction> transactionOpt = paymentTransactionRepository
+                    .findByTransactionId(webhookData.getTransactionId());
+
+            if (transactionOpt.isEmpty()) {
+                LOG.warn("Payment transaction not found: {}", webhookData.getTransactionId());
+                
+                // Create webhook log with error status but without transaction reference
+                // since the transaction doesn't exist
+                PaymentWebhookLog errorLog = new PaymentWebhookLog();
+                errorLog.setProvider(provider);
+                errorLog.setPayloadHash(payloadHash);
+                errorLog.setReceivedAt(Instant.now());
+                errorLog.setProcessingStatus("TRANSACTION_NOT_FOUND");
+                errorLog.setCreatedAt(Instant.now());
+                paymentWebhookLogRepository.save(errorLog);
+                
+                return "TRANSACTION_NOT_FOUND";
+            }
+
+            PaymentTransaction transaction = transactionOpt.get();
+
+            // Check if transaction is already in final state
+            if (transaction.getStatus() == PaymentStatus.SUCCESS ||
+                    transaction.getStatus() == PaymentStatus.FAILED ||
+                    transaction.getStatus() == PaymentStatus.REFUNDED) {
+                LOG.info("Transaction {} already in final state: {}", webhookData.getTransactionId(),
+                        transaction.getStatus());
+                
+                // Create webhook log for already final transaction
+                PaymentWebhookLog finalLog = new PaymentWebhookLog();
+                finalLog.setProvider(provider);
+                finalLog.setPayloadHash(payloadHash);
+                finalLog.setReceivedAt(Instant.now());
+                finalLog.setProcessingStatus("ALREADY_FINAL");
+                finalLog.setCreatedAt(Instant.now());
+                finalLog.setPaymentTransaction(transaction); // Set transaction reference
+                paymentWebhookLogRepository.save(finalLog);
+                
+                return "ALREADY_FINAL";
+            }
+
+            // 6) Create webhook log with ALL required fields set
             PaymentWebhookLog webhookLog;
             try {
-                webhookLog = paymentWebhookLogRepository.findByPayloadHash(payloadHash).orElse(null);
-                if (webhookLog != null) {
-                    LOG.debug("Webhook already processed: {} with status: {}", payloadHash, webhookLog.getProcessingStatus());
-                    return webhookLog.getProcessingStatus();
-                }
-                
-                // Create new log entry immediately to lock this payload hash
                 webhookLog = new PaymentWebhookLog();
                 webhookLog.setProvider(provider);
                 webhookLog.setPayloadHash(payloadHash);
                 webhookLog.setReceivedAt(Instant.now());
                 webhookLog.setProcessingStatus("PROCESSING");
                 webhookLog.setCreatedAt(Instant.now());
-                webhookLog = paymentWebhookLogRepository.save(webhookLog);
+                webhookLog.setPaymentTransaction(transaction); // CRITICAL: Set transaction before save
                 
+                webhookLog = paymentWebhookLogRepository.save(webhookLog);
+
             } catch (Exception e) {
                 // If we can't create the log entry, another thread might be processing this
                 LOG.warn("Could not create webhook log entry, possible duplicate processing: {}", e.getMessage());
                 return "DUPLICATE_PROCESSING";
             }
 
-            // 4) Parse gateway payload (mock)
-            WebhookData webhookData = parseWebhookPayload(payload, provider);
-
-            // 5) Find payment transaction
-            Optional<PaymentTransaction> transactionOpt = paymentTransactionRepository
-                    .findByTransactionId(webhookData.getTransactionId());
-
-            if (transactionOpt.isEmpty()) {
-                LOG.warn("Payment transaction not found: {}", webhookData.getTransactionId());
-                webhookLog.setProcessingStatus("TRANSACTION_NOT_FOUND");
-                paymentWebhookLogRepository.save(webhookLog);
-                return "TRANSACTION_NOT_FOUND";
-            }
-
-            PaymentTransaction transaction = transactionOpt.get();
-            
-            // Check if transaction is already in final state
-            if (transaction.getStatus() == PaymentStatus.SUCCESS || 
-                transaction.getStatus() == PaymentStatus.FAILED || 
-                transaction.getStatus() == PaymentStatus.REFUNDED) {
-                LOG.info("Transaction {} already in final state: {}", webhookData.getTransactionId(), transaction.getStatus());
-                webhookLog.setProcessingStatus("ALREADY_FINAL");
-                paymentWebhookLogRepository.save(webhookLog);
-                return "ALREADY_FINAL";
-            }
-
-            Booking booking = transaction.getBooking();
-            
-            // Set the payment transaction reference
-            webhookLog.setPaymentTransaction(transaction);
-            paymentWebhookLogRepository.save(webhookLog);
-
-            // 6) Process by mapped status
+            // 7) Process by mapped status
             PaymentStatus gatewayStatus = mapGatewayStatus(webhookData.getStatus());
+            Booking booking = transaction.getBooking();
 
             String result;
             if (gatewayStatus == PaymentStatus.SUCCESS) {
@@ -222,21 +238,21 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             // IMPROVED: Load seat numbers first (local operation)
             List<String> seatNos = loadSeatNosForBooking(booking);
-            
+
             // 1. Update local data first (fast, no external dependencies)
             transaction.setStatus(PaymentStatus.SUCCESS);
             transaction.setUpdatedAt(Instant.now());
-            
+
             booking.setStatus(BookingStatus.CONFIRMED);
             booking.setUpdatedAt(Instant.now());
-            
+
             // 2. Create tickets (local operation)
             createTicketsForBooking(booking, seatNos);
-            
+
             // 3. Save all local changes first
             paymentTransactionRepository.save(transaction);
             bookingRepository.save(booking);
-            
+
             // 4. Confirm seats in ms-route (external API - last step)
             try {
                 confirmSeatLocks(booking, seatNos);
@@ -244,52 +260,52 @@ public class PaymentServiceImpl implements PaymentService {
             } catch (Exception e) {
                 // CRITICAL: If seat confirmation fails, we need to rollback
                 LOG.error("Seat confirmation failed after payment success, attempting rollback: {}", e.getMessage(), e);
-                
+
                 // Rollback local changes
                 transaction.setStatus(PaymentStatus.PROCESSING);
                 booking.setStatus(BookingStatus.AWAITING_PAYMENT);
-                
+
                 paymentTransactionRepository.save(transaction);
                 bookingRepository.save(booking);
-                
+
                 // Mark for manual review
                 markForManualReview(booking, "Seat confirmation failed after payment: " + e.getMessage());
-                
+
                 webhookLog.setProcessingStatus("SEAT_CONFIRM_FAILED");
                 paymentWebhookLogRepository.save(webhookLog);
-                
+
                 return "SEAT_CONFIRM_FAILED";
             }
-            
+
             // 5. Update cache (only after all operations succeed)
             String cacheKey = "booking:" + booking.getBookingCode();
             redis.opsForValue().set(cacheKey, "CONFIRMED", Duration.ofDays(1));
-            
+
             // 6. Finalize webhook log status
             webhookLog.setProcessingStatus("SUCCESS");
             webhookLog.setUpdatedAt(Instant.now());
             paymentWebhookLogRepository.save(webhookLog);
-            
+
             LOG.info("Payment confirmed for booking {}", booking.getBookingCode());
             return "SUCCESS";
-            
+
         } catch (Exception e) {
             LOG.error("Payment processing failed, rolling back: {}", e.getMessage(), e);
-            
+
             // Rollback local changes if any step fails
             try {
                 transaction.setStatus(PaymentStatus.PROCESSING);
                 booking.setStatus(BookingStatus.AWAITING_PAYMENT);
-                
+
                 paymentTransactionRepository.save(transaction);
                 bookingRepository.save(booking);
-                
+
                 webhookLog.setProcessingStatus("FAILED");
                 paymentWebhookLogRepository.save(webhookLog);
             } catch (Exception rollbackEx) {
                 LOG.error("Failed to rollback payment processing: {}", rollbackEx.getMessage(), rollbackEx);
             }
-            
+
             return "FAILED";
         }
     }
@@ -409,7 +425,7 @@ public class PaymentServiceImpl implements PaymentService {
         body.setSeatNumbers(seatNos);
 
         SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.confirmSeatLocks(body);
-        if (res == null || res.getStatus() == null || !"OK".equalsIgnoreCase(res.getStatus())) {
+        if (res == null || res.getStatus() == null || !"CONFIRMED".equalsIgnoreCase(res.getStatus())) {
             throw new IllegalStateException(
                     "Seat confirm failed: " + (res != null ? res.getMessage() : "null response"));
         }
@@ -433,7 +449,8 @@ public class PaymentServiceImpl implements PaymentService {
      * creation).
      */
     private List<String> loadSeatNosForBooking(Booking booking) {
-        // Try Redis first: e.g., "booking:seats:{bookingId}" holding comma-separated string
+        // Try Redis first: e.g., "booking:seats:{bookingId}" holding comma-separated
+        // string
         String key = "booking:seats:" + booking.getId();
         String seatsStr = redis.opsForValue().get(key);
         if (seatsStr != null && !seatsStr.trim().isEmpty()) {
@@ -469,13 +486,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private String generatePaymentUrl(InitiatePaymentRequestVM request, String transactionId, String orderRef,
-            BigDecimal amount, String returnUrl, String ipAddress) {
+            BigDecimal amount, String returnUrl, String ipAddress, Instant bookingExpiresAt) {
         // Check payment method and delegate to appropriate service
         if (request.getMethod() != null) {
             switch (request.getMethod().name()) {
                 case "VNPAY":
                     return vnPayService.createPaymentUrl(request, transactionId, orderRef, amount, returnUrl,
-                            ipAddress);
+                            ipAddress, bookingExpiresAt);
             }
         }
 
@@ -540,34 +557,11 @@ public class PaymentServiceImpl implements PaymentService {
             String reviewKey = "payment:review:" + booking.getId();
             String reviewData = String.format("{\"bookingCode\":\"%s\",\"reason\":\"%s\",\"timestamp\":\"%s\"}",
                     booking.getBookingCode(), reason.replace("\"", "\\\""), Instant.now().toString());
-            
+
             redis.opsForValue().set(reviewKey, reviewData, Duration.ofDays(7)); // Keep for 7 days
             LOG.warn("Marked booking {} for payment review: {}", booking.getBookingCode(), reason);
         } catch (Exception e) {
             LOG.error("Failed to mark booking {} for payment review: {}", booking.getBookingCode(), e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Compensation job to reconcile failed payments.
-     * Runs every 10 minutes to find and fix inconsistent payment states.
-     */
-    @Scheduled(fixedRate = 600000) // Every 10 minutes
-    public void reconcileFailedPayments() {
-        LOG.debug("Starting payment reconciliation task");
-        
-        try {
-            // Find payments marked SUCCESS but with no tickets
-            // This would require a custom repository method
-            // For now, we'll log the concept and implement the basic structure
-            
-            // TODO: Implement actual inconsistent payment detection
-            // List<PaymentTransaction> inconsistentPayments = paymentTransactionRepository
-            //     .findSuccessfulPaymentsWithoutTickets();
-            
-            LOG.debug("Payment reconciliation completed");
-        } catch (Exception e) {
-            LOG.error("Error during payment reconciliation", e);
         }
     }
 
