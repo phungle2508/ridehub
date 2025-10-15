@@ -1,13 +1,18 @@
 package com.ridehub.booking.web.rest.admin;
 
 import com.ridehub.booking.domain.Booking;
+import com.ridehub.booking.domain.PaymentTransaction;
 import com.ridehub.booking.domain.Ticket;
 import com.ridehub.booking.domain.enumeration.BookingStatus;
+import com.ridehub.booking.domain.enumeration.PaymentStatus;
 import com.ridehub.booking.repository.BookingRepository;
+import com.ridehub.booking.repository.PaymentTransactionRepository;
 import com.ridehub.booking.repository.TicketRepository;
 import com.ridehub.booking.web.rest.errors.BadRequestAlertException;
 import com.ridehub.msroute.client.api.SeatLockResourceMsrouteApi;
 import com.ridehub.msroute.client.api.TripResourceMsrouteApi;
+import com.ridehub.msroute.client.model.CancelGroupRequestDTO;
+import com.ridehub.msroute.client.model.ConfirmGroupRequestDTO;
 import com.ridehub.msroute.client.model.SeatDTO;
 import com.ridehub.msroute.client.model.SeatLockActionRequestDTO;
 import com.ridehub.msroute.client.model.SeatLockActionResponseDTO;
@@ -29,6 +34,7 @@ import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -48,6 +54,7 @@ public class AdminBookingController {
 
     private final BookingRepository bookingRepository;
     private final TicketRepository ticketRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
     private final SeatLockResourceMsrouteApi seatLockResourceMsrouteApi;
     private final TripResourceMsrouteApi tripResourceMsrouteApi;
     private final StringRedisTemplate redisTemplate;
@@ -55,11 +62,13 @@ public class AdminBookingController {
     public AdminBookingController(
             BookingRepository bookingRepository,
             TicketRepository ticketRepository,
+            PaymentTransactionRepository paymentTransactionRepository,
             SeatLockResourceMsrouteApi seatLockResourceMsrouteApi,
             TripResourceMsrouteApi tripResourceMsrouteApi,
             StringRedisTemplate redisTemplate) {
         this.bookingRepository = bookingRepository;
         this.ticketRepository = ticketRepository;
+        this.paymentTransactionRepository = paymentTransactionRepository;
         this.seatLockResourceMsrouteApi = seatLockResourceMsrouteApi;
         this.tripResourceMsrouteApi = tripResourceMsrouteApi;
         this.redisTemplate = redisTemplate;
@@ -203,6 +212,241 @@ public class AdminBookingController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * {@code POST /api/admin/bookings/recover-expired-payment} : Recover a booking
+     * where payment succeeded but booking expired.
+     * This is a CRITICAL endpoint to handle the race condition where VNPay payment
+     * succeeded but database was down.
+     *
+     * @param transactionId the payment transaction ID to recover
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and recovery
+     *         details
+     */
+    @PostMapping("/recover-expired-payment")
+    public ResponseEntity<Map<String, Object>> recoverExpiredBookingPayment(@RequestParam String transactionId) {
+        log.info("🚨 CRITICAL RECOVERY INITIATED: Recovering expired booking for successful payment transaction: {}",
+                transactionId);
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Find the payment transaction
+            Optional<PaymentTransaction> transactionOpt = paymentTransactionRepository
+                    .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(transactionId);
+
+            if (transactionOpt.isEmpty()) {
+                throw new BadRequestAlertException("Payment transaction not found", "paymentTransaction",
+                        "transactionnotfound");
+            }
+
+            PaymentTransaction transaction = transactionOpt.get();
+
+            // Validate this is a critical case that needs recovery
+            if (transaction.getStatus() != PaymentStatus.PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED) {
+                throw new BadRequestAlertException(
+                        "Transaction is not in PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED status. Current status: "
+                                + transaction.getStatus(),
+                        "paymentTransaction", "invalidstatus");
+            }
+
+            // Get the associated booking
+            Booking booking = transaction.getBooking();
+            if (booking == null) {
+                throw new BadRequestAlertException("No booking associated with this transaction", "paymentTransaction",
+                        "nobooking");
+            }
+
+            log.warn("🚨 RECOVERING: Booking {} expired but payment {} succeeded. Starting recovery process...",
+                    booking.getBookingCode(), transactionId);
+
+            // Step 1: Reactivate the booking
+            booking.setStatus(BookingStatus.CONFIRMED);
+            booking.setUpdatedAt(Instant.now());
+
+            // Extend booking expiration if needed (give customer more time)
+            Instant newExpiration = Instant.now().plus(24, ChronoUnit.HOURS); // Give 24 hours
+            booking.setExpiresAt(newExpiration);
+
+            // Save the reactivated booking
+            bookingRepository.save(booking);
+
+            log.info("🚨 RECOVERY: Booking {} reactivated and extended until {} as compensation",
+                    booking.getBookingCode(), newExpiration);
+
+            // Step 2: Update payment transaction status to SUCCESS
+            transaction.setStatus(PaymentStatus.SUCCESS);
+            transaction.setUpdatedAt(Instant.now());
+
+            String paymentRecoveryNote = String.format(
+                    "🚨 RECOVERY COMPLETED: Payment successfully recovered and booking reactivated on %s. " +
+                            "Original issue: Payment succeeded but booking expired due to race condition.",
+                    Instant.now());
+
+            String existingPaymentNote = transaction.getGatewayNote();
+            if (existingPaymentNote != null && !existingPaymentNote.isEmpty()) {
+                transaction.setGatewayNote(existingPaymentNote + " | " + paymentRecoveryNote);
+            } else {
+                transaction.setGatewayNote(paymentRecoveryNote);
+            }
+
+            paymentTransactionRepository.save(transaction);
+
+            // Step 3: Confirm seat locks FIRST (critical before creating tickets)
+            try {
+                if (booking.getLockGroupId() != null && booking.getTripId() != null) {
+                    confirmSeatLocks(booking);
+                    log.info("✅ Seat locks confirmed successfully for recovered booking: {}", booking.getBookingCode());
+                } else {
+                    throw new IllegalStateException("Cannot confirm seat locks - missing lock group ID or trip ID");
+                }
+            } catch (Exception e) {
+                log.error("❌ CRITICAL: Seat lock confirmation failed for recovered booking {}: {}",
+                        booking.getBookingCode(), e.getMessage());
+
+                // Mark booking with special status for seat lock failure
+                booking.setStatus(BookingStatus.RECOVERY_FAILED_SEAT_LOCKS);
+                booking.setUpdatedAt(Instant.now());
+                bookingRepository.save(booking);
+
+                // Update payment transaction with failure note
+                String seatLockFailureNote = String.format(
+                        "🚨 SEAT LOCK RECOVERY FAILED: Cannot confirm seat locks for recovered booking on %s. " +
+                                "Error: %s. Manual intervention required to resolve seat allocation.",
+                        Instant.now(),
+                        e.getMessage());
+
+                String currentPaymentNote = transaction.getGatewayNote();
+                if (currentPaymentNote != null && !currentPaymentNote.isEmpty()) {
+                    transaction.setGatewayNote(currentPaymentNote + " | " + seatLockFailureNote);
+                } else {
+                    transaction.setGatewayNote(seatLockFailureNote);
+                }
+
+                paymentTransactionRepository.save(transaction);
+
+                // Return error response
+                response.put("success", false);
+                response.put("message",
+                        "Recovery failed: Seat locks could not be confirmed. Seats may no longer be available.");
+                response.put("bookingCode", booking.getBookingCode());
+                response.put("transactionId", transactionId);
+                response.put("bookingStatus", booking.getStatus());
+                response.put("paymentStatus", transaction.getStatus());
+                response.put("seatLockError", e.getMessage());
+                response.put("requiresManualIntervention", true);
+
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Step 4: Create tickets for the recovered booking (only after seat locks are
+            // confirmed)
+            try {
+                createTicketsForBooking(booking);
+                log.info("✅ Tickets created successfully for recovered booking: {}", booking.getBookingCode());
+            } catch (Exception e) {
+                log.error("❌ Failed to create tickets for recovered booking {}: {}", booking.getBookingCode(),
+                        e.getMessage());
+
+                // Even if ticket creation fails, we don't roll back the entire recovery
+                // since seat locks are confirmed and payment is successful
+                // Admin can manually create tickets later
+                response.put("warning",
+                        "Seat locks confirmed but ticket creation failed. Manual ticket creation may be required.");
+            }
+
+            // Build success response
+            response.put("success", true);
+            response.put("message",
+                    "CRITICAL RECOVERY COMPLETED: Booking successfully recovered after payment success");
+            response.put("bookingCode", booking.getBookingCode());
+            response.put("transactionId", transactionId);
+            response.put("recoveredAt", Instant.now());
+            response.put("newExpiration", newExpiration);
+            response.put("originalAmount", transaction.getAmount());
+            response.put("bookingStatus", booking.getStatus());
+            response.put("paymentStatus", transaction.getStatus());
+            response.put("ticketsCreated", ticketRepository.findByBookingId(booking.getId()).size());
+
+            log.info(
+                    "🎉 CRITICAL RECOVERY SUCCESS: Booking {} recovered with payment {}. Customer compensated for system issue.",
+                    booking.getBookingCode(), transactionId);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("💥 CRITICAL RECOVERY FAILED: Could not recover booking for payment transaction {}: {}",
+                    transactionId, e.getMessage(), e);
+
+            response.put("success", false);
+            response.put("message", "Recovery failed: " + e.getMessage());
+            response.put("transactionId", transactionId);
+            response.put("error", e.getClass().getSimpleName());
+
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * {@code GET /api/admin/bookings/critical-payments} : Get all payments that
+     * need manual recovery.
+     * This endpoint helps admins identify all the critical cases that need
+     * attention.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and list of
+     *         critical payments
+     */
+    @GetMapping("/critical-payments")
+    public ResponseEntity<List<Map<String, Object>>> getCriticalPayments() {
+        log.debug("Fetching all payments that require manual recovery");
+
+        try {
+            // Find all transactions with critical statuses
+            List<PaymentStatus> criticalStatuses = List.of(
+                    PaymentStatus.PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED,
+                    PaymentStatus.REQUIRES_MANUAL_REVIEW);
+
+            List<PaymentTransaction> criticalTransactions = paymentTransactionRepository
+                    .findByStatusInAndIsDeletedFalseOrIsDeletedIsNull(criticalStatuses);
+
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (PaymentTransaction transaction : criticalTransactions) {
+                Map<String, Object> transactionInfo = new HashMap<>();
+                transactionInfo.put("id", transaction.getId());
+                transactionInfo.put("transactionId", transaction.getTransactionId());
+                transactionInfo.put("orderRef", transaction.getOrderRef());
+                transactionInfo.put("amount", transaction.getAmount());
+                transactionInfo.put("status", transaction.getStatus());
+                transactionInfo.put("method", transaction.getMethod());
+                transactionInfo.put("createdAt", transaction.getCreatedAt());
+                transactionInfo.put("updatedAt", transaction.getUpdatedAt());
+                transactionInfo.put("gatewayNote", transaction.getGatewayNote());
+
+                // Add booking info if available
+                if (transaction.getBooking() != null) {
+                    Booking booking = transaction.getBooking();
+                    Map<String, Object> bookingInfo = new HashMap<>();
+                    bookingInfo.put("id", booking.getId());
+                    bookingInfo.put("bookingCode", booking.getBookingCode());
+                    bookingInfo.put("status", booking.getStatus());
+                    bookingInfo.put("customerId", booking.getCustomerId());
+                    bookingInfo.put("totalAmount", booking.getTotalAmount());
+                    bookingInfo.put("expiresAt", booking.getExpiresAt());
+                    transactionInfo.put("booking", bookingInfo);
+                }
+
+                result.add(transactionInfo);
+            }
+
+            log.info("Found {} critical payments requiring attention", result.size());
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            log.error("Error fetching critical payments: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     private void createTicketsForBooking(Booking booking) {
         // Check if tickets already exist
         List<Ticket> existingTickets = ticketRepository.findByBookingId(booking.getId());
@@ -220,51 +464,32 @@ public class AdminBookingController {
                 throw new IllegalStateException("Trip detail/route not found for trip " + booking.getTripId());
             }
 
-            // 2) Load seat numbers for the booking from Redis
-            List<String> seatNos = loadSeatNosForBooking(booking);
-            if (seatNos.isEmpty()) {
-                log.error("No seat numbers found for booking: {}", booking.getBookingCode());
-                throw new IllegalStateException("No seat numbers found for booking: " + booking.getBookingCode()
-                        + ". Seat locks may not be properly established.");
-            }
+            // 2) For ticket creation, we need to get seat information from existing tickets
+            // or from the trip details. Since we're using group-based seat lock operations,
+            // we'll create tickets based on the booking's existing tickets if they exist,
+            // or use a simplified approach for new tickets.
 
-            // 3) Build seat number to seat ID map from trip detail
-            Map<String, Long> seatNoToId = buildSeatNoToId(trip);
+            // For group-based seat lock operations, we create tickets without needing
+            // individual seat numbers
+            // Create a single ticket for the booking amount when using group operations
+            log.info("Creating single ticket for booking: {} using group-based approach",
+                    booking.getBookingCode());
 
-            // 4) Calculate per-seat price
-            BigDecimal perSeat = booking.getTotalAmount()
-                    .divide(BigDecimal.valueOf(seatNos.size()), 2, RoundingMode.HALF_UP);
+            Ticket ticket = new Ticket();
+            ticket.setTicketCode(generateTicketCode());
+            ticket.setPrice(booking.getTotalAmount());
+            ticket.setQrCode(null);
+            ticket.setTimeFrom(tripDTO.getDepartureTime().toInstant());
+            ticket.setTimeTo(tripDTO.getArrivalTime().toInstant());
+            ticket.setCheckedIn(false);
+            ticket.setTripId(tripDTO.getId());
+            ticket.setRouteId(tripDTO.getRoute().getId());
+            ticket.setSeatId(null); // Will be set later when seat info is available from ms-route
+            ticket.setCreatedAt(Instant.now());
+            ticket.setBooking(booking);
+            ticketRepository.save(ticket);
 
-            // 5) Convert trip times
-            Instant dep = tripDTO.getDepartureTime().toInstant();
-            Instant arr = tripDTO.getArrivalTime().toInstant();
-
-            // 6) Create tickets for each seat
-            for (String rawSeatNo : seatNos) {
-                String seatNo = normalizeSeatNo(rawSeatNo);
-                Long seatId = seatNoToId.get(seatNo);
-                if (seatId == null) {
-                    throw new IllegalStateException(
-                            "SeatId not found for seat " + seatNo + " on trip " + tripDTO.getId());
-                }
-
-                Ticket ticket = new Ticket();
-                ticket.setTicketCode(generateTicketCode());
-                ticket.setPrice(perSeat);
-                ticket.setQrCode(null); // populate if you generate QR
-                ticket.setTimeFrom(dep);
-                ticket.setTimeTo(arr);
-                ticket.setCheckedIn(false);
-                ticket.setTripId(tripDTO.getId());
-                ticket.setRouteId(tripDTO.getRoute().getId()); // Derived from trip
-                ticket.setSeatId(seatId); // Derived from seat locks
-                ticket.setCreatedAt(Instant.now());
-                ticket.setBooking(booking);
-
-                ticketRepository.save(ticket);
-            }
-
-            log.info("Created {} tickets for booking: {}", seatNos.size(), booking.getBookingCode());
+            log.info("Created single ticket for booking: {}", booking.getBookingCode());
 
         } catch (Exception e) {
             log.error("Failed to create tickets for booking: {}", booking.getBookingCode(), e);
@@ -275,106 +500,58 @@ public class AdminBookingController {
 
     private void confirmSeatLocks(Booking booking) {
         try {
-            log.info("Confirming seat locks for booking: {}", booking.getBookingCode());
+            log.info("Confirming seat locks for booking: {} using group-based operation", booking.getBookingCode());
 
-            // Load seat numbers for the booking from Redis
-            List<String> seatNos = loadSeatNosForBooking(booking);
-
-            SeatLockActionRequestDTO body = new SeatLockActionRequestDTO();
+            // Use booking-level confirmation instead of individual seat numbers
+            // This is more efficient and doesn't require loading seat numbers
+            ConfirmGroupRequestDTO body = new ConfirmGroupRequestDTO();
             body.setBookingId(booking.getId());
-            body.setTripId(booking.getTripId());
-            body.setSeatNumbers(seatNos);
+            body.setLockGroupId(booking.getLockGroupId());
+            // Note: No need to set seatNumbers for group operations
+            // The API should handle all seats in the booking's lock group
 
-            SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.confirmSeatLocks(body);
-            if (res == null || res.getStatus() == null || !"OK".equalsIgnoreCase(res.getStatus())) {
+            SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.confirmGroup(body);
+            if (res == null || res.getStatus() == null || !"CONFIRMED".equalsIgnoreCase(res.getStatus())) {
                 throw new IllegalStateException(
                         "Seat confirm failed: " + (res != null ? res.getMessage() : "null response"));
             }
+
+            log.info("Successfully confirmed seat locks for booking: {}", booking.getBookingCode());
         } catch (Exception e) {
             log.error("Failed to confirm seat locks for booking: {}", booking.getBookingCode(), e);
             throw new BadRequestAlertException("Failed to confirm seat locks", ENTITY_NAME, "seatlockerror");
         }
     }
 
-    private String generateTicketCode(String bookingCode, int ticketNumber) {
-        return bookingCode + "-T" + String.format("%02d", ticketNumber);
-    }
-
     private String generateTicketCode() {
         return "TKT-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
     }
 
-    private Map<String, Long> buildSeatNoToId(TripDetailVM trip) {
-        if (trip == null || trip.getDetailVM() == null || trip.getDetailVM().getSeatsByFloorId() == null) {
-            return Map.of();
-        }
-        Map<String, List<SeatDTO>> byFloor = trip.getDetailVM().getSeatsByFloorId();
-        Map<String, Long> out = new LinkedHashMap<>();
-
-        byFloor.values().stream()
-                .filter(Objects::nonNull)
-                .flatMap(List::stream)
-                .filter(Objects::nonNull)
-                .forEach(seat -> {
-                    String seatNo = seat.getSeatNo();
-                    Long id = seat.getId();
-                    if (seatNo != null && id != null) {
-                        out.putIfAbsent(normalizeSeatNo(seatNo), id);
-                    }
-                });
-
-        return out;
-    }
-
-    private static String normalizeSeatNo(String s) {
-        return s == null ? null : s.trim().toUpperCase();
-    }
-
     /**
-     * Cancel seat locks for a booking using ms-route API.
+     * Cancel seat locks for a booking using group-based operation.
      */
     private void cancelSeatLocks(Booking booking) {
         try {
-            // Load seat numbers for the booking from Redis
-            List<String> seatNos = loadSeatNosForBooking(booking);
+            log.info("Canceling seat locks for booking: {} using group-based operation", booking.getBookingCode());
 
-            SeatLockActionRequestDTO body = new SeatLockActionRequestDTO();
+            // Use booking-level cancellation instead of individual seat numbers
+            // This is more efficient and doesn't require loading seat numbers
+            CancelGroupRequestDTO body = new CancelGroupRequestDTO();
             body.setBookingId(booking.getId());
-            body.setTripId(booking.getTripId());
-            body.setSeatNumbers(seatNos);
+            body.setLockGroupId(booking.getLockGroupId());
+            // Note: No need to set seatNumbers for group operations
+            // The API should handle all seats in the booking's lock group
 
-            SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.cancelSeatLocks(body);
-            if (res == null || res.getStatus() == null || !"OK".equalsIgnoreCase(res.getStatus())) {
+            SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.cancelGroup(body);
+            if (res == null || res.getStatus() == null || !"CONFIRMED".equalsIgnoreCase(res.getStatus())) {
                 log.warn("Seat cancel returned non-OK for booking {}: {}",
                         booking.getBookingCode(), res != null ? res.getMessage() : "null response");
             } else {
-                log.debug("Successfully canceled seat locks for booking: {}", booking.getBookingCode());
+                log.info("Successfully canceled seat locks for booking: {}", booking.getBookingCode());
             }
         } catch (Exception e) {
             log.error("Failed to cancel seat locks for booking: {}", booking.getBookingCode(), e);
         }
     }
 
-    /**
-     * Load the seat numbers for this booking from Redis.
-     */
-    private List<String> loadSeatNosForBooking(Booking booking) {
-        // Try Redis first: e.g., "booking:seats:{bookingId}" holding List<String>
-        String key = "booking:seats:" + booking.getId();
-        Object obj = redisTemplate.opsForValue().get(key);
-        if (obj instanceof List<?> raw) {
-            List<String> seats = raw.stream()
-                    .filter(Objects::nonNull)
-                    .map(Object::toString)
-                    .toList();
-            if (!seats.isEmpty()) {
-                return seats;
-            }
-        }
-
-        // If not in Redis, fallback to empty list and log warning
-        log.warn("Seat list not found for booking {} (expected in Redis key {})",
-                booking.getId(), key);
-        return List.of();
-    }
 }

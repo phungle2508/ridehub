@@ -356,40 +356,184 @@ public class VNPayPollingService {
     
     /**
      * Mark a payment transaction as failed due to booking expiration.
-     * This will update the transaction status and clean up polling tracking.
+     * CRITICAL: This method now checks VNPay status first to prevent race conditions
+     * where payment succeeded but database was down when IPN arrived.
      */
     private void markTransactionAsFailedForExpiredBooking(PaymentTransaction transaction) {
         try {
-            LOG.info("Marking transaction {} as failed due to booking expiration", 
+            LOG.info("Processing expired booking for transaction {} - checking VNPay status first", 
                 transaction.getTransactionId());
             
-            // Update transaction status
-            transaction.setStatus(PaymentStatus.FAILED);
-            transaction.setUpdatedAt(Instant.now());
-            
-            // Add a note about the expiration
-            String existingNote = transaction.getGatewayNote();
-            String expirationNote = "Booking expired - payment automatically marked as failed";
-            if (existingNote != null && !existingNote.isEmpty()) {
-                transaction.setGatewayNote(existingNote + "; " + expirationNote);
-            } else {
-                transaction.setGatewayNote(expirationNote);
+            // CRITICAL FIX: Check VNPay status before marking as failed
+            // This prevents the race condition where payment succeeded but DB was down
+            VNPayService.VNPayQueryResult vnPayResult = null;
+            try {
+                vnPayResult = vnPayService.queryTransaction(transaction, POLLING_IP_ADDRESS);
+                
+                if (vnPayResult.isSuccess() && "00".equals(vnPayResult.getResponseCode())) {
+                    // CRITICAL: Payment actually succeeded at VNPay but booking expired!
+                    LOG.error("🚨 CRITICAL ISSUE DETECTED: Payment succeeded but booking expired! " +
+                        "Transaction: {}, Amount: {}, VNPay Status: {}", 
+                        transaction.getTransactionId(), 
+                        vnPayResult.getAmount(),
+                        vnPayResult.getTransactionStatus());
+                    
+                    // Mark with special status for manual recovery
+                    transaction.setStatus(PaymentStatus.PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED);
+                    transaction.setUpdatedAt(Instant.now());
+                    
+                    String criticalNote = String.format(
+                        "🚨 CRITICAL: Payment succeeded (VNPay: %s, Amount: %s) but booking expired on %s. " +
+                        "Customer paid but booking was canceled. IMMEDIATE MANUAL RECOVERY REQUIRED!",
+                        vnPayResult.getTransactionStatus(),
+                        vnPayResult.getAmount(),
+                        Instant.now()
+                    );
+                    
+                    String existingNote = transaction.getGatewayNote();
+                    if (existingNote != null && !existingNote.isEmpty()) {
+                        transaction.setGatewayNote(existingNote + " | " + criticalNote);
+                    } else {
+                        transaction.setGatewayNote(criticalNote);
+                    }
+                    
+                    // Save the critical status
+                    paymentTransactionRepository.save(transaction);
+                    
+                    // Clean up polling tracking
+                    String transactionId = transaction.getTransactionId();
+                    pollingAttempts.remove(transactionId);
+                    lastPollTime.remove(transactionId);
+                    
+                    LOG.error("🚨 CRITICAL: Transaction {} marked as PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED. " +
+                        "Manual recovery required to compensate customer!", 
+                        transaction.getTransactionId());
+                    return;
+                }
+                
+            } catch (Exception vnPayException) {
+                LOG.warn("Could not verify VNPay status for transaction {}: {}", 
+                    transaction.getTransactionId(), vnPayException.getMessage());
+                
+                // If we can't reach VNPay, don't mark as failed immediately
+                // Mark for manual review instead
+                transaction.setStatus(PaymentStatus.REQUIRES_MANUAL_REVIEW);
+                transaction.setUpdatedAt(Instant.now());
+                
+                String reviewNote = String.format(
+                    "Booking expired but VNPay status could not be verified (Error: %s). " +
+                    "Manual review required to determine if payment succeeded.",
+                    vnPayException.getMessage()
+                );
+                
+                String existingNote = transaction.getGatewayNote();
+                if (existingNote != null && !existingNote.isEmpty()) {
+                    transaction.setGatewayNote(existingNote + " | " + reviewNote);
+                } else {
+                    transaction.setGatewayNote(reviewNote);
+                }
+                
+                paymentTransactionRepository.save(transaction);
+                
+                // Clean up polling tracking
+                String transactionId = transaction.getTransactionId();
+                pollingAttempts.remove(transactionId);
+                lastPollTime.remove(transactionId);
+                
+                LOG.warn("Transaction {} marked as REQUIRES_MANUAL_REVIEW due to booking expiration " +
+                    "and unable to verify VNPay status", transaction.getTransactionId());
+                return;
             }
             
-            // Save the updated transaction
-            paymentTransactionRepository.save(transaction);
-            
-            // Clean up polling tracking
-            String transactionId = transaction.getTransactionId();
-            pollingAttempts.remove(transactionId);
-            lastPollTime.remove(transactionId);
-            
-            LOG.info("Successfully marked transaction {} as failed due to booking expiration", 
-                transaction.getTransactionId());
+            // Only mark as failed if VNPay confirms payment failed or transaction not found
+            if (vnPayResult != null && (vnPayResult.isSuccess() && 
+                (!"00".equals(vnPayResult.getResponseCode()) || !"00".equals(vnPayResult.getTransactionStatus())))) {
+                
+                LOG.info("VNPay confirmed payment failed for transaction {}: code={}, status={}", 
+                    transaction.getTransactionId(), vnPayResult.getResponseCode(), vnPayResult.getTransactionStatus());
+                
+                // Update transaction status to FAILED
+                transaction.setStatus(PaymentStatus.FAILED);
+                transaction.setUpdatedAt(Instant.now());
+                
+                // Add a note about the expiration and VNPay confirmation
+                String existingNote = transaction.getGatewayNote();
+                String expirationNote = String.format(
+                    "Booking expired - payment failed (VNPay: %s/%s)", 
+                    vnPayResult.getResponseCode(), 
+                    vnPayResult.getTransactionStatus()
+                );
+                
+                if (existingNote != null && !existingNote.isEmpty()) {
+                    transaction.setGatewayNote(existingNote + "; " + expirationNote);
+                } else {
+                    transaction.setGatewayNote(expirationNote);
+                }
+                
+                // Save the updated transaction
+                paymentTransactionRepository.save(transaction);
+                
+                // Clean up polling tracking
+                String transactionId = transaction.getTransactionId();
+                pollingAttempts.remove(transactionId);
+                lastPollTime.remove(transactionId);
+                
+                LOG.info("Successfully marked transaction {} as failed due to booking expiration " +
+                    "(confirmed by VNPay: {}/{})", 
+                    transaction.getTransactionId(), 
+                    vnPayResult.getResponseCode(),
+                    vnPayResult.getTransactionStatus());
+                
+            } else if (vnPayResult == null || !vnPayResult.isSuccess()) {
+                // VNPay query failed - mark for manual review
+                LOG.warn("VNPay query failed for transaction {} - marking for manual review", 
+                    transaction.getTransactionId());
+                
+                transaction.setStatus(PaymentStatus.REQUIRES_MANUAL_REVIEW);
+                transaction.setUpdatedAt(Instant.now());
+                
+                String reviewNote = String.format(
+                    "Booking expired and VNPay query failed (Response: %s). " +
+                    "Manual review required to determine actual payment status.",
+                    vnPayResult != null ? vnPayResult.getMessage() : "Query failed"
+                );
+                
+                String existingNote = transaction.getGatewayNote();
+                if (existingNote != null && !existingNote.isEmpty()) {
+                    transaction.setGatewayNote(existingNote + " | " + reviewNote);
+                } else {
+                    transaction.setGatewayNote(reviewNote);
+                }
+                
+                paymentTransactionRepository.save(transaction);
+                
+                // Clean up polling tracking
+                String transactionId = transaction.getTransactionId();
+                pollingAttempts.remove(transactionId);
+                lastPollTime.remove(transactionId);
+                
+                LOG.warn("Transaction {} marked as REQUIRES_MANUAL_REVIEW due to booking expiration " +
+                    "and VNPay query failure", transaction.getTransactionId());
+            }
             
         } catch (Exception e) {
-            LOG.error("Error marking transaction {} as failed for expired booking: {}", 
+            LOG.error("Error processing expired booking for transaction {}: {}", 
                 transaction.getTransactionId(), e.getMessage(), e);
+            
+            // Last resort - mark for manual review
+            try {
+                transaction.setStatus(PaymentStatus.REQUIRES_MANUAL_REVIEW);
+                transaction.setUpdatedAt(Instant.now());
+                transaction.setGatewayNote("Processing error during expiration handling - manual review required");
+                paymentTransactionRepository.save(transaction);
+                
+                String transactionId = transaction.getTransactionId();
+                pollingAttempts.remove(transactionId);
+                lastPollTime.remove(transactionId);
+            } catch (Exception saveException) {
+                LOG.error("Failed to mark transaction {} for manual review: {}", 
+                    transaction.getTransactionId(), saveException.getMessage());
+            }
         }
     }
 

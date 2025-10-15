@@ -438,7 +438,7 @@ public class PaymentServiceImpl implements PaymentService {
         body.setSeatNumbers(seatNos);
 
         SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.cancelSeatLocks(body);
-        if (res == null || res.getStatus() == null || !"OK".equalsIgnoreCase(res.getStatus())) {
+        if (res == null || res.getStatus() == null || !"CONFIRMED".equalsIgnoreCase(res.getStatus())) {
             LOG.warn("Seat cancel returned non-OK: {}", res != null ? res.getMessage() : "null response");
         }
     }

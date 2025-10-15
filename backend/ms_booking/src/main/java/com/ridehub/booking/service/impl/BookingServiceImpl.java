@@ -252,7 +252,7 @@ public class BookingServiceImpl implements BookingService {
             boolean ok = attachResult != null
                     && attachResult.getStatus() != null
                     && switch (attachResult.getStatus().toUpperCase()) {
-                        case "ATTACHED", "ALREADY_ATTACHED", "OK" -> true; // allow legacy "OK" too
+                        case "ATTACHED", "ALREADY_ATTACHED", "CONFIRMED" -> true; // allow legacy "CONFIRMED" too
                         default -> false;
                     };
 

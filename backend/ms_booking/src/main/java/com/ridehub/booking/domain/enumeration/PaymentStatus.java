@@ -9,4 +9,6 @@ public enum PaymentStatus {
     SUCCESS,
     FAILED,
     REFUNDED,
+    PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED,
+    REQUIRES_MANUAL_REVIEW,
 }

@@ -41,4 +41,11 @@ public interface PaymentTransactionRepository
                         @Param("statuses") List<PaymentStatus> statuses,
                         @Param("createdAfter") Instant createdAfter);
 
+        /**
+         * Find transactions by multiple statuses and not deleted.
+         */
+        @Query("SELECT pt FROM PaymentTransaction pt WHERE pt.status IN :statuses AND (pt.isDeleted = false OR pt.isDeleted IS NULL)")
+        List<PaymentTransaction> findByStatusInAndIsDeletedFalseOrIsDeletedIsNull(
+                        @Param("statuses") List<PaymentStatus> statuses);
+
 }

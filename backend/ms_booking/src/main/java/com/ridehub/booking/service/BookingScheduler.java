@@ -168,7 +168,7 @@ public class BookingScheduler {
             body.setSeatNumbers(seatNos);
 
             SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.cancelSeatLocks(body);
-            if (res == null || res.getStatus() == null || !"OK".equalsIgnoreCase(res.getStatus())) {
+            if (res == null || res.getStatus() == null || !"CONFIRMED".equalsIgnoreCase(res.getStatus())) {
                 log.warn("Seat cancel returned non-OK for booking {}: {}",
                         booking.getBookingCode(), res != null ? res.getMessage() : "null response");
             } else {

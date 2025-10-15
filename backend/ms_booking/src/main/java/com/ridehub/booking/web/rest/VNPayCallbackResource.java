@@ -1,17 +1,23 @@
 package com.ridehub.booking.web.rest;
 
 import com.ridehub.booking.domain.PaymentTransaction;
+import com.ridehub.booking.domain.enumeration.PaymentMethod;
+import com.ridehub.booking.domain.enumeration.PaymentStatus;
 import com.ridehub.booking.repository.PaymentTransactionRepository;
 import com.ridehub.booking.service.PaymentService;
 import com.ridehub.booking.service.VNPayPollingService;
+import com.ridehub.booking.service.dto.RefundRequestDTO;
 import com.ridehub.booking.service.payment.vnpay.VNPayService;
+import com.ridehub.booking.service.payment.vnpay.VNPayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -93,7 +99,7 @@ public class VNPayCallbackResource {
             String result = paymentService.processWebhook("VNPAY", payload, signature);
             
             if ("SUCCESS".equals(result)) {
-                return ResponseEntity.ok("OK");
+                return ResponseEntity.ok("CONFIRMED");
             } else if ("ALREADY_PROCESSED".equals(result)) {
                 return ResponseEntity.ok("ALREADY_PROCESSED");
             } else {
@@ -186,29 +192,39 @@ public class VNPayCallbackResource {
      */
     @PostMapping("/refund/{transactionId}")
     public ResponseEntity<Map<String, Object>> refundTransaction(@PathVariable String transactionId,
-                                                                  @RequestBody Map<String, Object> refundRequest,
+                                                                  @RequestBody @Valid RefundRequestDTO refundRequest,
                                                                   HttpServletRequest request) {
-        LOG.debug("Refunding VNPay transaction: {}", transactionId);
+        LOG.debug("Refunding VNPay transaction: {} with amount: {}", transactionId, refundRequest.getAmount());
 
         try {
-            String ipAddress = getClientIpAddress(request);
-            BigDecimal amount = refundRequest.containsKey("amount") ? 
-                new BigDecimal(refundRequest.get("amount").toString()) : null;
-            String orderInfo = refundRequest.containsKey("orderInfo") ? 
-                refundRequest.get("orderInfo").toString() : null;
-            String transactionType = refundRequest.containsKey("transactionType") ? 
-                refundRequest.get("transactionType").toString() : null;
+            // Get transaction from database to obtain original transaction date
+            PaymentTransaction transaction = paymentTransactionRepository
+                .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(transactionId)
+                .orElse(null);
 
-            if (amount == null) {
+            if (transaction == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("responseCode", "01");
+                errorResponse.put("message", "Transaction not found in database");
+                return ResponseEntity.status(404).body(errorResponse);
+            }
+
+            String ipAddress = getClientIpAddress(request);
+            String originalTransDate = transaction.getGatewayCreateDate();
+
+            // Validate that originalTransDate exists and is in correct format
+            if (originalTransDate == null || originalTransDate.length() != 14) {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("responseCode", "03");
-                errorResponse.put("message", "Amount is required");
+                errorResponse.put("message", "Original transaction date is missing or invalid");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
 
             VNPayService.VNPayRefundResult result = vnPayService.refundTransaction(
-                transactionId, amount, ipAddress, orderInfo, transactionType);
+                transactionId, refundRequest.getAmount(), ipAddress, refundRequest.getOrderInfo(), 
+                refundRequest.getTransactionType(), originalTransDate);
 
             Map<String, Object> response = new HashMap<>();
             response.put("transactionId", transactionId);
@@ -220,6 +236,14 @@ public class VNPayCallbackResource {
             response.put("transactionStatus", result.getTransactionStatus());
 
             if (result.isSuccess()) {
+                // Save refund data to database
+                try {
+                    saveRefundData(transaction, refundRequest, result);
+                } catch (Exception e) {
+                    LOG.error("Error saving refund data for transaction: {}", transactionId, e);
+                    // Don't fail the response if DB save fails, but log the error
+                    response.put("dbSaveWarning", "Refund processed but failed to save to database");
+                }
                 return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.badRequest().body(response);
@@ -287,5 +311,76 @@ public class VNPayCallbackResource {
         }
         
         return request.getRemoteAddr();
+    }
+
+    /**
+     * Save refund data to database
+     */
+    private void saveRefundData(PaymentTransaction originalTransaction, RefundRequestDTO refundRequest, 
+                               VNPayService.VNPayRefundResult refundResult) {
+        LOG.info("Saving refund data for transaction: {}", originalTransaction.getTransactionId());
+
+        // Check if transaction is already refunded
+        if (PaymentStatus.REFUNDED.equals(originalTransaction.getStatus())) {
+            LOG.warn("Transaction {} is already refunded", originalTransaction.getTransactionId());
+            throw new IllegalStateException("Transaction is already refunded");
+        }
+
+        // Validate refund amount doesn't exceed original amount
+        if (refundRequest.getAmount().compareTo(originalTransaction.getAmount()) > 0) {
+            LOG.warn("Refund amount {} exceeds original transaction amount {}", 
+                refundRequest.getAmount(), originalTransaction.getAmount());
+            throw new IllegalArgumentException("Refund amount cannot exceed original transaction amount");
+        }
+
+        try {
+            // Update original transaction status to REFUNDED
+            originalTransaction.setStatus(PaymentStatus.REFUNDED);
+            originalTransaction.setUpdatedAt(Instant.now());
+            
+            // Add refund information to gateway note
+            String refundInfo = String.format("Refunded: %s - Amount: %s - RefundTxnNo: %s - RefundType: %s - RefundDate: %s",
+                refundResult.getTransactionNo() != null ? refundResult.getTransactionNo() : "N/A",
+                refundRequest.getAmount().toString(),
+                refundResult.getTransactionNo() != null ? refundResult.getTransactionNo() : "N/A",
+                refundRequest.getTransactionType(),
+                Instant.now().toString());
+            
+            String existingNote = originalTransaction.getGatewayNote();
+            if (existingNote != null && !existingNote.trim().isEmpty()) {
+                originalTransaction.setGatewayNote(existingNote + " | " + refundInfo);
+            } else {
+                originalTransaction.setGatewayNote(refundInfo);
+            }
+
+            // Save updated original transaction
+            paymentTransactionRepository.save(originalTransaction);
+
+            // Create new refund transaction record
+            PaymentTransaction refundTransaction = new PaymentTransaction();
+            refundTransaction.setTransactionId("REFUND-" + System.currentTimeMillis() + "-" + originalTransaction.getTransactionId());
+            refundTransaction.setOrderRef(originalTransaction.getOrderRef());
+            refundTransaction.setMethod(PaymentMethod.VNPAY);
+            refundTransaction.setStatus(PaymentStatus.SUCCESS);
+            refundTransaction.setAmount(refundRequest.getAmount());
+            refundTransaction.setTime(Instant.now());
+            refundTransaction.setGatewayCreateDate(VNPayUtils.getVNPayDate()); // Current date in VNPay format
+            refundTransaction.setGatewayNote(String.format("Refund for original transaction: %s | RefundTxnNo: %s | Type: %s",
+                originalTransaction.getTransactionId(),
+                refundResult.getTransactionNo() != null ? refundResult.getTransactionNo() : "N/A",
+                refundRequest.getTransactionType()));
+            refundTransaction.setCreatedAt(Instant.now());
+            refundTransaction.setUpdatedAt(Instant.now());
+
+            // Save refund transaction
+            paymentTransactionRepository.save(refundTransaction);
+
+            LOG.info("Successfully saved refund data. Original transaction: {} updated to REFUNDED status. New refund transaction: {} created",
+                originalTransaction.getTransactionId(), refundTransaction.getTransactionId());
+
+        } catch (Exception e) {
+            LOG.error("Failed to save refund data for transaction: {}", originalTransaction.getTransactionId(), e);
+            throw new RuntimeException("Failed to save refund data", e);
+        }
     }
 }

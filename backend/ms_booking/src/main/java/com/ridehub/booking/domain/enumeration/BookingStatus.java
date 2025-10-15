@@ -10,4 +10,5 @@ public enum BookingStatus {
     CONFIRMED,
     CANCELED,
     REFUNDED,
+    RECOVERY_FAILED_SEAT_LOCKS,
 }

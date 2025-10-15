@@ -227,7 +227,7 @@ public class VNPayService {
      * Refund transaction
      */
     public VNPayRefundResult refundTransaction(String transactionId, BigDecimal amount,
-            String ipAddress, String orderInfo, String transactionType) {
+            String ipAddress, String orderInfo, String transactionType, String originalTransDate) {
         LOG.debug("Refunding VNPay transaction: {} amount: {}", transactionId, amount);
 
         try {
@@ -255,20 +255,29 @@ public class VNPayService {
             refundParams.put("vnp_CreateBy", vnPayConfig.getRefundCreateBy());
             refundParams.put("vnp_CreateDate", createDate);
             refundParams.put("vnp_IpAddr", ipAddress);
+            refundParams.put("vnp_TransactionDate", originalTransDate); // Required parameter per VNPay spec
 
-            // Build data for hash
+            // Build data for hash according to VNPay specification:
+            // data = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" + 
+            //        vnp_TransactionType + "|" + vnp_TxnRef + "|" + vnp_Amount + "|" + vnp_TransactionNo + "|" + 
+            //        vnp_TransactionDate + "|" + vnp_CreateBy + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo
+            String transactionTypeParam = transactionType != null ? transactionType : vnPayConfig.getRefundTransactionTypeFull();
+            String orderInfoParam = orderInfo != null ? orderInfo : "Refund for transaction: " + transactionId;
+            
             String hashData = String.join("|",
                     requestId,
                     vnPayConfig.getVersion(),
                     "refund",
                     vnPayConfig.getTmnCode(),
-                    transactionType != null ? transactionType : vnPayConfig.getRefundTransactionTypeFull(),
+                    transactionTypeParam,
                     transactionId,
                     amountInVND,
-                    orderInfo != null ? orderInfo : "Refund for transaction: " + transactionId,
+                    "", // vnp_TransactionNo - optional, empty for now
+                    originalTransDate, // vnp_TransactionDate - required
                     vnPayConfig.getRefundCreateBy(),
                     createDate,
-                    ipAddress);
+                    ipAddress,
+                    orderInfoParam);
 
             // Generate secure hash
             String secureHash = VNPayUtils.hmacSHA512(vnPayConfig.getHashSecret(), hashData);
