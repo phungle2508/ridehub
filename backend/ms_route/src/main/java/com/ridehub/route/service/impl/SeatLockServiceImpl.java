@@ -423,4 +423,89 @@ public class SeatLockServiceImpl implements SeatLockService {
             return new SeatValidateLockResponseDTO("REJECTED", "Trip not found", request.getTripId());
         }
     }
+
+    // ===== reclaim-expired-seats =====
+    @Override
+    public SeatLockActionResponseDTO reclaimExpiredSeats(ConfirmGroupRequestDTO req) {
+        if (req.getBookingId() == null) {
+            return new SeatLockActionResponseDTO("BAD_REQUEST", "Provide bookingId");
+        }
+        
+        Instant now = Instant.now();
+        
+        // Find all seatlocks for the booking (regardless of status)
+        List<SeatLock> bookingLocks = queryService.findByBookingId(req.getBookingId());
+        
+        if (bookingLocks.isEmpty()) {
+            return new SeatLockActionResponseDTO("NOT_FOUND", "No seat locks found for booking");
+        }
+        
+        List<SeatLock> reclaimedSeats = new ArrayList<>();
+        
+        for (SeatLock bookingLock : bookingLocks) {
+            // Find expired seatlocks with same seatNo and trip
+            List<SeatLock> expiredLocks = findExpiredLocksOrHeldBySeatAndTrip(
+                bookingLock.getSeatNo(), 
+                bookingLock.getTrip().getId(), 
+                now
+            );
+            
+            for (SeatLock expiredLock : expiredLocks) {
+                // Check if expired lock is not held by other bookingId and is actually expired
+                if (expiredLock.getBookingId() == null || 
+                    expiredLock.getBookingId().equals(req.getBookingId())) {
+                    
+                    // Reclaim the expired seat for current booking
+                    expiredLock.setBookingId(req.getBookingId());
+                    expiredLock.setStatus(LockStatus.HELD);
+                    expiredLock.setExpiresAt(now.plusSeconds(180)); // 3 minutes TTL
+                    expiredLock.setUpdatedAt(now);
+                    reclaimedSeats.add(expiredLock);
+                }
+            }
+        }
+        
+        if (reclaimedSeats.isEmpty()) {
+            return new SeatLockActionResponseDTO("NOT_FOUND", "No expired seats available to reclaim");
+        }
+        
+        // Save all reclaimed seats
+        seatLockRepository.saveAll(reclaimedSeats);
+        
+        return new SeatLockActionResponseDTO("RECLAIMED", 
+            "Reclaimed " + reclaimedSeats.size() + " expired seats");
+    }
+
+    // Helper method to find expired locks by seat number and trip
+    List<SeatLock> findExpiredLocksOrHeldBySeatAndTrip(String seatNo, Long tripId, Instant now) {
+        SeatLockCriteria c = new SeatLockCriteria();
+        
+        // Trip filter
+        LongFilter tripF = new LongFilter(); 
+        tripF.setEquals(tripId); 
+        c.setTripId(tripF);
+        
+        // Seat number filter
+        StringFilter seatF = new StringFilter(); 
+        seatF.setEquals(seatNo); 
+        c.setSeatNo(seatF);
+        
+        // Status filter for expired or held locks
+        SeatLockCriteria.LockStatusFilter statusF = new SeatLockCriteria.LockStatusFilter();
+        statusF.setIn(Arrays.asList(LockStatus.EXPIRED, LockStatus.HELD)); 
+        c.setStatus(statusF);
+        
+        // For HELD status, find only expired ones
+        InstantFilter exp = new InstantFilter(); 
+        exp.setLessThan(now); // Expired before now
+        c.setExpiresAt(exp);
+        
+        // Not deleted filter
+        BooleanFilter deletedF = new BooleanFilter();
+        deletedF.setEquals(false);
+        c.setIsDeleted(deletedF);
+        
+        List<SeatLockDTO> dtos = queryService.findByCriteria(c);
+        return dtos.stream().map(seatLockMapper::toEntity).toList();
+    }
 }

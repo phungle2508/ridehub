@@ -114,4 +114,14 @@ public interface SeatLockService {
     SeatLockActionResponseDTO confirmGroup(ConfirmGroupRequestDTO req);
 
     List<SeatLockDTO> findActive(Long tripId, Long bookingId, String lockGroupId);
+
+    /**
+     * Reclaim expired seats for a booking.
+     * Finds seatlocks by booking and checks for expired seats with same seatNo and trip
+     * that are not held by other bookingId and not expired.
+     *
+     * @param req the reclaim seats request containing booking details.
+     * @return the seat lock action response.
+     */
+    SeatLockActionResponseDTO reclaimExpiredSeats(ConfirmGroupRequestDTO req);
 }
