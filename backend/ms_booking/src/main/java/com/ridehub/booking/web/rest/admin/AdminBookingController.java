@@ -510,7 +510,7 @@ public class AdminBookingController {
             // Note: No need to set seatNumbers for group operations
             // The API should handle all seats in the booking's lock group
 
-            SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.confirmGroup(body);
+            SeatLockActionResponseDTO res = seatLockResourceMsrouteApi.reclaimExpiredSeats(body);
             if (res == null || res.getStatus() == null || !"CONFIRMED".equalsIgnoreCase(res.getStatus())) {
                 throw new IllegalStateException(
                         "Seat confirm failed: " + (res != null ? res.getMessage() : "null response"));
