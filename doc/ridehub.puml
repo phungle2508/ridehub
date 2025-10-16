@@ -10,6 +10,7 @@ skinparam classAttributeIconSize 0
 ' =============================
 '              ENUMS
 ' =============================
+' From ms_booking domain enums
 enum BookingStatus {
   DRAFT
   AWAITING_PAYMENT
@@ -17,12 +18,11 @@ enum BookingStatus {
   CONFIRMED
   CANCELED
   REFUNDED
+  RECOVERY_FAILED_SEAT_LOCKS
 }
 
 enum PaymentMethod {
   VNPAY
-  MOMO
-  ZALOPAY
   CREDIT_CARD
   BANK_TRANSFER
 }
@@ -33,8 +33,11 @@ enum PaymentStatus {
   SUCCESS
   FAILED
   REFUNDED
+  PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED
+  REQUIRES_MANUAL_REVIEW
 }
 
+' From ms_route domain enums
 enum StaffStatus {
   ACTIVE
   INACTIVE
@@ -67,6 +70,40 @@ enum LockStatus {
 enum SeatType {
   SLEEPER
   NORMAL
+}
+
+' From Avro enums (for cross-service communication)
+enum AvroBookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum AvroSeatType {
+  ECONOMY
+  BUSINESS
+  FIRST_CLASS
+  VIP
+}
+
+enum AvroTicketStatus {
+  AVAILABLE
+  BOOKED
+  CANCELLED
+  EXPIRED
+}
+
+enum AvroPaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum TransportType {
+  TRAIN
+  BUS
 }
 
 ' =============================

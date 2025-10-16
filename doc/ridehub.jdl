@@ -2,15 +2,25 @@
 // Enums (Keycloak owns roles)
 // ======================================================
 
-enum BookingStatus { DRAFT, AWAITING_PAYMENT, PAID, CONFIRMED, CANCELED, REFUNDED }
-enum PaymentMethod { VNPAY, MOMO, ZALOPAY, CREDIT_CARD, BANK_TRANSFER }
-enum PaymentStatus { INITIATED, PROCESSING, SUCCESS, FAILED, REFUNDED }
+// From ms_booking domain enums
+enum BookingStatus { DRAFT, AWAITING_PAYMENT, PAID, CONFIRMED, CANCELED, REFUNDED, RECOVERY_FAILED_SEAT_LOCKS }
+enum PaymentMethod { VNPAY, CREDIT_CARD, BANK_TRANSFER }
+enum PaymentStatus { INITIATED, PROCESSING, SUCCESS, FAILED, REFUNDED, PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED, REQUIRES_MANUAL_REVIEW }
+
+// From ms_route domain enums
 enum StaffStatus { ACTIVE, INACTIVE }
 enum Gender { MALE, FEMALE, OTHER }
 enum VehicleStatus { ACTIVE, MAINTENANCE, RETIRED } // Hoạt động / Bảo trì / Đã ngừng
 enum VehicleType { STANDARD_BUS_VIP, STANDARD_BUS_NORMAL, LIMOUSINE }
 enum LockStatus { HELD, EXPIRED, COMMITTED } // NEW
 enum SeatType { SLEEPER, NORMAL }
+
+// From Avro enums (for cross-service communication)
+enum AvroBookingStatus { PENDING, CONFIRMED, CANCELLED, COMPLETED }
+enum AvroSeatType { ECONOMY, BUSINESS, FIRST_CLASS, VIP }
+enum AvroTicketStatus { AVAILABLE, BOOKED, CANCELLED, EXPIRED }
+enum AvroPaymentStatus { PENDING, COMPLETED, FAILED, REFUNDED }
+enum TransportType { TRAIN, BUS }
 
 // ======================================================
 // Applications
