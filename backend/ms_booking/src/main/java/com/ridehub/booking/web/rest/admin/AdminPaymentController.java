@@ -125,12 +125,8 @@ public class AdminPaymentController {
     ) {
         log.debug("REST request to refund PaymentTransaction : {}", id);
 
-        Optional<PaymentTransaction> transactionOpt = paymentTransactionRepository.findById(id);
-        if (transactionOpt.isEmpty()) {
-            throw new BadRequestAlertException("Payment transaction not found", ENTITY_NAME, "transactionnotfound");
-        }
-
-        PaymentTransaction transaction = transactionOpt.get();
+        PaymentTransaction transaction = paymentTransactionRepository.findById(id)
+                .orElseThrow(() -> new BadRequestAlertException("Payment transaction not found", ENTITY_NAME, "transactionnotfound"));
         
         if (transaction.getStatus() != PaymentStatus.SUCCESS) {
             throw new BadRequestAlertException("Can only refund completed payments", ENTITY_NAME, "invalidstatus");

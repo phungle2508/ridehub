@@ -145,12 +145,8 @@ public class AdminBookingController {
     public ResponseEntity<Void> confirmBooking(@PathVariable Long id) {
         log.debug("REST request to confirm Booking : {}", id);
 
-        Optional<Booking> bookingOpt = bookingRepository.findById(id);
-        if (bookingOpt.isEmpty()) {
-            throw new BadRequestAlertException("Booking not found", ENTITY_NAME, "bookingnotfound");
-        }
-
-        Booking booking = bookingOpt.get();
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new BadRequestAlertException("Booking not found", ENTITY_NAME, "bookingnotfound"));
         if (booking.getStatus() == BookingStatus.CONFIRMED) {
             throw new BadRequestAlertException("Booking already confirmed", ENTITY_NAME, "alreadyconfirmed");
         }
@@ -187,12 +183,8 @@ public class AdminBookingController {
     public ResponseEntity<Void> cancelBooking(@PathVariable Long id) {
         log.debug("REST request to cancel Booking : {}", id);
 
-        Optional<Booking> bookingOpt = bookingRepository.findById(id);
-        if (bookingOpt.isEmpty()) {
-            throw new BadRequestAlertException("Booking not found", ENTITY_NAME, "bookingnotfound");
-        }
-
-        Booking booking = bookingOpt.get();
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new BadRequestAlertException("Booking not found", ENTITY_NAME, "bookingnotfound"));
 
         if (booking.getStatus() == BookingStatus.CANCELED) {
             throw new BadRequestAlertException("Booking already canceled", ENTITY_NAME, "alreadycanceled");
@@ -231,15 +223,10 @@ public class AdminBookingController {
 
         try {
             // Find the payment transaction
-            Optional<PaymentTransaction> transactionOpt = paymentTransactionRepository
-                    .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(transactionId);
-
-            if (transactionOpt.isEmpty()) {
-                throw new BadRequestAlertException("Payment transaction not found", "paymentTransaction",
-                        "transactionnotfound");
-            }
-
-            PaymentTransaction transaction = transactionOpt.get();
+            PaymentTransaction transaction = paymentTransactionRepository
+                    .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(transactionId)
+                    .orElseThrow(() -> new BadRequestAlertException("Payment transaction not found", "paymentTransaction",
+                            "transactionnotfound"));
 
             // Validate this is a critical case that needs recovery
             if (transaction.getStatus() != PaymentStatus.PAYMENT_SUCCESS_BUT_BOOKING_EXPIRED) {

@@ -140,9 +140,10 @@ public class PaymentServiceImpl implements PaymentService {
             // 3) Check for duplicate processing first
             Optional<PaymentWebhookLog> existingLog = paymentWebhookLogRepository.findByPayloadHash(payloadHash);
             if (existingLog.isPresent()) {
+                PaymentWebhookLog log = existingLog.orElseThrow(() -> new IllegalStateException("Existing log should be present"));
                 LOG.debug("Webhook already processed: {} with status: {}", payloadHash,
-                        existingLog.get().getProcessingStatus());
-                return existingLog.get().getProcessingStatus();
+                        log.getProcessingStatus());
+                return log.getProcessingStatus();
             }
 
             // 4) Parse gateway payload first to get transaction ID
@@ -168,7 +169,7 @@ public class PaymentServiceImpl implements PaymentService {
                 return "TRANSACTION_NOT_FOUND";
             }
 
-            PaymentTransaction transaction = transactionOpt.get();
+            PaymentTransaction transaction = transactionOpt.orElseThrow(() -> new IllegalStateException("Transaction should be present"));
 
             // Check if transaction is already in final state
             if (transaction.getStatus() == PaymentStatus.SUCCESS ||

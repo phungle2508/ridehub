@@ -45,8 +45,9 @@ public class PaymentTransactionRepositoryTest {
                 .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(TEST_TRANSACTION_ID);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getTransactionId()).isEqualTo(TEST_TRANSACTION_ID);
-        assertThat(result.get().getIsDeleted()).isFalse();
+        PaymentTransaction foundTransaction = result.orElseThrow(() -> new AssertionError("Expected transaction to be present"));
+        assertThat(foundTransaction.getTransactionId()).isEqualTo(TEST_TRANSACTION_ID);
+        assertThat(foundTransaction.getIsDeleted()).isFalse();
     }
 
     @Test
@@ -61,8 +62,9 @@ public class PaymentTransactionRepositoryTest {
                 .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(TEST_TRANSACTION_ID);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getTransactionId()).isEqualTo(TEST_TRANSACTION_ID);
-        assertThat(result.get().getIsDeleted()).isNull();
+        PaymentTransaction foundTransaction = result.orElseThrow(() -> new AssertionError("Expected transaction to be present"));
+        assertThat(foundTransaction.getTransactionId()).isEqualTo(TEST_TRANSACTION_ID);
+        assertThat(foundTransaction.getIsDeleted()).isNull();
     }
 
     @Test
@@ -103,8 +105,9 @@ public class PaymentTransactionRepositoryTest {
                 .findByTransactionIdAndIsDeletedFalseOrIsDeletedIsNull(TEST_TRANSACTION_ID);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getTransactionId()).isEqualTo(TEST_TRANSACTION_ID);
-        assertThat(result.get().getIsDeleted()).isFalse();
+        PaymentTransaction foundTransaction = result.orElseThrow(() -> new AssertionError("Expected transaction to be present"));
+        assertThat(foundTransaction.getTransactionId()).isEqualTo(TEST_TRANSACTION_ID);
+        assertThat(foundTransaction.getIsDeleted()).isFalse();
     }
 
     @Test

@@ -168,11 +168,8 @@ public class TicketResource {
     public ResponseEntity<CheckinResponse> checkinTicket(@PathVariable String code) {
         LOG.debug("REST request to check in Ticket with code: {}", code);
 
-        Optional<TicketDTO> ticketOpt = ticketService.findByTicketCode(code);
-        if (ticketOpt.isEmpty()) {
-            throw new BadRequestAlertException("Ticket not found", ENTITY_NAME, "ticketnotfound");
-        }
-        TicketDTO ticket = ticketOpt.get();
+        TicketDTO ticket = ticketService.findByTicketCode(code)
+                .orElseThrow(() -> new BadRequestAlertException("Ticket not found", ENTITY_NAME, "ticketnotfound"));
         if (Boolean.TRUE.equals(ticket.getCheckedIn())) {
             throw new BadRequestAlertException("Ticket already checked in", ENTITY_NAME, "alreadycheckedin");
         }
