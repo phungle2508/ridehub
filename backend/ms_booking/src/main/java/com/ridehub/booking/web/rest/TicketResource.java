@@ -147,10 +147,9 @@ public class TicketResource {
     // -------------------------------------------------------
 
     /**
-     * GET /api/tickets?bookingCode=... : get tickets by booking code.
-     * This mapping is disambiguated by the presence of the "bookingCode" param.
+     * GET /api/tickets/by-booking-code : get tickets by booking code.
      */
-    @GetMapping(value = "", params = "bookingCode")
+    @GetMapping("/by-booking-code")
     public ResponseEntity<TicketResponse> getTicketsByBookingCode(@RequestParam String bookingCode) {
         LOG.debug("REST request to get Tickets by booking code: {}", bookingCode);
         List<TicketDTO> tickets = ticketService.findByBookingCode(bookingCode);
