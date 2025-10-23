@@ -1,0 +1,31 @@
+name: Deploy RideHub
+
+on:
+  push:
+    branches:
+      - main  # or your preferred branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS (ridehub)
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.VPS_HOST_INFRA }}
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            echo "=== 🛠 Starting RideHub deployment ==="
+            cd ~/repositories/ridehub
+            echo "📥 Pulling latest code..."
+            git fetch --all
+            git reset --hard origin/main
+            echo "🔁 Updating submodules..."
+            git submodule update --init --recursive
+            git submodule foreach git fetch --all
+            git submodule foreach git reset --hard origin/main
+            echo "✅ Done updating main repo & submodules"
