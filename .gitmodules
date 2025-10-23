@@ -9,4 +9,4 @@
     branch = main
 [submodule "spi/keycloak-custom-reg"]
 	path = spi/keycloak-custom-reg
-	url = https://github.com/phungle2508/keycloak-custom-reg-maian3333.git
+	url = https://github.com/maian3333/keycloak-custom-reg.git
