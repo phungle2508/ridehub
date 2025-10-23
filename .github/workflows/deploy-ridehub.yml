@@ -20,13 +20,54 @@ jobs:
           username: root
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
+            set -euo pipefail
+      
             echo "=== 🛠 Starting RideHub deployment ==="
-            cd ~/repositories/ridehub
-            echo "📥 Pulling latest code..."
-            git fetch --all
-            git reset --hard origin/main
-            echo "🔁 Updating submodules..."
+            echo "Host identity:"
+            uname -a
+            hostname -A || true
+            ip -4 addr show eth0 | sed -n 's/ *inet //p' || true
+      
+            BASE_DIR="/root/repositories"
+            REPO_DIR="$BASE_DIR/ridehub"
+            REPO_URL="https://github.com/phungle2508/ridehub.git"
+            BRANCH="main"
+      
+            echo "📁 Ensuring base dir: $BASE_DIR"
+            mkdir -p "$BASE_DIR"
+      
+            if [ ! -d "$REPO_DIR/.git" ]; then
+              echo "🐣 First run on this host → cloning repo"
+              git clone --recursive "$REPO_URL" "$REPO_DIR"
+            fi
+      
+            cd "$REPO_DIR"
+      
+            echo "🔏 Marking repo as safe (just in case)"
+            git config --global --add safe.directory "$REPO_DIR"
+      
+            echo "📥 Fetch & hard reset to origin/$BRANCH"
+            git fetch --all --prune
+            git reset --hard "origin/$BRANCH"
+            git clean -fdx
+      
+            echo "🔁 Sync & update submodules"
+            git submodule sync --recursive
+            # If you want submodules to track their upstream default branches:
+            # git submodule update --init --recursive --remote
             git submodule update --init --recursive
-            git submodule foreach git fetch --all
-            git submodule foreach git reset --hard origin/main
+      
+            echo "🌿 Force submodules to their origin/main (optional)"
+            git submodule foreach --recursive '
+              set -e
+              git fetch --all --prune || true
+              # Try origin/main; if it doesn't exist, fall back to the checked-in commit
+              if git rev-parse --verify origin/main >/dev/null 2>&1; then
+                git reset --hard origin/main
+              else
+                echo "No origin/main for $(pwd), keeping recorded commit."
+              fi
+              git clean -fdx || true
+            '
+      
             echo "✅ Done updating main repo & submodules"
