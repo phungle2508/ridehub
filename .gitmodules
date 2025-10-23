@@ -1,34 +1,54 @@
+[submodule "backend/data-fakker"]
+	path = backend/data-fakker
+	url = https://github.com/maian3333/data-fakker.git
+	branch = main
+
 [submodule "backend/ridehub-central-common"]
-    path = backend/ridehub-central-common
-    url = https://github.com/LeTrungMiniuh/ridehub-central-common.git
-    branch = main
+	path = backend/ridehub-central-common
+	url = https://github.com/maian3333/ridehub-central-common.git
+	branch = main
 
 [submodule "backend/ridehub-central-config"]
-    path = backend/ridehub-central-config
-    url = https://github.com/LeTrungMiniuh/ridehub-central-config.git
-    branch = main
-    
-[submodule "spi/keycloak-custom-reg"]
-	path = spi/keycloak-custom-reg
-	url = https://github.com/maian3333/keycloak-custom-reg.git
-[submodule "backend/gateway"]
-	path = backend/gateway
+	path = backend/ridehub-central-config
+	url = https://github.com/maian3333/ridehub-central-config.git
+	branch = main
+
+[submodule "backend/ridehub-gateway"]
+	path = backend/ridehub-gateway
 	url = https://github.com/maian3333/ridehub-gateway.git
-[submodule "backend/ms_booking"]
-	path = backend/ms_booking
+	branch = main
+
+[submodule "backend/ridehub-ms-booking"]
+	path = backend/ridehub-ms-booking
 	url = https://github.com/maian3333/ridehub-ms-booking.git
-[submodule "backend/ms_promotion"]
-	path = backend/ms_promotion
+	branch = main
+
+[submodule "backend/ridehub-ms-promotion"]
+	path = backend/ridehub-ms-promotion
 	url = https://github.com/maian3333/ridehub-ms-promotion.git
-[submodule "backend/ms_route"]
-	path = backend/ms_route
+	branch = main
+
+[submodule "backend/ridehub-ms-route"]
+	path = backend/ridehub-ms-route
 	url = https://github.com/maian3333/ridehub-ms-route.git
-[submodule "backend/ms_user"]
-	path = backend/ms_user
+	branch = main
+
+[submodule "backend/ridehub-ms-user"]
+	path = backend/ridehub-ms-user
 	url = https://github.com/maian3333/ridehub-ms-user.git
-[submodule "backend/ms_user"]
-	path = backend/ms_user
+	branch = main
+
+[submodule "infra/keycloak-custom-reg"]
+	path = infra/keycloak-custom-reg
+	url = https://github.com/maian3333/keycloak-custom-reg.git
+	branch = main
+
+[submodule "infra/vps-microservices"]
+	path = infra/vps-microservices
 	url = https://github.com/maian3333/vps-microservices.git
-[submodule "backend/ms_user"]
-	path = backend/ms_user
+	branch = main
+
+[submodule "infra/vps-infra"]
+	path = infra/vps-infra
 	url = https://github.com/maian3333/vps-infra.git
+	branch = main
