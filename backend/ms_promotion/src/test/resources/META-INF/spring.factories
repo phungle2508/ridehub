@@ -1,5 +1,0 @@
-org.springframework.test.context.ContextCustomizerFactory = \
-    com.ridehub.promotion.config.\
-    SqlTestContainersSpringContextCustomizerFactory,com.ridehub.promotion.\
-    config.RedisTestContainersSpringContextCustomizerFactory,com.ridehub.\
-    promotion.config.KafkaTestContainersSpringContextCustomizerFactory
