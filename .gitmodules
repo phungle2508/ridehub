@@ -13,16 +13,22 @@
 	url = https://github.com/maian3333/keycloak-custom-reg.git
 [submodule "backend/gateway"]
 	path = backend/gateway
-	url = https://github.com/phungle2508/ridehub-gateway.git
+	url = https://github.com/maian3333/ridehub-gateway.git
 [submodule "backend/ms_booking"]
 	path = backend/ms_booking
-	url = https://github.com/phungle2508/ridehub-ms-booking.git
+	url = https://github.com/maian3333/ridehub-ms-booking.git
 [submodule "backend/ms_promotion"]
 	path = backend/ms_promotion
-	url = https://github.com/phungle2508/ridehub-ms-promotion.git
+	url = https://github.com/maian3333/ridehub-ms-promotion.git
 [submodule "backend/ms_route"]
 	path = backend/ms_route
-	url = https://github.com/phungle2508/ridehub-ms-route.git
+	url = https://github.com/maian3333/ridehub-ms-route.git
 [submodule "backend/ms_user"]
 	path = backend/ms_user
-	url = https://github.com/phungle2508/ridehub-ms-user.git
+	url = https://github.com/maian3333/ridehub-ms-user.git
+[submodule "backend/ms_user"]
+	path = backend/ms_user
+	url = https://github.com/maian3333/vps-microservices.git
+[submodule "backend/ms_user"]
+	path = backend/ms_user
+	url = https://github.com/maian3333/vps-infra.git
