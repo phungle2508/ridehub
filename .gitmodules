@@ -49,3 +49,7 @@
 	url = https://github.com/maian3333/vps-infra.git
 	branch = main
 
+[submodule "infra/keycloak-custom-reg"]
+	path = infra/keycloak-custom-reg
+	url = https://github.com/maian3333/keycloak-custom-reg.git
+	branch = main
