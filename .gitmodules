@@ -38,10 +38,6 @@
 	url = https://github.com/maian3333/ridehub-ms-user.git
 	branch = main
 
-[submodule "infra/keycloak-custom-reg"]
-	path = infra/keycloak-custom-reg
-	url = https://github.com/maian3333/keycloak-custom-reg.git
-	branch = main
 
 [submodule "infra/vps-microservices"]
 	path = infra/vps-microservices
@@ -51,4 +47,9 @@
 [submodule "infra/vps-infra"]
 	path = infra/vps-infra
 	url = https://github.com/maian3333/vps-infra.git
+	branch = main
+
+[submodule "infra/vps-infra/keycloak-custom-reg"]
+	path = infra/vps-infra/keycloak-custom-reg
+	url = https://github.com/maian3333/keycloak-custom-reg.git
 	branch = main
