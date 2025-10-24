@@ -7,12 +7,12 @@
 
   <modules>
     <module>ridehub-central-common</module>
-    <module>gateway</module>
-    <module>ms_booking</module>
+    <module>ridehub-gateway</module>
+    <module>ridehub-ms-booking</module>
     <!-- <module>ms_payment</module> -->
-    <module>ms_route</module>
-    <module>ms_user</module>
+    <module>ridehub-ms-route</module>
+    <module>ridehub-ms-user</module>
     <!-- <module>ms_notification</module> -->
-    <module>ms_promotion</module>
+    <module>ridehub-ms-promotion</module>
   </modules>
 </project>

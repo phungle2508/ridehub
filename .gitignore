@@ -12,3 +12,4 @@ microservices/kafka/ssl/*
 .serena/*
 ./*/serena/*
 backend/*/.serena/*
+backend/.vscode/settings.json
