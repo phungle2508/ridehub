@@ -8,11 +8,6 @@
 	url = https://github.com/maian3333/ridehub-central-common.git
 	branch = main
 
-[submodule "backend/ridehub-central-config"]
-	path = backend/ridehub-central-config
-	url = https://github.com/maian3333/ridehub-central-config.git
-	branch = main
-
 [submodule "backend/ridehub-gateway"]
 	path = backend/ridehub-gateway
 	url = https://github.com/maian3333/ridehub-gateway.git
