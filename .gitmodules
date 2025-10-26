@@ -1,8 +1,3 @@
-[submodule "backend/data-fakker"]
-	path = backend/data-fakker
-	url = https://github.com/maian3333/data-fakker.git
-	branch = main
-
 [submodule "backend/ridehub-gateway"]
 	path = backend/ridehub-gateway
 	url = https://github.com/maian3333/ridehub-gateway.git
@@ -37,4 +32,12 @@
 [submodule "infra/vps-infra"]
 	path = infra/vps-infra
 	url = https://github.com/maian3333/vps-infra.git
+	branch = main
+[submodule "infra/data-fakker"]
+	path = infra/data-fakker
+	url = https://github.com/maian3333/data-fakker.git
+	branch = main
+[submodule "backend/ridehub-central-common"]
+	path = backend/ridehub-central-common
+	url = https://github.com/maian3333/ridehub-central-common.git
 	branch = main
