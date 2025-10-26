@@ -3,11 +3,6 @@
 	url = https://github.com/maian3333/data-fakker.git
 	branch = main
 
-[submodule "backend/ridehub-central-common"]
-	path = backend/ridehub-central-common
-	url = https://github.com/maian3333/ridehub-central-common.git
-	branch = main
-
 [submodule "backend/ridehub-gateway"]
 	path = backend/ridehub-gateway
 	url = https://github.com/maian3333/ridehub-gateway.git
