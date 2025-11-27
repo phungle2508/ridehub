@@ -21,3 +21,9 @@
 [submodule "backend/gateway"]
 	path = backend/gateway
 	url = https://github.com/maian3333/ridehub-gateway.git
+[submodule "infra/vps-microservices"]
+	path = infra/vps-microservices
+	url = https://github.com/maian3333/vps-microservices.git
+[submodule "infra/vps-infra"]
+	path = infra/vps-infra
+	url = https://github.com/maian3333/vps-infra.git
