@@ -11,4 +11,4 @@ microservices/kafka/ssl/*
 # spi/ should be included in version control
 .serena/*
 ./*/serena/*
-backend/*/.serena/*
+backend/*/.serena/*/infra/vps-microservices/ridehub/
