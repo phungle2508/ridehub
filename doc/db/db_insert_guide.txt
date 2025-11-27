@@ -1,0 +1,462 @@
+
+TRAVEL TICKETING – DB INSERT GUIDE (MySQL 8.x)
+=============================================
+
+This guide shows the recommended ORDER OF INSERTS and SAMPLE SQL for the 4 services:
+- ms_user
+- ms_route
+- ms_booking
+- ms_promotion
+
+Assumptions
+-----------
+- MySQL 8.x
+- UUID values are stored as VARCHAR(36). Replace the example UUIDs with your own as needed.
+- Timestamps use UTC ISO-like strings.
+- Soft delete: set is_deleted = 0 (false) for active rows.
+- Run each block within a transaction in its own service database/schema.
+- Cross-service references are LOGICAL (UUID copied from the source service); there are no foreign keys across services.
+
+Common tips
+-----------
+- Always create parents before children.
+- For cross-service references, first create the record in its own service, then copy the UUID into dependent services.
+- If you batch insert, commit in small chunks for safety.
+
+================================================================================
+1) SERVICE: ms_user  (DB: ms_user)
+================================================================================
+
+-- 1.1 Create a user (AppUser) – Keycloak owns roles; store keycloak_id (sub)
+INSERT INTO app_user (
+  id, keycloak_id, email, phone_number, first_name, last_name, date_of_birth,
+  is_verified, is_active, last_login_at,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  '11111111-1111-1111-1111-111111111111', -- app_user.id
+  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', -- keycloak sub
+  'alice@example.com',
+  '+84-912-000-001',
+  'Alice',
+  'Nguyen',
+  '1995-04-21',
+  1,
+  1,
+  '2025-09-18 10:00:00',
+  '2025-09-18 09:59:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 1.2 Create a profile and link 1-1 to the user
+INSERT INTO profile (
+  id, user_id, full_name, birth_date,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  '22222222-2222-2222-2222-222222222222',
+  '11111111-1111-1111-1111-111111111111',
+  'Alice Nguyen',
+  '1995-04-21',
+  '2025-09-18 09:59:30',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+================================================================================
+2) SERVICE: ms_route  (DB: ms_route)
+================================================================================
+The address hierarchy (province -> district -> ward -> address), then station,
+seat_map/floor/seat, vehicle, route, trip, trip_seat, and staff.
+
+-- 2.1 Province
+INSERT INTO province (
+  id, province_code, name, name_en, full_name, full_name_en, code_name,
+  administrative_unit_id, administrative_region_id,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  '33333333-3333-3333-3333-333333333333',
+  '79',
+  'Thành phố Hồ Chí Minh',
+  'Ho Chi Minh City',
+  'Thành phố Hồ Chí Minh',
+  'Ho Chi Minh City',
+  'ho_chi_minh_city',
+  1,
+  7,
+  '2025-09-18 09:00:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.2 District
+INSERT INTO district (
+  id, province_id, district_code, name, name_en, full_name, full_name_en, code_name,
+  administrative_unit_id, created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  '44444444-4444-4444-4444-444444444444',
+  '33333333-3333-3333-3333-333333333333',
+  '769',
+  'Quận 1',
+  'District 1',
+  'Quận 1',
+  'District 1',
+  'quan_1',
+  2,
+  '2025-09-18 09:01:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.3 Ward
+INSERT INTO ward (
+  id, district_id, ward_code, name, name_en, full_name, full_name_en, code_name,
+  administrative_unit_id, created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  '55555555-5555-5555-5555-555555555555',
+  '44444444-4444-4444-4444-444444444444',
+  '26734',
+  'Phường Bến Nghé',
+  'Ben Nghe Ward',
+  'Phường Bến Nghé',
+  'Ben Nghe Ward',
+  'phuong_ben_nghe',
+  3,
+  '2025-09-18 09:02:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.4 Address
+INSERT INTO address (
+  id, ward_id, street_address, latitude, longitude,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  '66666666-6666-6666-6666-666666666666',
+  '55555555-5555-5555-5555-555555555555',
+  '123 Lê Lợi, Q1',
+  10.7757,
+  106.7004,
+  '2025-09-18 09:03:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.5 Station (located at Address)
+INSERT INTO station (
+  id, address_id, name, phone_number, description, active,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  '77777777-7777-7777-7777-777777777777',
+  '66666666-6666-6666-6666-666666666666',
+  'Ben Xe Q1',
+  '+84-28-1234-5678',
+  'Central station in District 1',
+  1,
+  '2025-09-18 09:04:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.6 Seat Map / Floor / Seat
+INSERT INTO seat_map (id, name, created_at, updated_at, is_deleted, deleted_at, deleted_by)
+VALUES ('88888888-8888-8888-8888-888888888888', '2-floor-18-seats-per-floor', '2025-09-18 09:05:00', NULL, 0, NULL, NULL);
+
+INSERT INTO floor (id, seat_map_id, floor_no, price_factor_floor, created_at, updated_at, is_deleted, deleted_at, deleted_by)
+VALUES
+('99999999-9999-9999-9999-999999999991', '88888888-8888-8888-8888-888888888888', 1, 1.00, '2025-09-18 09:05:30', NULL, 0, NULL, NULL),
+('99999999-9999-9999-9999-999999999992', '88888888-8888-8888-8888-888888888888', 2, 1.05, '2025-09-18 09:05:31', NULL, 0, NULL, NULL);
+
+-- Example: insert 4 seats on floor 1 (A01..A04)
+INSERT INTO seat (id, floor_id, seat_no, row, col, price_factor, created_at, updated_at, is_deleted, deleted_at, deleted_by) VALUES
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001', '99999999-9999-9999-9999-999999999991', 'A01', 1, 1, 1.00, '2025-09-18 09:06:00', NULL, 0, NULL, NULL),
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0002', '99999999-9999-9999-9999-999999999991', 'A02', 1, 2, 1.00, '2025-09-18 09:06:01', NULL, 0, NULL, NULL),
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0003', '99999999-9999-9999-9999-999999999991', 'A03', 1, 3, 1.00, '2025-09-18 09:06:02', NULL, 0, NULL, NULL),
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0004', '99999999-9999-9999-9999-999999999991', 'A04', 1, 4, 1.00, '2025-09-18 09:06:03', NULL, 0, NULL, NULL);
+
+-- 2.7 Vehicle (with vehicle type & factor)
+INSERT INTO vehicle (
+  id, seat_map_id, type, type_factor, plate_number, brand, description,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  '88888888-8888-8888-8888-888888888888',
+  'STANDARD_BUS',
+  1.00,
+  '51A-123.45',
+  'Thaco',
+  'Standard bus (2 floors)',
+  '2025-09-18 09:07:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.8 Route (origin/destination can point to same demo station or different stations)
+-- For demo, create a second station as destination:
+INSERT INTO address (id, ward_id, street_address, latitude, longitude, created_at, updated_at, is_deleted, deleted_at, deleted_by)
+VALUES ('66666666-6666-6666-6666-666666666667', '55555555-5555-5555-5555-555555555555', '456 Hai Ba Trung, Q1', 10.78, 106.70, '2025-09-18 09:07:30', NULL, 0, NULL, NULL);
+
+INSERT INTO station (id, address_id, name, phone_number, description, active, created_at, updated_at, is_deleted, deleted_at, deleted_by)
+VALUES ('77777777-7777-7777-7777-777777777778', '66666666-6666-6666-6666-666666666667', 'Ben Xe Hai Ba Trung', '+84-28-9876-5432', 'Another central station', 1, '2025-09-18 09:07:45', NULL, 0, NULL, NULL);
+
+INSERT INTO route (
+  id, origin_station_id, destination_station_id, route_code, distance_km,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'cccccccc-cccc-cccc-cccc-cccccccccccc',
+  '77777777-7777-7777-7777-777777777777',
+  '77777777-7777-7777-7777-777777777778',
+  'HCM-Q1-DEMO',
+  12.5,
+  '2025-09-18 09:08:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.9 Trip (assign vehicle; optional driver/attendant)
+INSERT INTO trip (
+  id, route_id, vehicle_id, driver_id, attendant_id, trip_code, departure_time, arrival_time, base_fare,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'dddddddd-dddd-dddd-dddd-dddddddddddd',
+  'cccccccc-cccc-cccc-cccc-cccccccccccc',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  NULL,
+  NULL,
+  'TRIP-Q1-001',
+  '2025-09-20 08:00:00',
+  '2025-09-20 08:45:00',
+  100000.00,
+  '2025-09-18 09:09:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 2.10 Trip seats snapshot (tie to trip; copy seat numbers/floor from seat_map)
+INSERT INTO trip_seat (
+  id, trip_id, seat_no, floor_no, price_factor, booked, reserved_by, reserved_until,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES
+('eeeeeeee-eeee-eeee-eeee-eeeeeeee0001', 'dddddddd-dddd-dddd-dddd-dddddddddddd', 'A01', 1, 1.00, 0, NULL, NULL, '2025-09-18 09:10:00', NULL, 0, NULL, NULL),
+('eeeeeeee-eeee-eeee-eeee-eeeeeeee0002', 'dddddddd-dddd-dddd-dddd-dddddddddddd', 'A02', 1, 1.00, 0, NULL, NULL, '2025-09-18 09:10:01', NULL, 0, NULL, NULL);
+
+================================================================================
+3) SERVICE: ms_booking  (DB: ms_booking)
+================================================================================
+Create booking, tickets, payment transaction, invoice.
+PRICE formula (example in app): price = trip.base_fare * vehicle.type_factor * floor.price_factor_floor * seat.price_factor
+
+-- 3.1 Booking (customer_id from ms_user.app_user.id)
+INSERT INTO booking (
+  id, customer_id, booking_code, status, quantity, total_amount, created_time,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1',
+  '11111111-1111-1111-1111-111111111111',
+  'BKG-20250920-0001',
+  'AWAITING_PAYMENT',
+  2,
+  200000.00,
+  '2025-09-18 12:00:00',
+  '2025-09-18 12:00:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 3.2 Tickets (trip/route/trip_seat from ms_route; one seat per ticket)
+INSERT INTO ticket (
+  id, booking_id, trip_id, route_id, trip_seat_id, ticket_code, price, qr_code,
+  time_from, time_to, checked_in, created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES
+('f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2',
+  'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1',
+  'dddddddd-dddd-dddd-dddd-dddddddddddd',
+  'cccccccc-cccc-cccc-cccc-cccccccccccc',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeee0001',
+  'TCK-20250920-0001',
+  100000.00,
+  'QR-1',
+  '2025-09-20 08:00:00',
+  '2025-09-20 08:45:00',
+  0,
+  '2025-09-18 12:01:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+),
+('f3f3f3f3-f3f3-f3f3-f3f3-f3f3f3f3f3f3',
+  'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1',
+  'dddddddd-dddd-dddd-dddd-dddddddddddd',
+  'cccccccc-cccc-cccc-cccc-cccccccccccc',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeee0002',
+  'TCK-20250920-0002',
+  100000.00,
+  'QR-2',
+  '2025-09-20 08:00:00',
+  '2025-09-20 08:45:00',
+  0,
+  '2025-09-18 12:01:05',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 3.3 PaymentTransaction (pending)
+INSERT INTO payment_transaction (
+  id, booking_id, transaction_id, method, status, amount, time, gateway_note,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'f4f4f4f4-f4f4-f4f4-f4f4-f4f4f4f4f4f4',
+  'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1',
+  'VNPAY-20250918-XYZ',
+  'VNPAY',
+  'INITIATED',
+  200000.00,
+  '2025-09-18 12:02:00',
+  'init',
+  '2025-09-18 12:02:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 3.4 Invoice (optional before/after payment confirmation)
+INSERT INTO invoice (
+  id, booking_id, invoice_no, issued_at, gross_amount, vat_amount, net_amount,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'f5f5f5f5-f5f5-f5f5-f5f5-f5f5f5f5f5f5',
+  'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1',
+  'INV-20250918-0001',
+  '2025-09-18 12:03:00',
+  200000.00,
+  20000.00,
+  180000.00,
+  '2025-09-18 12:03:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+================================================================================
+4) SERVICE: ms_promotion  (DB: ms_promotion)
+================================================================================
+
+-- 4.1 Promotion
+INSERT INTO promotion (
+  id, code, description, start_date, end_date, usage_limit, used_count, active,
+  created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'abababab-abab-abab-abab-abababababab',
+  'SEP10',
+  'September promo 10%',
+  '2025-09-01',
+  '2025-09-30',
+  1000,
+  0,
+  1,
+  '2025-09-01 00:00:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 4.2 Policy: Percent off total (10%)
+INSERT INTO policy_percent_off (
+  promotion_id, percent, max_off, created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'abababab-abab-abab-abab-abababababab',
+  10,
+  50000.00,
+  '2025-09-01 00:00:00',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 4.3 Condition: By route (apply to demo route from ms_route)
+INSERT INTO cond_by_route (
+  id, promotion_id, route_id, created_at, updated_at, is_deleted, deleted_at, deleted_by
+) VALUES (
+  'cdcdcdcd-cdcd-cdcd-cdcd-cdcdcdcdcdcd',
+  'abababab-abab-abab-abab-abababababab',
+  'cccccccc-cccc-cccc-cccc-cccccccccccc',
+  '2025-09-01 00:00:10',
+  NULL,
+  0,
+  NULL,
+  NULL
+);
+
+-- 4.4 Link promotion to a booking (in ms_booking) – store in booking_promotion (ms_promotion DB)
+INSERT INTO booking_promotion (
+  booking_id, promotion_id
+) VALUES (
+  'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1',
+  'abababab-abab-abab-abab-abababababab'
+);
+
+================================================================================
+Verification Queries (optional)
+================================================================================
+
+-- Check route & trip:
+SELECT r.route_code, t.trip_code, t.base_fare
+FROM route r
+JOIN trip t ON t.route_id = r.id
+WHERE r.id = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+
+-- Check available trip seats:
+SELECT ts.seat_no, ts.floor_no, ts.booked
+FROM trip_seat ts
+WHERE ts.trip_id = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+
+-- Check booking with tickets:
+SELECT b.booking_code, b.total_amount, tk.ticket_code, tk.price
+FROM booking b
+JOIN ticket tk ON tk.booking_id = b.id
+WHERE b.id = 'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1';
+
+-- Check promotions applied to booking:
+SELECT bp.booking_id, p.code, p.description
+FROM booking_promotion bp
+JOIN promotion p ON p.id = bp.promotion_id
+WHERE bp.booking_id = 'f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1';
+
+================================================================================
+Order of teardown (if needed)
+================================================================================
+- Delete children first, then parents:
+  ms_booking: ticket -> invoice/payment_transaction -> booking
+  ms_promotion: booking_promotion -> conditions/policies -> promotion
+  ms_route: trip_seat -> trip -> route -> station/address/ward/district/province
+  ms_user: profile -> app_user
+
+End of file.

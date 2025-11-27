@@ -1,0 +1,42 @@
+name: Publish to GitHub Packages
+on:
+  push:
+    tags: ["v*"] # publish when you tag a version
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: secrets
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+      
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Build & Deploy
+        run: |
+          export KEYCLOAK_USERNAME='${{ secrets.KEYCLOAK_USERNAME }}'
+          export KEYCLOAK_PASSWORD='${{ secrets.KEYCLOAK_PASSWORD }}'
+          export KEYCLOAK_SECRET='${{ secrets.KEYCLOAK_SECRET }}'
+          mvn -v
+          # Set version from git tag
+          mvn versions:set -DnewVersion=${{ steps.extract_version.outputs.VERSION }}
+          mvn -B -U -DskipTests clean deploy -Prun-openapi \
+            -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/LeTrungMiniuh/ridehub-central-common
+        env:
+          GITHUB_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          GITHUB_ACTOR: __token__

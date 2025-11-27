@@ -1,0 +1,18 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.ridehub</groupId>
+  <artifactId>backend</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>ridehub-central-common</module>
+    <module>gateway</module>
+    <module>ms_booking</module>
+    <!-- <module>ms_payment</module> -->
+    <module>ms_route</module>
+    <module>ms_user</module>
+    <!-- <module>ms_notification</module> -->
+    <module>ms_promotion</module>
+  </modules>
+</project>

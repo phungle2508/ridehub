@@ -1,0 +1,100 @@
+//// ==========================================
+//// ms_promotion (Promotions & Conditions)
+//// ==========================================
+
+Table promotion {
+  id UUID [pk, not null]
+  code varchar [not null, unique]
+  description text
+  start_date date
+  end_date date
+  usage_limit int
+  used_count int
+  active boolean
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+}
+
+Table policy_buy_n_get_m {
+  promotion_id UUID [not null, ref: > promotion.id]
+  buy_n int [not null]
+  get_m int [not null]
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+
+  Indexes {
+    (promotion_id) [pk]
+  }
+}
+
+Table policy_percent_off {
+  promotion_id UUID [not null, ref: > promotion.id]
+  percent int [not null]
+  max_off decimal(12,2)
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+
+  Indexes {
+    (promotion_id) [pk]
+  }
+}
+
+Table cond_by_route {
+  id UUID [pk, not null]
+  promotion_id UUID [not null, ref: > promotion.id]
+  route_id UUID [not null, note: 'ms_route.route.id (logical)']
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+}
+
+Table cond_by_date {
+  id UUID [pk, not null]
+  promotion_id UUID [not null, ref: > promotion.id]
+  specific_date date
+  weekday int // 1..7 optional
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+}
+
+Table cond_by_location {
+  id UUID [pk, not null]
+  promotion_id UUID [not null, ref: > promotion.id]
+  province_id UUID [note: 'ms_route.province.id (logical)']
+  district_id UUID [note: 'ms_route.district.id (logical)']
+  ward_id UUID [note: 'ms_route.ward.id (logical)']
+
+  created_at timestamptz [not null]
+  updated_at timestamptz
+  is_deleted boolean
+  deleted_at timestamptz
+  deleted_by UUID
+}
+
+Table booking_promotion {
+  booking_id UUID [not null, note: 'ms_booking.booking.id (logical)']
+  promotion_id UUID [not null, ref: > promotion.id]
+
+  Indexes {
+    (booking_id, promotion_id) [pk]
+  }
+}

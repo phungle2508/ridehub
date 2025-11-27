@@ -1,0 +1,17 @@
+@startuml
+title ms-booking – Ticket Handling (No Kafka)
+
+actor Customer
+participant "TicketController" as TICKET
+database "BookingDB" as BOOKDB
+
+== Ticket Retrieval ==
+Customer -> TICKET : GET /api/tickets?bookingCode=...
+TICKET -> BOOKDB : SELECT * FROM Ticket WHERE bookingId=...
+TICKET --> Customer : {tickets[], qrCodes[]}
+
+== Ticket Check-in ==
+Customer -> TICKET : POST /api/tickets/{code}/checkin
+TICKET -> BOOKDB : update Ticket.checkedIn=true
+TICKET --> Customer : {checkedIn=true}
+@enduml

@@ -1,0 +1,3 @@
+com.ridehub.kafka.config.KafkaLibraryAutoConfiguration
+com.ridehub.common.feign.FeignCommonAutoConfiguration
+com.ridehub.common.config.ConsulBootstrapConfiguration
