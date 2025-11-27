@@ -18,3 +18,6 @@
 [submodule "backend/ms_user"]
 	path = backend/ms_user
 	url = https://github.com/maian3333/ridehub-ms-user.git
+[submodule "backend/gateway"]
+	path = backend/gateway
+	url = https://github.com/maian3333/ridehub-gateway.git
