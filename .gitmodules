@@ -27,3 +27,6 @@
 [submodule "infra/vps-infra"]
 	path = infra/vps-infra
 	url = https://github.com/maian3333/vps-infra.git
+[submodule "infra/ridehub-central-common"]
+	path = infra/ridehub-central-common
+	url = https://github.com/maian3333/ridehub-central-common.git
