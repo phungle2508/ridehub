@@ -1,0 +1,250 @@
+RIDEHUB - SERVICE AND INFRA SCRIPT SECURITY REVIEW
+===================================================
+
+Phạm vi
+-------
+Rà soát code service, cấu hình runtime và script trong:
+- backend/gateway
+- backend/ms_user
+- backend/ms_booking
+- backend/ms_route
+- backend/ms_promotion
+- infra/vps-infra
+- infra/ridehub-central-common
+
+Kết luận ngắn
+-------------
+Các service đã có nền tảng Spring Security/OIDC, stateless JWT validation, healthcheck,
+Kafka/Redis integration và một số admin guard. Tuy nhiên hệ thống chưa production-ready
+vì secret management, Kafka authorization, TLS verification, dev-mode infrastructure,
+backup/restore và các fallback cấu hình nguy hiểm vẫn tồn tại.
+
+Các lỗi cần sửa theo thứ tự
+---------------------------
+
+P0 - cần xử lý trước khi mở production
+
+1. Secret và private key bị đưa vào source/config
+Files liên quan:
+- infra/vps-infra/central-server-config/kafka-config/kraft-config.properties
+- infra/vps-infra/central-server-config/kafka-config/admin.properties
+- infra/vps-infra/central-server-config/consul/consul.hcl
+- infra/vps-infra/central-server-config/tls/
+- backend/ms_user/src/main/java/com/ridehub/user/service/impl/KeycloakAuthServiceImpl.java
+
+Vấn đề:
+- Kafka OAuth secret, keystore password, Consul token, Keycloak secret và TLS private
+  key xuất hiện trong workspace/tracked configuration.
+- Có default secret trong code và script.
+
+Cần làm:
+- Rotate toàn bộ credential đã từng commit.
+- Xóa secret/private key khỏi Git history theo chính sách bảo mật.
+- Inject runtime bằng Vault/Docker secrets/external secret manager.
+- Thêm secret scanning vào CI.
+
+2. Kafka authorization gần như đang mở
+File:
+- infra/vps-infra/central-server-config/kafka-config/kraft-config.properties
+
+Vấn đề:
+- User:ANONYMOUS là super-user.
+- allow.everyone.if.no.acl.found=true.
+- Có PLAINTEXT listener và inter-broker traffic.
+- Public port đang bind all interfaces.
+
+Cần làm:
+- Bỏ ANONYMOUS.
+- Đặt allow.everyone.if.no.acl.found=false.
+- Tạo OAuth/SASL identity và ACL riêng cho từng service/topic/group.
+- Đóng public listener nếu không có yêu cầu rõ ràng.
+
+3. TLS verification bị tắt
+Files:
+- infra/vps-infra/central-server-config/kafka-config/kraft-config.properties
+- infra/vps-infra/central-server-config/kafka-config/admin.properties
+- infra/vps-infra/central-server-config/kafka-config/producer.properties
+- infra/vps-infra/central-server-config/kafka-config/consumer.properties
+- infra/vps-infra/central-server-config/default.conf.template
+
+Vấn đề:
+- Kafka hostname verification bị tắt.
+- OIDC Lua config dùng ssl_verify = "no".
+- Advertised hostname Kafka và SAN certificate không khớp.
+
+Cần làm:
+- Sửa DNS/SAN và advertised.listeners.
+- Bật hostname verification.
+- Bật OIDC certificate verification.
+- Test từ đúng network client, không chỉ test được TCP port.
+
+4. Vault và Keycloak đang chạy theo dev model
+Files:
+- infra/vps-infra/vault/vault-startup.sh
+- infra/vps-infra/vault/config/vault.hcl
+- infra/vps-infra/docker-compose.yml
+
+Vấn đề:
+- Vault dev mode, root token, HTTP và fallback token root.
+- Keycloak start-dev và KC_DB=dev-file.
+- Custom Keycloak provider chưa được mount trong compose chính.
+
+Cần làm:
+- Chuyển Vault sang production mode, TLS, persistent storage và policy/token riêng.
+- Chuyển Keycloak sang production mode + database production.
+- Build/deploy provider bằng image hoặc artifact versioned.
+
+5. Dịch vụ dữ liệu đang public hoặc không có authentication
+Files:
+- infra/vps-infra/docker-compose.yml
+- infra/vps-infra/central-server-config/default.conf.template
+
+Vấn đề:
+- Elasticsearch tắt xpack.security.enabled và publish port 9200.
+- Redis publish port 6379 và còn bị proxy qua HTTP.
+
+Cần làm:
+- Đóng public port.
+- Bật auth/TLS hoặc chỉ private network với identity kiểm soát.
+- Xóa Redis HTTP proxy.
+
+P1 - cần xử lý trước khi vận hành ổn định
+
+6. Backup không chứng minh được khả năng restore
+File:
+- infra/vps-infra/backup-vps.sh
+
+Vấn đề:
+- Tên Docker volume có thể bị prefix theo project nên script có thể backup sai volume.
+- Thiếu Redis, Elasticsearch và application database.
+- Không có restore script, encryption, retention policy hay restore drill.
+
+Cần làm:
+- Dùng tên volume explicit hoặc resolve volume bằng Docker label.
+- Backup đầy đủ dữ liệu authoritative.
+- Mã hóa archive, kiểm tra checksum và retention.
+- Viết restore script và chạy restore test định kỳ.
+
+7. Fallback database production không an toàn
+Files:
+- backend/*/src/main/resources/config/application-prod.yml
+
+Vấn đề:
+- Một số service có useSSL=false, user root hoặc password rỗng làm default.
+- Nếu config server lỗi, service có thể khởi động bằng credential không phù hợp.
+
+Cần làm:
+- Không có password/username production mặc định trong repository.
+- Fail fast khi thiếu secret.
+- Bật TLS tới database và dùng user riêng theo service.
+
+8. Kafka producer/reliability chưa đủ an toàn vận hành
+Files:
+- infra/ridehub-central-common/src/main/java/com/ridehub/common/kafka/broker/GenericKafkaProducer.java
+- infra/vps-infra/central-server-config/config/application.yml
+
+Vấn đề:
+- Producer dùng AtomicReference như queue một phần tử, có thể ghi đè event khi send gần nhau.
+- Cấu hình có topic auto-creation, replication factor 1, acks 1 và idempotence chưa bật.
+- Single broker khiến mất broker là mất availability/data durability.
+
+Cần làm:
+- Dùng KafkaTemplate/StreamBridge hoặc bounded queue có backpressure.
+- Dùng acks=all, idempotence và retry phù hợp.
+- Tắt auto topic creation.
+- Dùng nhiều broker/controller khi cần HA.
+- Bổ sung outbox/idempotency cho event từ database.
+
+9. Script TLS đang làm yếu permission
+File:
+- infra/vps-infra/scripts/generate-kafka-ssl.sh
+
+Vấn đề:
+- Script đặt keystore/truststore `600` rồi đổi thành `644`.
+- Password được truyền qua command argument/environment.
+- CA và broker certificate tạo thời hạn 10 năm.
+- Tạo artifact ở path ../kafka/ssl, không nhất quán với path compose đang mount.
+
+Cần làm:
+- Giữ private key/keystore ở `600`, truststore có permission tối thiểu cần thiết.
+- Không đưa password vào process args/log.
+- Rút ngắn thời hạn và có quy trình rotate certificate.
+- Chuẩn hóa output path với compose.
+- Không commit generated private key/certificate artifact.
+
+10. Logging và telemetry có thể lộ dữ liệu
+Files:
+- infra/vps-infra/central-server-config/config/application.yml
+- backend/*/src/main/java/**
+
+Vấn đề:
+- ROOT DEBUG, SQL/debug logging và tracing 100% làm tăng khả năng log password,
+  token, SQL parameter, phone/email hoặc payload nhạy cảm.
+- Một số resource/service log trực tiếp DTO/request.
+
+Cần làm:
+- Production dùng INFO/WARN, tắt SQL parameter logging.
+- Redact token, password, phone/email và payload nhạy cảm.
+- Sampling tracing, giới hạn retention và kiểm soát quyền đọc Loki/Zipkin.
+
+11. Docker boundary quá rộng
+Files:
+- infra/vps-infra/docker-compose.yml
+- infra/vps-infra/observability/promtail-config.yaml
+
+Vấn đề:
+- Promtail chạy root và mount Docker socket.
+- Autoheal cũng mount Docker socket.
+- Docker socket gần tương đương quyền điều khiển host.
+
+Cần làm:
+- Dùng metrics/log agent hạn chế quyền hoặc cô lập trên management host.
+- Thêm CPU, memory, PID và file descriptor limits.
+- Không chạy Kafka bằng root nếu image/deployment cho phép bỏ root.
+
+P2 - cải thiện sau khi P0/P1 hoàn tất
+
+12. Supply-chain và reproducibility
+- Pin mọi image bằng version immutable hoặc digest.
+- Không dùng vault/kafka-ui/autoheal/redisinsight:latest.
+- Pin OS package, LuaRocks và download URL bằng HTTPS/checksum.
+- Chạy CVE scan, dependency scan, SBOM và image signature verification.
+
+13. Service authorization và contract
+- Kiểm tra admin endpoint bằng method-level authorization, đặc biệt ms_user AuthResource.
+- Public auth flow chỉ permit đúng register/login/reset; admin operation phải có role.
+- Hoàn thiện OpenAPI/AsyncAPI/Avro contract và provider/consumer tests.
+- Không dùng Java class name làm payload contract giữa Kafka service.
+
+14. Redis shared policy
+- Bật TLS/ACL và credential riêng.
+- Chuẩn hóa key prefix, TTL, rate limit, lock và idempotency.
+- Tránh Java serialization cho dữ liệu cross-service.
+
+Các điểm đang hợp lý
+--------------------
+- Các service sử dụng stateless resource-server JWT validation.
+- OIDC issuer và audience validation đã được đặt trong SecurityConfiguration.
+- Nginx có HTTPS redirect và certificate mount.
+- Healthcheck/restart policy đã được dùng cho nhiều container.
+- Backup script có set -euo pipefail và loại trừ build artifact.
+- Có Kafka KRaft, Avro envelope, retry/DLQ direction và Redisson/JCache foundation.
+
+Thứ tự triển khai đề xuất
+-------------------------
+1. Rotate/remove secrets và private keys.
+2. Đóng public data/admin endpoints.
+3. Khóa Kafka ACL và sửa TLS hostname verification.
+4. Chuyển Vault/Keycloak khỏi dev mode.
+5. Sửa backup/restore và database fail-fast config.
+6. Sửa Kafka producer/reliability và per-service identity.
+7. Sửa TLS generation script, logging và Docker socket boundary.
+8. Pin/scan images và hoàn thiện contract/security tests.
+
+Kết luận
+--------
+
+Code service có nền tảng bảo mật hợp lý, nhưng infra script và runtime config hiện chưa
+đủ chặt để production. Các lỗi nghiêm trọng nhất là secret exposure, Kafka authorization,
+TLS verification, Vault/Keycloak dev mode, public Elasticsearch/Redis và backup chưa
+được chứng minh bằng restore test.

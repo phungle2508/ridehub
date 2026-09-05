@@ -1,0 +1,146 @@
+RIDEHUB - DIRECTORY, CONTRACTS AND CENTRAL CONFIG
+=================================================
+
+Mục tiêu
+--------
+Tách rõ ba loại tài sản:
+
+1. Contract: API/event/schema mà các service phải tuân thủ.
+2. Shared library: code Java dùng chung và generated client.
+3. Central config: cấu hình runtime/deployment được nạp khi service chạy.
+
+Không nên để ba loại này trộn trong cùng một module.
+
+Cấu trúc đề xuất
+----------------
+
+ridehub/
+├── backend/
+│   ├── gateway/
+│   └── ms_*/                        # business service, không sở hữu contract chung
+│
+├── infra/
+│   ├── ridehub-contracts/           # source contract + optional schema/model JAR
+│   │   ├── src/main/openapi/
+│   │   ├── src/main/asyncapi/
+│   │   ├── src/main/avro/
+│   │   ├── src/main/json-schema/
+│   │   ├── examples/
+│   │   └── contract-tests/
+│   ├── ridehub-central-common/      # shared runtime library, build thành JAR
+│   ├── vps-infra/                   # Docker, Nginx, Vault, Kafka, observability
+│   └── central-server-config/       # runtime config nếu tách thành repo riêng
+│
+└── doc/
+
+Nếu giữ central-server-config trong vps-infra thì dùng:
+
+infra/
+└── vps-infra/
+    └── central-server-config/
+
+Ownership
+---------
+
+infra/ridehub-contracts/
+- Sở hữu OpenAPI, AsyncAPI, Avro/JSON Schema và examples.
+- Là source of truth duy nhất.
+- Có version và compatibility policy.
+- Không chứa password, token, hostname môi trường production hoặc Docker secret.
+- Có thể publish artifact/schema package riêng.
+
+ridehub-contracts/
+- Build generated Avro classes, DTO/model dùng chung nếu cần.
+- Có thể publish Maven JAR riêng từ schema source.
+- Không chứa business logic, Kafka connection, Redis client hay Consul runtime.
+- Không hand-edit generated source.
+
+ridehub-central-common/
+- Là shared library nằm trong infra, không phải business service trong backend.
+- Chứa Feign client, Kafka helper, Redis helper, auth client và auto-configuration.
+- Consume contract/schema artifact để generate client/model.
+- Build thành versioned JAR rồi publish lên Maven Registry/GitHub Packages.
+- Các microservice chỉ consume JAR qua dependency version.
+- Không phải nơi định nghĩa contract gốc.
+- Không chứa secret hoặc config riêng của production.
+
+central-server-config/
+- Chứa application config runtime cho Consul/Vault/config server.
+- Có thể chứa tên service, timeout, topic name, profile và endpoint template.
+- Secret phải là placeholder được inject lúc deploy, ví dụ ${KAFKA_CLIENT_SECRET}.
+- Không chứa Java source, generated DTO, OpenAPI source of truth hoặc business logic.
+
+vps-infra/
+- Chứa compose, Dockerfile, Nginx, TLS wiring, Vault policy, backup và deployment script.
+- Có trách nhiệm chạy service, không định nghĩa API/event contract.
+- Không commit private key, OAuth secret, SMS password hoặc token thật.
+
+Contract build flow
+-------------------
+
+1. Sửa schema/API/event contract trong infra/ridehub-contracts/.
+2. CI lint OpenAPI/AsyncAPI và kiểm tra Avro compatibility.
+3. Build/publish schema/model artifact nếu cần.
+4. infra/ridehub-central-common consume schema artifact, generate client và build shared JAR.
+5. Publish shared JAR lên Maven Registry/GitHub Packages.
+6. Microservice nâng dependency version.
+7. Chạy provider/consumer contract tests.
+8. Deploy central-server-config riêng theo environment.
+
+Khuyến nghị Maven
+-----------------
+
+Không nên khai báo ridehub-central-common như module con giả tại:
+
+backend/ridehub-central-common
+
+vì module thật đang ở:
+
+infra/ridehub-central-common
+
+Có hai lựa chọn hợp lệ:
+
+A. Shared library dưới infra (khuyến nghị):
+- Giữ infra/ridehub-central-common là Maven project độc lập.
+- Build và publish thành JAR versioned.
+- Các microservice dùng JAR qua dependency version.
+- infra/ridehub-contracts sở hữu source contract và có thể publish schema/model artifact.
+
+B. Dùng root reactor:
+- Tạo Maven pom ở root repository.
+- Khai báo module bằng đường dẫn đúng tới infra/.
+- Chạy được một lệnh build từ root.
+
+Với nhiều microservice và release độc lập, lựa chọn A phù hợp hơn.
+
+Quy tắc không được vi phạm
+--------------------------
+
+- Không đặt contract canonical trong central-server-config.
+- Không đặt secret trong contracts hoặc generated JAR.
+- Không để generated code là source of truth.
+- Không để service tự sửa schema/event mà không cập nhật contracts.
+- Không dùng cùng một config file cho dev, staging và production.
+- Không dùng latest cho image production.
+- Không publish central-server-config như một Java library.
+- Không đưa business logic vào central-common.
+
+Thứ tự chuyển đổi
+-----------------
+
+P0. Tách secret thật khỏi central config và rotate toàn bộ secret đã commit.
+P1. Tạo infra/ridehub-contracts và chuyển OpenAPI/Avro/AsyncAPI vào đó.
+P1. Giữ infra/ridehub-central-common là shared library độc lập.
+P1. Build/publish central-common thành JAR versioned.
+P1. Sửa root Maven build hoặc chuyển hoàn toàn sang dependency artifact.
+P2. Thêm CI lint, compatibility check và contract test.
+P2. Tách config theo environment: dev, staging, production.
+P2. Version hóa contract và shared JAR độc lập với microservice.
+
+Kết luận
+--------
+
+ridehub-contracts là nơi sở hữu hợp đồng giao tiếp; ridehub-central-common trong infra là shared library
+build thành JAR; central-server-config là cấu hình runtime; vps-infra là cách triển khai.
+Bốn trách nhiệm này nên tách biệt để thay đổi API không làm thay đổi secret/deployment và
+thay đổi deployment không làm thay đổi contract.

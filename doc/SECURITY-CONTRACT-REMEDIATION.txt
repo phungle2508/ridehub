@@ -1,0 +1,174 @@
+RIDEHUB - INFRA SECURITY SUMMARY
+=================================
+
+Status: chưa sẵn sàng cho production. Nhiều building block bảo mật đã có nhưng
+đang bị vô hiệu hóa hoặc cấu hình theo dev mode.
+
+1. NGINX / EDGE
+---------------
+Đã có:
+- HTTP chuyển hướng sang HTTPS.
+- Let's Encrypt certificate.
+- Reverse-proxy headers.
+- OIDC bảo vệ Kafdrop và token gate cho Consul.
+
+Vấn đề:
+- OIDC đang tắt ssl_verify.
+- Redis bị proxy qua HTTP, không đúng protocol.
+- Chưa thấy rate limit, security headers và allowlist admin đầy đủ.
+
+Ưu tiên:
+- P0: bật xác thực TLS cho OIDC, xóa Redis HTTP proxy.
+- P1: thêm rate limit, security headers, timeout và admin allowlist.
+
+2. CONSUL
+---------
+Đã có:
+- ACL bật.
+- Default policy là deny.
+- Token persistence bật.
+
+Vấn đề:
+- Management/agent token tĩnh trong config.
+- Chưa có persistence/backup rõ ràng.
+- Đang chạy một server, không có HA quorum.
+
+Ưu tiên:
+- P0: rotate token và inject từ secret manager.
+- P1: thêm volume, backup và private admin access.
+- P2: triển khai multi-server nếu yêu cầu HA.
+
+3. VAULT
+--------
+Đã có:
+- Secret bootstrap script.
+- File storage configuration.
+
+Vấn đề:
+- Dev mode, root token và HTTP.
+- tls_disable=1.
+- Volume khai báo nhưng chưa mount vào service Vault.
+
+Ưu tiên:
+- P0: chuyển production mode, bật TLS, bỏ root token runtime.
+- P1: dùng policy/token riêng cho từng service, persistence và backup.
+
+4. KEYCLOAK / SMS
+-----------------
+Đã có:
+- JWT issuer validation và RS256.
+- Access token lifetime ngắn.
+- Healthcheck.
+- SMS gateway chạy private mode và gọi qua HTTPS.
+
+Vấn đề:
+- Keycloak dùng start-dev và dev-file.
+- Custom registration provider chưa được mount trong compose chính.
+- Secret nằm trong realm/config.
+- OTP dùng JVM memory, Random và thiếu rate limit/attempt limit.
+
+Ưu tiên:
+- P0: production mode + database production; rotate secrets.
+- P1: build/deploy custom provider reproducibly.
+- P1: OTP dùng SecureRandom + Redis TTL + atomic consume + rate limit.
+- P2: bật brute-force protection và audit admin actions.
+
+5. KAFKA
+--------
+Version hiện tại:
+- Strimzi 0.48.0 với Kafka 4.1.0.
+- Kafka 4.1.0 không phải thế hệ quá cũ; cần CVE/support check trước khi nâng.
+- Nếu bản mới từ chối config, khả năng cao là plugin/property compatibility.
+
+Đã có:
+- KRaft.
+- TLS keystore/truststore.
+- SASL/OAUTHBEARER.
+- StandardAuthorizer.
+- Persistent Kafka volume.
+
+Vấn đề nghiêm trọng:
+- User:ANONYMOUS là super-user.
+- allow.everyone.if.no.acl.found=true.
+- Inter-broker và controller dùng PLAINTEXT.
+- Host 9094 map vào 9092 nhưng advertise kafka:9092.
+- Advertise appf4.io.vn nhưng certificate SAN là appf4s.io.vn.
+- Hostname verification bị tắt.
+- Client OAuth dùng property cần kiểm tra lại theo chuẩn Kafka:
+  oauth.client.id, oauth.client.secret, oauth.token.endpoint.uri.
+- Dùng chung admin OAuth client, secret và keystore password trong config.
+
+Ưu tiên:
+- P0: bỏ ANONYMOUS, đặt allow.everyone.if.no.acl.found=false, tạo ACL từng service.
+- P0: đóng public listener nếu không thật sự cần.
+- P1: sửa advertised listener, DNS/SAN và bật hostname verification.
+- P1: dùng SASL_SSL cho service/inter-broker; TLS cho controller.
+- P1: mỗi microservice một OAuth identity.
+- P2: quota, topic governance, audit, schema compatibility và replay protection.
+
+6. REDIS
+--------
+Đã có:
+- Password authentication.
+- Redisson/JCache integration.
+
+Vấn đề:
+- Public port 6379.
+- Chỉ dùng shared password, chưa có TLS/ACL.
+- Không có volume persistence rõ ràng.
+- Có Redis HTTP proxy trong Nginx.
+
+Ưu tiên:
+- P0: bỏ public port và HTTP proxy; rotate password.
+- P1: bật TLS/ACL, TTL/key prefix, backup nếu chứa state quan trọng.
+- P1: dùng Redis cho rate limit, lock và idempotency có chuẩn chung.
+
+7. ELASTICSEARCH
+----------------
+Đã có:
+- Persistent data volume.
+- Healthcheck.
+- Single-node mode.
+
+Vấn đề:
+- xpack.security.enabled=false.
+- Public port 9200.
+
+Ưu tiên:
+- P0: đóng port 9200.
+- P0: bật authentication/TLS hoặc chỉ cho private network.
+- P1: snapshot/restore, access policy và disk alerts.
+
+8. OBSERVABILITY / DOCKER
+-------------------------
+Đã có:
+- Loki, Promtail, Grafana.
+- Healthcheck và restart policy.
+- Autoheal.
+
+Vấn đề:
+- Nhiều image dùng latest.
+- Promtail/Autoheal mount Docker socket; đây là boundary quyền cao.
+- Thiếu resource limit, retention/backup và audit đầy đủ.
+
+Ưu tiên:
+- P0: pin image version/digest và scan CVE.
+- P1: bỏ Docker socket hoặc cô lập agent quản trị.
+- P1: thêm CPU/memory/PID limits và retention policy.
+
+THỨ TỰ SỬA TỔNG QUÁT
+--------------------
+1. Đóng public exposure: Kafka, Redis, Elasticsearch, Consul và admin UI.
+2. Rotate toàn bộ secret đã commit; chuyển sang Vault/Docker secrets.
+3. Bỏ Kafka anonymous/permissive ACL và tạo identity riêng từng service.
+4. Sửa Kafka listener, advertised address, certificate SAN và hostname verification.
+5. Bỏ dev mode của Keycloak/Vault; thêm persistence và backup.
+6. Bổ sung Redis/Elasticsearch security.
+7. Pin image, scan CVE, thêm monitoring/audit/quota.
+8. Test trên disposable cluster rồi staging trước production.
+
+KẾT LUẬN
+---------
+Các cơ chế nền tảng đã tồn tại, nhưng hiện chưa tạo thành defense-in-depth hoàn chỉnh.
+Ưu tiên cao nhất là network exposure, secret rotation, Kafka ACL/identity và chuyển
+Keycloak/Vault khỏi dev mode.
