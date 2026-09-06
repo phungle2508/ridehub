@@ -22,9 +22,10 @@ Most components are Git submodules pointing to external repositories:
 - `backend/ms_route` -> https://github.com/maian3333/ridehub-ms-route.git
 - `backend/ms_booking` -> https://github.com/maian3333/ridehub-ms-booking.git
 - `backend/ms_promotion` -> https://github.com/maian3333/ridehub-ms-promotion.git
-- `infra/ridehub-central-common` -> https://github.com/maian3333/ridehub-central-common.git
-- `infra/vps-infra` -> https://github.com/maian3333/vps-infra.git
-- `infra/vps-microservices` -> https://github.com/maian3333/vps-microservices.git
+- `infra/shared/ridehub-shared` -> https://github.com/phungle-vip/ridehub-shared.git
+- `infra/shared/ridehub-contract` -> https://github.com/phungle-vip/ridehub-contract.git
+- `infra/vps-infra` -> https://github.com/phungle-vip/vps-infra.git
+- `infra/vps-microservices` -> https://github.com/phungle-vip/vps-microservices.git
 - `spi/keycloak-custom-reg` -> https://github.com/maian3333/keycloak-custom-reg.git
 
 When cloning this repo, use `git clone --recursive` or run `git submodule update --init --recursive`.

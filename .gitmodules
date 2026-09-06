@@ -19,6 +19,10 @@
 [submodule "infra/vps-infra"]
 	path = infra/vps-infra
 	url = https://github.com/phungle-vip/vps-infra.git
-[submodule "infra/ridehub-central-common"]
-	path = infra/ridehub-central-common
-	url = https://github.com/phungle-vip/ridehub-central-common.git
+[submodule "infra/shared/ridehub-shared"]
+	path = infra/shared/ridehub-shared
+	url = https://github.com/phungle-vip/ridehub-shared.git
+
+[submodule "infra/shared/ridehub-contract"]
+	path = infra/shared/ridehub-contract
+	url = https://github.com/phungle-vip/ridehub-contract.git
