@@ -1,27 +1,24 @@
-[submodule "spi/keycloak-custom-reg"]
-	path = spi/keycloak-custom-reg
-	url = https://github.com/maian3333/keycloak-custom-reg.git
 [submodule "backend/ms_booking"]
 	path = backend/ms_booking
-	url = https://github.com/maian3333/ridehub-ms-booking.git
+	url = https://github.com/phungle-vip/ridehub-ms-booking.git
 [submodule "backend/ms_route"]
 	path = backend/ms_route
-	url = https://github.com/maian3333/ridehub-ms-route.git
+	url = https://github.com/phungle-vip/ridehub-ms-route.git
 [submodule "backend/ms_promotion"]
 	path = backend/ms_promotion
-	url = https://github.com/maian3333/ridehub-ms-promotion.git
+	url = https://github.com/phungle-vip/ridehub-ms-promotion.git
 [submodule "backend/ms_user"]
 	path = backend/ms_user
-	url = https://github.com/maian3333/ridehub-ms-user.git
+	url = https://github.com/phungle-vip/ridehub-ms-user.git
 [submodule "backend/gateway"]
 	path = backend/gateway
-	url = https://github.com/maian3333/ridehub-gateway.git
+	url = https://github.com/phungle-vip/ridehub-gateway.git
 [submodule "infra/vps-microservices"]
 	path = infra/vps-microservices
-	url = https://github.com/maian3333/vps-microservices.git
+	url = https://github.com/phungle-vip/vps-microservices.git
 [submodule "infra/vps-infra"]
 	path = infra/vps-infra
-	url = https://github.com/maian3333/vps-infra.git
+	url = https://github.com/phungle-vip/vps-infra.git
 [submodule "infra/ridehub-central-common"]
 	path = infra/ridehub-central-common
-	url = https://github.com/maian3333/ridehub-central-common.git
+	url = https://github.com/phungle-vip/ridehub-central-common.git
