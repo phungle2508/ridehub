@@ -15,7 +15,7 @@ shared/
 ```mermaid
 graph LR
     CONTRACT["ridehub-contract<br/><small>Avro schemas, OpenAPI specs</small>"]
-    SHARED["ridehub-shared<br/><small>Feign clients, Kafka utils,<br/>Consul SSH tunnel</small>"]
+    SHARED["ridehub-shared<br/><small>Feign clients, Kafka utils,<br/>Consul Heartbeat</small>"]
     MS_USER["ms_user"]
     MS_BOOKING["ms_booking"]
     MS_ROUTE["ms_route"]
@@ -42,9 +42,10 @@ graph LR
 |---|---|
 | **Group ID** | `com.ridehub` |
 | **Artifact ID** | `ridehub-contract` |
-| **Version** | `0.1.0-SNAPSHOT` |
+| **Version** | `1.0.0` |
 | **Java** | 17 |
-| **Publish** | GitHub Packages |
+| **Publish** | Reposilite (`https://repo.phungvip.io.vn/releases`) |
+
 
 ### Contract đã định nghĩa
 
@@ -104,11 +105,11 @@ git push origin v0.1.0
 |---|---|
 | **Group ID** | `com.ridehub.clients` |
 | **Artifact ID** | `client-open-feign-avro` |
-| **Version** | `0.1.0` (POM) / `v2.2.x` (Git tags) |
+| **Version** | `1.0.0` |
 | **Java** | 17 |
 | **Spring Boot** | 3.4.4 |
 | **Spring Cloud** | 2024.0.1 |
-| **Publish** | GitHub Packages |
+| **Publish** | Reposilite (`https://repo.phungvip.io.vn/releases`) |
 
 ### Chức năng chính
 
@@ -187,24 +188,23 @@ public class BookingCreatedHandler implements EventHandler<BookingDTO> {
 | `KafkaJobRunner` | Thread pool cho async consumer jobs |
 | `AvroConverter` | Utility convert Java objects ↔ Avro `EventEnvelope` |
 
-#### C. Consul SSH Tunnel (Dev Profile)
+#### C. Consul Heartbeat TTL (Dev Profile)
 
-Cho phép local dev machine đăng ký service lên remote Consul (VPS) thông qua SSH reverse tunnel:
+Cho phép local dev machine tự động gửi tín hiệu sống định kỳ lên remote Consul (VPS) mà không cần mở SSH tunnel:
 
 ```yaml
 # application-dev.yml trong microservice
-tunnel:
-  enabled: true
-  vps-host: phungvip.io.vn
-  vps-user: deploy
-  vps-password: ${VPS_SSH_PASSWORD}
-  port-offset: 1000
+spring:
+  cloud:
+    consul:
+      discovery:
+        prefer-ip-address: true
+        heartbeat:
+          enabled: true
+          ttl-value: 30
+          ttl-unit: s
+        health-check-path: null
 ```
-
-Tự động:
-1. Mở SSH tunnel `localhost:port` → `vps:port+1000`
-2. Đăng ký service trên Consul với VPS address
-3. Thêm suffix `-dev` vào service name/ID
 
 ### Spring Boot Auto-Configurations
 
@@ -214,7 +214,6 @@ Registered trong `META-INF/spring/org.springframework.boot.autoconfigure.AutoCon
 |---|---|---|
 | `KafkaLibraryAutoConfiguration` | Luôn active | ObjectMapper, RetryTemplate, EventDispatcher, KafkaUtilityService beans |
 | `RidehubFeignAutoConfiguration` | `Feign.class` + `LoadBalancerClient.class` trên classpath | Feign encoder/decoder, auth interceptor, client auto-registration |
-| `ConsulSSHTunnelAutoConfiguration` | `@ConditionalOnConsulEnabled` + `tunnel.enabled=true` | SSH tunnel + Consul registration customizer |
 
 ### Cách microservice sử dụng
 
@@ -230,8 +229,9 @@ Registered trong `META-INF/spring/org.springframework.boot.autoconfigure.AutoCon
 **2. Thêm repository (nếu chưa có):**
 ```xml
 <repository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/phungle-vip/ridehub-shared</url>
+    <id>ridehub-releases</id>
+    <name>RideHub Reposilite Releases</name>
+    <url>https://repo.phungvip.io.vn/releases</url>
 </repository>
 ```
 
