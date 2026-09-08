@@ -8,11 +8,49 @@ RideHub là nền tảng đặt xe công nghệ (ride-sharing platform) xây d�
 
 Dự án sử dụng **`transcrypt`** (AES-256-CBC) để mã hóa toàn bộ các file `.env` khi commit lên Git nhằm bảo vệ mật khẩu và API secrets.
 
-Khi bạn vừa clone repository này về máy, hãy chạy lệnh sau để giải mã toàn bộ các file cấu hình `.env`:
+Transcrypt được cấu hình riêng trong từng Git repository, bao gồm các submodule. Vì vậy, khi vừa clone repository này về máy, hãy khởi tạo submodule trước:
 
 ```bash
-transcrypt -c aes-256-cbc -p 'PASSWORD'
+git clone --recursive https://github.com/phungle2508/ridehub.git
+# Hoặc nếu đã clone:
+git submodule update --init --recursive
 ```
+
+Sau đó, khởi tạo Transcrypt một lần cho các submodule bằng cùng passphrase:
+
+```bash
+read -rsp "Transcrypt passphrase: " TRANSCRYPT_PASSWORD
+echo
+export TRANSCRYPT_PASSWORD
+
+git submodule foreach --recursive '
+   if ! git config --local --get transcrypt.version >/dev/null; then
+      transcrypt -c aes-256-cbc -p "$TRANSCRYPT_PASSWORD" -y
+   fi
+'
+
+unset TRANSCRYPT_PASSWORD
+```
+
+Passphrase chỉ được lưu trong cấu hình local của từng repository, không commit vào Git.
+
+### Pull cập nhật và giải mã recursive
+
+Cấu hình Git để fetch và cập nhật submodule cùng lúc:
+
+```bash
+git config submodule.recurse true
+git config fetch.recurseSubmodules on-demand
+```
+
+Từ các lần sau, chỉ cần chạy:
+
+```bash
+git pull --recurse-submodules
+git submodule update --init --recursive
+```
+
+Khi checkout hoặc pull, Transcrypt sẽ tự giải mã file `.env` ở working tree. Khi commit/push, các file này vẫn được lưu dưới dạng ciphertext.
 
 * **Xem cấu hình mã hóa hiện tại**: `transcrypt -d`
 * **Đổi mật khẩu mã hóa (Rekey)**: `transcrypt -r`
