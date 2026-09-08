@@ -35,12 +35,12 @@ MS_USER_DISCOVERY_ADDRESS=msuser.${DOMAIN}
 
 For the same-host Docker simulation, override Consul with `host.docker.internal:8500/http` and use `host.docker.internal` as every discovery address.
 
-When Consul and service domains are behind Cloudflare Access, the machine-to-machine requests must be allowed with a service token or Access bypass. A normal browser login is not sufficient for Spring Cloud Consul or Consul health checks. A private DNS/VPN route is preferable for production service-to-service traffic.
+Consul and Vault are secured natively via Consul ACL tokens and Vault restricted tokens. Cloudflare Access policy has been removed from `consul.${DOMAIN}` and `vault.${DOMAIN}` so that cross-VPS communication (VPS 2 calling VPS 1 via domain over HTTPS 443) works directly without browser redirect or IP bypass workarounds.
 
 ## Verify
 
 ```bash
-curl -H "X-Consul-Token: f4security" http://localhost:8500/v1/agent/checks
+curl -H "X-Consul-Token: <CONSUL_HTTP_TOKEN>" http://localhost:8500/v1/agent/checks
 ```
 
 Every registered service check should use `host.docker.internal` and its published service port, rather than a Docker container hostname.

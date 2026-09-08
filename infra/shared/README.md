@@ -103,8 +103,8 @@ git push origin v0.1.0
 
 | Thuộc tính | Giá trị |
 |---|---|
-| **Group ID** | `com.ridehub.clients` |
-| **Artifact ID** | `client-open-feign-avro` |
+| **Group ID** | `com.ridehub` |
+| **Artifact ID** | `ridehub-shared` |
 | **Version** | `1.0.0` |
 | **Java** | 17 |
 | **Spring Boot** | 3.4.4 |
@@ -220,8 +220,8 @@ Registered trong `META-INF/spring/org.springframework.boot.autoconfigure.AutoCon
 **1. Thêm dependency:**
 ```xml
 <dependency>
-    <groupId>com.ridehub.clients</groupId>
-    <artifactId>client-open-feign-avro</artifactId>
+    <groupId>com.ridehub</groupId>
+    <artifactId>ridehub-shared</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```

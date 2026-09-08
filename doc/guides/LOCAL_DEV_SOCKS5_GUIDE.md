@@ -19,7 +19,7 @@ SOCKS5 Proxy được tích hợp sẵn trên VPS tại địa chỉ:
 * **Host**: `phungvip.io.vn` (hoặc IP của VPS)
 * **Port**: `1080`
 * **Username**: `dev`
-* **Password**: `f4security` (hoặc giá trị `${APP_F4_PASS}`)
+* **Password**: `<APP_F4_PASS>` (lấy từ biến `APP_F4_PASS` trong file `.env`)
 
 ### Cách A: Cấu hình qua VM Options trong IntelliJ IDEA (Khuyên dùng - 1 lần duy nhất)
 
@@ -27,7 +27,7 @@ Khi chạy bất kỳ microservice nào (`MsBookingApp`, `MsRouteApp`...) trong 
 1. Vào **Run/Debug Configurations** của service.
 2. Tại mục **VM options** (hoặc Modify options ➡️ Add VM options), thêm cờ:
    ```bash
-   -DsocksProxyHost=phungvip.io.vn -DsocksProxyPort=1080 -Djava.net.socks.username=dev -Djava.net.socks.password=f4security
+   -DsocksProxyHost=phungvip.io.vn -DsocksProxyPort=1080 -Djava.net.socks.username=dev -Djava.net.socks.password=<APP_F4_PASS>
    ```
 3. Bấm **Apply** và **Run**.
 👉 Toàn bộ kết nối TCP của Spring Boot (MySQL JDBC, Redis) sẽ tự động luồn qua SOCKS5 Proxy vào thẳng database trên VPS!
@@ -39,11 +39,11 @@ Nếu bạn muốn dùng DBeaver xem dữ liệu MySQL trên VPS:
    * **Host**: `localhost` (hoặc tên container `ms_booking-mysql`)
    * **Port**: `3309` (port MySQL tương ứng của service)
    * **Username**: `root`
-   * **Password**: `f4security`
+   * **Password**: `<APP_F4_PASS>`
 2. Chuyển sang tab **Network Handler** ➡️ Chọn **SOCKS Proxy**:
    * Tích chọn **Use SOCKS Proxy**
    * **Host**: `phungvip.io.vn` | **Port**: `1080`
-   * **Username**: `dev` | **Password**: `f4security`
+   * **Username**: `dev` | **Password**: `<APP_F4_PASS>`
 3. Bấm **Test Connection** ➡️ Thành công!
 
 ---
@@ -77,8 +77,8 @@ Tất cả các microservices đã được cấu hình sẵn repository:
 Khi cần kích hoạt restart hoặc deploy microservice trên VPS từ xa (hoặc từ GitHub Actions):
 ```bash
 # Deploy toàn bộ:
-curl -X POST "https://webhook.phungvip.io.vn/hooks/restart?target=all&token=f4security"
+curl -X POST "https://webhook.phungvip.io.vn/hooks/restart?target=all" -H "X-Admin-Token: <ADMIN_TOKEN>"
 
 # Hoặc deploy riêng 1 service:
-curl -X POST "https://webhook.phungvip.io.vn/hooks/restart?target=ms_booking&token=f4security"
+curl -X POST "https://webhook.phungvip.io.vn/hooks/restart?target=ms_booking" -H "X-Admin-Token: <ADMIN_TOKEN>"
 ```

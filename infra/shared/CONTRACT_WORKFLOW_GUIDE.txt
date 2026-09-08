@@ -1,0 +1,87 @@
+================================================================================
+QUY TRÌNH XỬ LÝ KHI DEV THƯỜNG XUYÊN THAY ĐỔI CONTRACT & SHARED LIB JAR
+================================================================================
+
+I. NGUYÊN TẮC CỐT LÕI (TRÁNH PHẢI RELEASE JAR LIÊN TỤC LÊN REPOSILITE)
+--------------------------------------------------------------------------------
+1. Tuyệt đối KHÔNG release bản chính thức (Release Tag) khi đang trong giai đoạn dev.
+2. Dùng phiên bản `SNAPSHOT` kết hợp lưu trữ local repo (`~/.m2/repository`).
+3. Tận dụng Module Substitution của IDE để code thời gian thực.
+
+
+II. CÁC BƯỚC THỰC HIỆN TRONG VÒNG LẶP DEV (LOCAL DEV LOOP)
+--------------------------------------------------------------------------------
+Bước 1: Đặt version SNAPSHOT trong pom.xml
+- `infra/shared/ridehub-contract/pom.xml`: <version>1.1.0-SNAPSHOT</version>
+- `infra/shared/ridehub-shared/pom.xml`:   <version>1.1.0-SNAPSHOT</version>
+- Các microservice (`ms_booking`, `ms_route`...): 
+  Khai báo depend vào: `com.ridehub:ridehub-shared:1.1.0-SNAPSHOT`
+
+Bước 2: Cập nhật Schema & Sinh lại code Feign Offline
+- Sửa Avro schema hoặc file OpenAPI YAML trong `ridehub-contract/src/main/openapi`.
+- Sinh lại Feign Client trong `ridehub-shared` (script tự đọc file YAML offline, 
+  không cần khởi động Consul hay các microservices):
+  `cd infra/shared/ridehub-shared && ./mvnw clean package -Prun-openapi -DskipTests`
+
+Bước 3: Install nhanh vào Local Maven Repository (~/.m2)
+- Chạy lệnh build cài đặt local:
+  ```bash
+  cd infra/shared/ridehub-contract && ./mvnw clean install -DskipTests
+  cd ../ridehub-shared && ./mvnw clean install -DskipTests
+  ```
+- Kết quả: File JAR mới nhất nằm ngay trong `~/.m2/repository`.
+- Các service ở backend/ chỉ cần reload Maven là ăn ngay code mới trong 5-10 giây!
+
+
+III. MẸO TỐI ƯU DEV TRÊN IDE (ZERO-BUILD)
+--------------------------------------------------------------------------------
+- Trong IntelliJ IDEA: Mở cả thư mục gốc `ridehub` và import các module:
+  `backend/ms_*`, `infra/shared/ridehub-contract`, `infra/shared/ridehub-shared`.
+- IntelliJ sẽ tự động nhận diện `ridehub-shared` là Source Module thay vì External JAR.
+- Khi dev sửa Feign client hoặc DTO trong `ridehub-shared`, code ở `ms_booking` sẽ 
+  nhận diện cú pháp và auto-complete ngay lập tức mà KHÔNG CẦN chạy build Maven.
+
+
+IV. QUY TẮC THIẾT KẾ ĐỂ KHÔNG LÀM SẬP SERVICE CŨ (BACKWARD COMPATIBILITY)
+--------------------------------------------------------------------------------
+1. Tolerant Reader:
+   - Các service luôn bật: `spring.jackson.deserialization.fail-on-unknown-properties: false`
+   - Khi Provider (`ms_route`) thêm trường mới, Consumer (`ms_booking`) đang chạy bản JAR cũ 
+     vẫn serialize bình thường, không bị crash.
+
+2. Quy tắc thêm/sửa:
+   - CHỈ THÊM (Add): Thêm endpoint mới, thêm trường tùy chọn (optional field) -> An toàn.
+   - KHÔNG SỬA / XÓA (Modify / Delete): Không đổi tên trường, không đổi kiểu dữ liệu. 
+     Nếu bắt buộc thay đổi: tạo endpoint mới (`/api/v2/...`), đánh dấu trường cũ là `@Deprecated`.
+
+
+V. KHI NÀO MỚI RELEASE BẢN CHÍNH THỨC (PROD)?
+--------------------------------------------------------------------------------
+1. Khi toàn bộ tính năng trong sprint đã hoàn thành và test xong ở local.
+2. Chạy Pact Contract Test để xác nhận Provider không làm vỡ Consumer.
+3. Đổi version từ `1.1.0-SNAPSHOT` thành `1.1.0` (hoặc tạo git tag `v1.1.0`).
+4. GitHub Actions tự động build và publish JAR lên Reposilite (`repo.phungvip.io.vn`).
+
+
+VI. MÃ HÓA & MỞ KHÓA FILE .ENV BẰNG TRANSCRYPT (PASSWORD)
+--------------------------------------------------------------------------------
+Dự án sử dụng `transcrypt` với thuật toán AES-256-CBC để tự động mã hóa file `.env` 
+khi commit và giải mã khi checkout. Không cần giữ file key nhị phân.
+
+1. Khi clone repo về máy mới, chỉ cần chạy 1 lệnh để giải mã tất cả file .env:
+   ```bash
+   transcrypt -c aes-256-cbc -p 'PASSWORD'
+   ```
+
+2. Xem cấu hình cipher & password hiện tại:
+   ```bash
+   transcrypt -d
+   ```
+
+3. Đổi mật khẩu mã hóa mới (rekey):
+   ```bash
+   transcrypt -r
+   ```
+================================================================================
+
+

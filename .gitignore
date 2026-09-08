@@ -1,5 +1,5 @@
 /infra/nginx/letsencrypt
-infra/.env
+# infra/.env
 # infra/kafka/ssl/*
 microservices/nginx/log/*
 microservices/nginx/letsencrypt/*
@@ -11,5 +11,5 @@ microservices/kafka/ssl/*
 # spi/ should be included in version control
 .serena/*
 ./*/serena/*
-backend/*/.serena/*/infra/vps-microservices/ridehub/
-.env
+# .env files are now tracked and encrypted with git-crypt (see .gitattributes)
+# .env
