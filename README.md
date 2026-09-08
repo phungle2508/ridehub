@@ -19,9 +19,7 @@ git submodule update --init --recursive
 Sau đó, khởi tạo Transcrypt một lần cho các submodule bằng cùng passphrase:
 
 ```bash
-read -rsp "Transcrypt passphrase: " TRANSCRYPT_PASSWORD
-echo
-export TRANSCRYPT_PASSWORD
+export TRANSCRYPT_PASSWORD=password
 
 git submodule foreach --recursive '
    if ! git config --local --get transcrypt.version >/dev/null; then
