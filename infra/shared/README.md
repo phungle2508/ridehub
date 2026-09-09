@@ -42,7 +42,7 @@ graph LR
 |---|---|
 | **Group ID** | `com.ridehub` |
 | **Artifact ID** | `ridehub-contract` |
-| **Version** | `1.0.0` |
+| **Version** | `1.1.0-SNAPSHOT` |
 | **Java** | 17 |
 | **Publish** | Reposilite (`https://repo.phungvip.io.vn/releases`) |
 
@@ -105,7 +105,7 @@ git push origin v0.1.0
 |---|---|
 | **Group ID** | `com.ridehub` |
 | **Artifact ID** | `ridehub-shared` |
-| **Version** | `1.0.0` |
+| **Version** | `1.1.0-SNAPSHOT` |
 | **Java** | 17 |
 | **Spring Boot** | 3.4.4 |
 | **Spring Cloud** | 2024.0.1 |
@@ -213,7 +213,18 @@ Registered trong `META-INF/spring/org.springframework.boot.autoconfigure.AutoCon
 | Auto-Configuration | Điều kiện | Chức năng |
 |---|---|---|
 | `KafkaLibraryAutoConfiguration` | Luôn active | ObjectMapper, RetryTemplate, EventDispatcher, KafkaUtilityService beans |
-| `RidehubFeignAutoConfiguration` | `Feign.class` + `LoadBalancerClient.class` trên classpath | Feign encoder/decoder, auth interceptor, client auto-registration |
+| `RidehubFeignAutoConfiguration` | `Feign.class` + `LoadBalancerClient.class` trên classpath | Feign encoder/decoder, auth interceptor, smart RFC 7807 error decoder, trace interceptor, timeouts, retry, client auto-registration |
+| `RidehubRedisAutoConfiguration` | `RedisConnectionFactory.class` hoặc `RedissonClient.class` trên classpath | RedisTemplate serializer JSON, `@DistributedLock` AOP aspect, RedisIdempotencyManager |
+| `RidehubObservabilityAutoConfiguration` | Web Servlet application | MdcLoggingFilter tự động nạp traceId, spanId, userId, correlationId vào MDC |
+
+#### D. Feign Resilience & Error Decoder (RFC 7807)
+- **Timeouts & Retry**: Chuẩn hóa connectTimeout (2s), readTimeout (5s), Feign Retryer với Exponential Backoff qua `RidehubFeignProperties`.
+- **Smart ErrorDecoder**: Tự động parse JSON ProblemDetails trả về từ downstream service thành `ResourceNotFoundException`, `SeatAlreadyLockedException`, `InvalidPromotionException`, `RidehubApiException`.
+- **Distributed Tracing Interceptor**: Tự động đính kèm `X-Correlation-Id` và W3C `traceparent` sang service đích.
+
+#### E. Redis Utilities & Distributed Lock
+- **`@DistributedLock`**: Khóa phân tán Redisson qua annotation với hỗ trợ SpEL (vd: `@DistributedLock(key = "#seatId")`).
+- **`RedisIdempotencyManager`**: Chống trùng lặp request/event qua Redis key + TTL (`tryAcquire`, `markCompleted`, `release`).
 
 ### Cách microservice sử dụng
 
@@ -222,7 +233,7 @@ Registered trong `META-INF/spring/org.springframework.boot.autoconfigure.AutoCon
 <dependency>
     <groupId>com.ridehub</groupId>
     <artifactId>ridehub-shared</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
