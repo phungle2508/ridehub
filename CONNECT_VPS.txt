@@ -1,0 +1,193 @@
+================================================================================
+          RIDEHUB - HƯỚNG DẪN KẾT NỐI VPS (SSH & CLOUDFLARE ZERO TRUST)
+================================================================================
+Dành cho: Quản trị viên (Admin) & Đội ngũ Phát triển (Developers)
+Cập nhật lần cuối: 2026-09-10
+================================================================================
+
+MỤC LỤC:
+  1. TỔNG QUAN 2 PHƯƠNG THỨC KẾT NỐI
+  2. HƯỚNG DẪN CHO ADMIN TRÊN WINDOWS
+  3. HƯỚNG DẪN CHO ADMIN TRÊN LINUX (ARCH / UBUNTU / DEBIAN)
+  4. HƯỚNG DẪN CHO DEVELOPER DÙNG WARP ĐỂ CODE LOCAL (KHÔNG CẦN SSH)
+  5. XỬ LÝ SỰ CỐ THƯỜNG GẶP (TROUBLESHOOTING)
+
+================================================================================
+1. TỔNG QUAN 2 PHƯƠNG THỨC KẾT NỐI (DÀNH CHO ADMIN)
+================================================================================
+
+  A. PHƯƠNG THỨC 1: Cloudflare Zero Trust (Host: ridehub) - KHUYÊN DÙNG
+     - Hostname : ssh.phungvip.io.vn (Port 22 đóng hoàn toàn với Internet)
+     - Bảo mật  : Yêu cầu tài khoản Keycloak (ROLE_ADMIN hoặc /Admins)
+     - Ưu điểm  : Chống 100% hacker dò quét port, không phụ thuộc GCP metadata key.
+
+  B. PHƯƠNG THỨC 2: Kết nối Trực tiếp qua IP VPS (Host: ridehub-direct) - DỰ PHÒNG
+     - Hostname : 136.85.105.222 (Port 22 mở trực tiếp tới Google Cloud)
+     - Bảo mật  : Bắt buộc SSH Private Key (google_compute_engine)
+     - Ưu điểm  : Tốc độ tức thì (0ms proxy overhead), dùng khi cần thao tác nhanh.
+
+================================================================================
+2. HƯỚNG DẪN CHO ADMIN TRÊN WINDOWS (PowerShell)
+================================================================================
+
+Bước 2.1: Cài đặt công cụ cloudflared CLI
+  Mở PowerShell (Run as Administrator) và chạy một trong 2 lệnh:
+    winget install Cloudflare.cloudflared
+    # Hoặc qua Chocolatey:
+    # choco install cloudflared
+
+Bước 2.2: Tự động ghi cấu hình ~/.ssh/config chuẩn
+  Chạy đoạn script PowerShell sau:
+
+    $cfPath = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source
+    if (-not $cfPath) { $cfPath = "cloudflared.exe" }
+    $sshDir = "$HOME\.ssh"
+    if (!(Test-Path $sshDir)) { New-Item -ItemType Directory -Path $sshDir -Force | Out-Null }
+
+    $configContent = @"
+    # ==============================================================================
+    # RIDEHUB VPS SSH CONFIGURATION
+    # ==============================================================================
+
+    # 1. Kết nối qua Cloudflare Zero Trust (Keycloak OIDC Protected)
+    Host ridehub
+        HostName ssh.phungvip.io.vn
+        User phungvip
+        IdentityFile ~/.ssh/google_compute_engine
+        ProxyCommand "$cfPath" access ssh --hostname %h
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+
+    # 2. Kết nối trực tiếp qua IP VPS (Dự phòng)
+    Host ridehub-direct
+        HostName 136.85.105.222
+        User phungvip
+        IdentityFile ~/.ssh/google_compute_engine
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+    "@
+
+    Set-Content -Path "$HOME\.ssh\config" -Value $configContent -Encoding utf8
+    Write-Host "✓ Đã cấu hình xong C:\Users\$env:USERNAME\.ssh\config" -ForegroundColor Green
+
+Bước 2.3: Đăng nhập Cloudflare Zero Trust (chỉ cần chạy 1 lần)
+    cloudflared access login https://ssh.phungvip.io.vn
+    -> Trình duyệt tự mở, đăng nhập tài khoản Keycloak:
+       Username : admin.phungvip
+       Password : Admin@RideHub2026
+
+Bước 2.4: Kết nối vào VPS
+    ssh ridehub          # Qua Cloudflare Zero Trust
+    # hoặc
+    ssh ridehub-direct   # Trực tiếp qua IP
+
+  * Trong VS Code: Nhấn F1 -> "Remote-SSH: Connect to Host..." -> Chọn "ridehub".
+
+================================================================================
+3. HƯỚNG DẪN CHO ADMIN TRÊN LINUX (Arch Linux / Ubuntu / Fedora / Debian)
+================================================================================
+
+Bước 3.1: Cài đặt cloudflared
+  - Arch Linux:
+      sudo pacman -S cloudflared
+  - Ubuntu / Debian:
+      curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+      echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
+      sudo apt update && sudo apt install cloudflared
+  - Fedora:
+      sudo dnf install cloudflared
+
+Bước 3.2: Thiết lập file ~/.ssh/config (Tối ưu tốc độ với ControlMaster)
+  Chạy lệnh bash:
+
+    mkdir -p ~/.ssh/sockets && chmod 700 ~/.ssh
+
+    cat << 'EOF' > ~/.ssh/config
+    # 1. Kết nối qua Cloudflare Zero Trust (Tăng tốc bằng ControlMaster)
+    Host ridehub
+        HostName ssh.phungvip.io.vn
+        User phungvip
+        IdentityFile ~/.ssh/google_compute_engine
+        ProxyCommand cloudflared access ssh --hostname %h
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+        ControlMaster auto
+        ControlPath ~/.ssh/sockets/%r@%h:%p
+        ControlPersist 10m
+
+    # 2. Kết nối trực tiếp qua IP VPS (Dự phòng)
+    Host ridehub-direct
+        HostName 136.85.105.222
+        User phungvip
+        IdentityFile ~/.ssh/google_compute_engine
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+    EOF
+
+    chmod 600 ~/.ssh/config
+
+  * Đảm bảo quyền file Private Key chuẩn:
+    chmod 600 ~/.ssh/google_compute_engine
+
+Bước 3.3: Đăng nhập & Kết nối
+    cloudflared access login https://ssh.phungvip.io.vn
+    ssh ridehub
+
+================================================================================
+4. HƯỚNG DẪN CHO DEVELOPER DÙNG WARP ĐỂ CODE LOCAL (KHÔNG CẦN SSH)
+================================================================================
+
+  Mô hình an toàn nhất: Dev chạy code trên chính laptop của mình, chỉ cần bật
+  WARP để thông mạng riêng ảo với Database, Redis, Kafka của VPS.
+
+Bước 4.1: Cài đặt Cloudflare WARP trên máy Dev
+  - Windows (PowerShell): winget install Cloudflare.WARP
+  - Hoặc tải bộ cài giao diện tại: https://one.dash.cloudflare.com/
+
+Bước 4.2: Đăng ký thiết bị vào tổ chức RideHub (Chỉ làm 1 lần)
+    warp-cli registration new appf4
+    -> Trình duyệt tự mở, dev đăng nhập bằng tài khoản Keycloak của mình.
+
+Bước 4.3: Bật kết nối mạng nội bộ
+    warp-cli connect
+
+  Kiểm tra trạng thái kết nối:
+    warp-cli status
+    -> Kết quả báo: "Status update: Connected"
+
+Bước 4.4: Sử dụng tài nguyên nội bộ khi code Local (trong application-dev.yml)
+  Nhờ WARP, laptop dev gọi trực tiếp các IP nội bộ như đang ngồi chung mạng LAN:
+    - Kafka Broker  : 172.18.0.x:9092
+    - Redis Cache   : 172.18.0.x:6379
+    - Consul Server : 172.18.0.x:8500
+    - Vault Server  : 172.18.0.x:8200
+    - MySQL User    : 172.19.0.x:3308
+    - MySQL Route   : 172.19.0.x:3307
+    - MySQL Booking : 172.19.0.x:3309
+    - MySQL Promo   : 172.19.0.x:3310
+
+  Ngắt kết nối khi hết giờ làm việc:
+    warp-cli disconnect
+
+================================================================================
+5. XỬ LÝ SỰ CỐ THƯỜNG GẶP (TROUBLESHOOTING)
+================================================================================
+
+1. Lỗi: "Permission denied (publickey)"
+   -> Nguyên nhân: Thiếu dòng `IdentityFile ~/.ssh/google_compute_engine` trong
+      khối `Host ridehub` của file `~/.ssh/config`. Hãy thêm dòng này vào.
+
+2. Lỗi: "posix_spawnp: No such file or directory" trên Windows / VS Code
+   -> Nguyên nhân: OpenSSH không tìm thấy file thực thi `cloudflared`.
+   -> Cách xử lý: Điền đường dẫn tuyệt đối của cloudflared.exe trong ProxyCommand:
+      Ví dụ: ProxyCommand "C:\Program Files (x86)\cloudflared\cloudflared.exe" access ssh --hostname %h
+
+3. Lỗi: "Authentication error: Failed to fetch user/group information"
+   -> Đã được xử lý hoàn tất trên Keycloak OIDC (bổ sung scope offline_access).
+   -> Nếu gặp lại, chỉ cần chạy lại script:
+      ./infra/vps-infra/central-server-config/cloudflared/setup-ssh-and-warp-policies.sh
+
+4. Lỗi: "unrecognized subcommand 'teams-enroll'" trên WARP CLI
+   -> Các phiên bản WARP mới đã đổi cú pháp lệnh.
+   -> Dùng lệnh mới: `warp-cli registration new appf4` thay vì lệnh cũ.
+================================================================================
