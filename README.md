@@ -4,184 +4,104 @@ RideHub là nền tảng đặt xe công nghệ (ride-sharing platform) xây d�
 
 ---
 
-## 1. Mở khóa bí mật môi trường (.env) bằng Transcrypt
+## 1. Khởi động nhanh (Quick Start)
 
-Dự án sử dụng **`transcrypt`** (AES-256-CBC) để mã hóa toàn bộ các file `.env` khi commit lên Git nhằm bảo vệ mật khẩu và API secrets.
-
-Transcrypt được cấu hình riêng trong từng Git repository, bao gồm các submodule. Vì vậy, khi vừa clone repository này về máy, hãy khởi tạo submodule trước:
-
+### A. Clone & Giải mã biến môi trường (.env)
 ```bash
+# 1. Clone repository kèm toàn bộ submodules
 git clone --recursive https://github.com/phungle2508/ridehub.git
-# Hoặc nếu đã clone:
-git submodule update --init --recursive
-```
+cd ridehub
 
-Sau đó, khởi tạo Transcrypt một lần cho các submodule bằng cùng passphrase:
-
-```bash
-export TRANSCRYPT_PASSWORD=password
-
+# 2. Giải mã file .env bằng Transcrypt (chỉ cần chạy 1 lần)
+export TRANSCRYPT_PASSWORD="YOUR_PASSPHRASE"
 git submodule foreach --recursive '
    if ! git config --local --get transcrypt.version >/dev/null; then
       transcrypt -c aes-256-cbc -p "$TRANSCRYPT_PASSWORD" -y
    fi
 '
-
 unset TRANSCRYPT_PASSWORD
 ```
+> 👉 Chi tiết cấu trúc từng submodule và cách quản lý Git xem tại: [**`SUBMODULES.md`**](SUBMODULES.md)
 
-Passphrase chỉ được lưu trong cấu hình local của từng repository, không commit vào Git.
-
-### Pull cập nhật và giải mã recursive
-
-Cấu hình Git để fetch và cập nhật submodule cùng lúc:
-
+### B. Chạy thử Local Service
 ```bash
-git config submodule.recurse true
-git config fetch.recurseSubmodules on-demand
+# Chạy bất kỳ microservice nào:
+cd backend/ms_booking && ./mvnw
+
+# Chạy Gateway & Angular Frontend:
+cd backend/gateway && ./mvnw           # Terminal 1: Backend
+cd backend/gateway && ./npmw start     # Terminal 2: Angular (http://localhost:9000)
 ```
-
-Từ các lần sau, chỉ cần chạy:
-
-```bash
-git pull --recurse-submodules
-git submodule update --init --recursive
-```
-
-Khi checkout hoặc pull, Transcrypt sẽ tự giải mã file `.env` ở working tree. Khi commit/push, các file này vẫn được lưu dưới dạng ciphertext.
-
-* **Xem cấu hình mã hóa hiện tại**: `transcrypt -d`
-* **Đổi mật khẩu mã hóa (Rekey)**: `transcrypt -r`
-
-> [!NOTE]
-> File `.env` trên máy local của bạn sẽ ở dạng plain-text để IDE và Spring Boot đọc bình thường. Khi `git commit / push`, transcrypt sẽ tự động mã hóa nhị phân trước khi đẩy lên GitHub.
 
 ---
 
-## 2. Kiến trúc hệ thống (Architecture)
+## 2. Kiến trúc hệ thống (System Architecture)
 
 ```
-                                  [ Client / Browser ]
-                                           │
-                                           ▼
-                               [ gateway:8080 (Angular 19) ]
-                                           │
-             ┌─────────────────────────────┼─────────────────────────────┐
-             ▼                             ▼                             ▼
-    [ ms_user:8081 ]              [ ms_route:8082 ]             [ ms_booking:8083 ]
-   (User & Driver Profiles)     (Trips, Seats, Routing)        (Bookings, Tickets, Pay)
-             │                             │                             │
-             └─────────────────────────────┼─────────────────────────────┘
-                                           │
-                                           ▼
-                                [ ms_promotion:8084 ]
-                               (Discounts & Campaigns)
-                                           │
-    ══════════════════════════════════════════════════════════════════════════════
-    HẠ TẦNG DÙNG CHUNG (VPS INFRA):
-    - Consul: Service Discovery & Distributed KV (Port 8500)
-    - Keycloak: OAuth2 / OIDC Auth Server (Port 9080)
-    - Kafka KRaft: Event Messaging Stream + Avro Envelope (Port 9093 / 9094)
-    - Redis: Cache, Sessions & Distributed Locking (Port 6379)
-    - Elasticsearch: Pathfinding & Geo-Search (Port 9200)
-    - Observability: Prometheus (9090), Loki (3100), Grafana (3000)
-    - Maven Repo: Reposilite (https://repo.phungvip.io.vn)
+                              [ Client / Mobile App / Browser ]
+                                              │
+                                              ▼
+                                 [ gateway:8080 (Angular 19) ]
+                                              │
+         ┌──────────────────────────────┼──────────────────────────────┐
+         ▼                              ▼                              ▼
+  [ ms_user:8081 ]              [ ms_route:8082 ]             [ ms_booking:8083 ]
+ (User & Driver)              (Trips, Seats, Search)         (Bookings & Payment)
+         │                              │                              │
+         └──────────────────────────────┼──────────────────────────────┘
+                                        ▼
+                             [ ms_promotion:8084 ]
+                            (Discounts & Campaigns)
+══════════════════════════════════════════════════════════════════════════════════
+HẠ TẦNG DÙNG CHUNG (VPS INFRA):
+Consul (8500) | Keycloak OIDC (9080) | Kafka KRaft (9093) | Redis (6379) | Vault (8200)
 ```
 
-### Chi tiết các Microservices
+### Danh mục Microservices
 
-| Service | Port | Database | Công nghệ & Nhiệm vụ chính |
+| Service | Port | Database | Nhiệm vụ chính |
 |---|---|---|---|
-| **gateway** | `8080` | MySQL | Spring Cloud Gateway, Angular 19 frontend, Reverse proxy, JWT Relay |
+| **gateway** | `8080` | MySQL | Spring Cloud Gateway, Angular 19 UI, Reverse proxy, JWT Relay |
 | **ms_user** | `8081` | MySQL | Quản lý người dùng, tài xế, xác thực OTP, hồ sơ cá nhân |
-| **ms_route** | `8082` | MySQL | Quản lý chuyến xe, tuyến đường, ghế ngồi, Elasticsearch tìm kiếm |
-| **ms_booking** | `8083` | MySQL | Đặt vé, giữ chỗ, thanh toán (VNPay, SePay), xuất hóa đơn |
+| **ms_route** | `8082` | MySQL | Quản lý chuyến xe, tuyến đường, ghế ngồi, Elasticsearch |
+| **ms_booking** | `8083` | MySQL | Đặt vé, giữ chỗ, thanh toán (VNPay, SePay), xuất hoá đơn |
 | **ms_promotion**| `8084` | MySQL | Quản lý voucher, khuyến mãi, chính sách giảm giá |
 
 ---
 
-## 3. Cấu trúc Git Submodules
+## 3. Quy trình làm việc với Shared Library
 
-Repository này là Monorepo điều phối chứa các Git submodules:
+Hệ thống tách biệt rõ ràng giữa Schema/Contract và Code client dùng chung:
+* **`infra/shared/ridehub-contract`**: Nguồn sự thật duy nhất (SSOT) cho Avro Schemas, OpenAPI Specs.
+* **`infra/shared/ridehub-shared`**: Chứa Feign Clients sinh tự động, Kafka utilities, Security Interceptors (phân phối qua Maven Registry: `https://repo.phungvip.io.vn`).
 
-* `backend/gateway` $\rightarrow$ `https://github.com/phungle-vip/ridehub-gateway.git`
-* `backend/ms_user` $\rightarrow$ `https://github.com/phungle-vip/ridehub-ms-user.git`
-* `backend/ms_route` $\rightarrow$ `https://github.com/phungle-vip/ridehub-ms-route.git`
-* `backend/ms_booking` $\rightarrow$ `https://github.com/phungle-vip/ridehub-ms-booking.git`
-* `backend/ms_promotion` $\rightarrow$ `https://github.com/phungle-vip/ridehub-ms-promotion.git`
-* `infra/shared/ridehub-contract` $\rightarrow$ `https://github.com/phungle-vip/ridehub-contract.git`
-* `infra/shared/ridehub-shared` $\rightarrow$ `https://github.com/phungle-vip/ridehub-shared.git`
-* `infra/vps-infra` $\rightarrow$ `https://github.com/phungle-vip/vps-infra.git`
-* `infra/vps-microservices` $\rightarrow$ `https://github.com/phungle-vip/vps-microservices.git`
-
-Khi clone repository mới:
-```bash
-git clone --recursive https://github.com/phungle2508/ridehub.git
-# Hoặc nếu đã clone:
-git submodule update --init --recursive
-```
+> 👉 Chi tiết quy trình cập nhật schema & build shared lib: [**`infra/shared/CONTRACT_WORKFLOW_GUIDE.txt`**](infra/shared/CONTRACT_WORKFLOW_GUIDE.txt)
 
 ---
 
-## 4. Hướng dẫn phát triển Local (Local Development)
-
-### A. Phát triển từng Service riêng biệt
-Chạy trực tiếp bất kỳ service nào trong thư mục của nó:
-```bash
-cd backend/ms_booking
-./mvnw                       # Chạy Spring Boot ở profile dev
-./mvnw verify                # Chạy Unit & Integration tests
-```
-
-Với **Gateway (Frontend)**:
-```bash
-cd backend/gateway
-./mvnw                       # Chạy Gateway backend
-./npmw start                 # Khởi động Angular dev server (http://localhost:9000)
-./npmw test                  # Chạy Unit test frontend
-```
-
-### B. Kết nối Database & Redis qua SOCKS5 Proxy
-Nếu muốn dev local kết nối thẳng vào DB và Redis trên VPS:
-* Thêm VM options vào Run Configuration trong IntelliJ:
-  ```bash
-  -DsocksProxyHost=phungvip.io.vn -DsocksProxyPort=1080 -Djava.net.socks.username=dev -Djava.net.socks.password=PASSWORD
-  ```
-
----
-
-## 5. Quy trình làm việc với Shared Library (`infra/shared`)
-
-Hệ thống tách biệt rõ ràng giữa Contract và Thư viện dùng chung:
-* **`ridehub-contract`**: Chứa nguồn sự thật duy nhất (SSOT) cho Avro Schemas, OpenAPI Specs, AsyncAPI Specs.
-* **`ridehub-shared`**: Chứa Feign Clients auto-generated, Kafka Utilities, Security Auth Interceptor.
-
-### Vòng lặp phát triển nhanh (Không cần push Reposilite liên tục):
-1. Đặt version `SNAPSHOT` (vd: `1.1.0-SNAPSHOT`) trong `pom.xml`.
-2. Sửa schema trong `ridehub-contract` hoặc sinh lại Feign trong `ridehub-shared`:
-   ```bash
-   cd infra/shared/ridehub-shared
-   ./mvnw clean package -Prun-openapi -DskipTests
-   ```
-3. Cài đặt vào Local Maven Repo (`~/.m2`):
-   ```bash
-   cd infra/shared/ridehub-contract && ./mvnw clean install -DskipTests
-   cd ../ridehub-shared && ./mvnw clean install -DskipTests
-   ```
-4. Các microservice (`ms_booking`, `ms_route`...) sẽ nhận ngay code mới trong 5 giây!
-
-> Chi tiết quy trình và lưu ý xem tại: [`infra/shared/CONTRACT_WORKFLOW_GUIDE.txt`](infra/shared/CONTRACT_WORKFLOW_GUIDE.txt)
-
----
-
-## 6. Build & Deploy Production
+## 4. Build & Triển khai (Build & Deploy)
 
 ```bash
-# Build production JAR
+# Build production JAR cho service
 ./mvnw -Pprod clean verify
 
 # Build Docker images
-npm run java:docker             # Cho Gateway
-./mvnw -Pprod jib:dockerBuild   # Cho các Microservices
+npm run java:docker             # Gateway
+./mvnw -Pprod jib:dockerBuild   # Microservices
 ```
 
+* Triển khai cụm hạ tầng: xem [**`infra/vps-infra/README.md`**](infra/vps-infra/README.md)
+* Triển khai cụm microservices tự động: xem [**`infra/vps-microservices/README.md`**](infra/vps-microservices/README.md)
+
+---
+
+## 5. Quy tắc kiến trúc cốt lõi (Core Architecture Rules)
+
+Tất cả AI Coding Assistants và Developers tham gia dự án **BẮT BUỘC** phải tuân thủ hướng dẫn tại:
+👉 [**`AGENTS.md`**](AGENTS.md) (hoặc [**`GEMINI.md`**](GEMINI.md))
+
+* **Submodule Autonomy**: Độc lập hoàn toàn về Git, build và vòng đời; không import chéo mã nguồn.
+* **JDL Code Hygiene**: Mã nguồn nền tảng sinh tự động từ `doc/ridehub.jdl`. Hạn chế sửa trực tiếp CRUD auto-gen; bảo vệ code custom bằng `.jhipsterignore` và cấu trúc Side-by-Side (`custom/`).
+  > 📘 **Người mới bắt đầu?** Xem cẩm nang chi tiết: [**`doc/guides/JDL_DEVELOPMENT_GUIDE.md`**](doc/guides/JDL_DEVELOPMENT_GUIDE.md) để tránh bị ghi đè mất code khi cập nhật JDL.
+* **Database per Service**: Mỗi service sở hữu database riêng, cấm truy cập chéo DB.
+* **Multi-VPS First**: Không hardcode localhost hay container nội bộ; định tuyến FQDN qua HTTPS và Consul Service Discovery; sẵn sàng phân tán dịch vụ trên nhiều máy chủ độc lập.
