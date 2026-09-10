@@ -26,3 +26,6 @@
 [submodule "infra/shared/ridehub-contract"]
 	path = infra/shared/ridehub-contract
 	url = https://github.com/phungle-vip/ridehub-contract.git
+[submodule "e2e-tests"]
+	path = e2e-tests
+	url = https://github.com/phungle-vip/ridehub-e2e-tests.git
