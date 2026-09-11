@@ -100,6 +100,17 @@ Hầu hết các microservice trong `backend/*` được khởi tạo tự độ
   ```
 - Nhờ cơ chế này, Service A ở VPS 1 và Service B ở VPS 2 hoàn toàn có thể tự tìm thấy và gọi nhau thông qua Consul Discovery mà không cần biết đối phương đang nằm ở máy chủ nào.
 
+### Rule 7: Tuyệt đối không dùng cơ chế Fallback (Zero Chained / Variable-to-Variable Fallback) & Áp dụng Strict Fail-Fast
+- **CẤM Triệt để Fallback lồng nhau / Cascading**:
+  - Tuyệt đối **KHÔNG** sử dụng cơ chế fallback biến dạng `${VAR:-${OTHER_VAR}}`, `${A:-${B:-${C}}}`, hoặc fallback ngầm các secret/token sang mật khẩu chung (như `:-${F4_PASSWORD}` hoặc `:-f4security`).
+  - **Lý do**: Fallback ngầm che giấu lỗi thiếu biến môi trường, làm sai lệch ma trận phân quyền (RBAC) và vi phạm nguyên tắc bảo mật Zero Trust.
+- **BẮT BUỘC Strict Fail-Fast với Bí mật & Credentials**:
+  - Mọi token, password, secret bắt buộc phải được khai báo tường minh và fail-fast ngay khi khởi động bằng cú pháp:
+    `${VAR_NAME:?VAR_NAME is required}`
+  - Nếu thiếu biến cấu hình bắt buộc trong `.env` hoặc runtime, container / script phải dừng ngay lập tức và in rõ tên biến bị thiếu để người vận hành xử lý.
+- **Tham số không nhạy cảm (Non-secret)**:
+  - Chỉ được phép dùng literal constant đơn giản (vd: `${DOMAIN:-phungvip.io.vn}`, `${TZ:-Asia/Ho_Chi_Minh}`, `${REDIS_PORT:-6379}`). Tuyệt đối không trỏ cascading sang biến khác.
+
 ---
 
 ## 3. Bản kiểm tra hiện trạng & Tiến triển Multi-VPS (Readiness & Integration Progress)
@@ -137,3 +148,5 @@ Khi AI làm việc trên repository này, AI **PHẢI** tuân thủ các quy t�
    - Không được tạo kết nối cứng tới DB của service khác.
 5. **Khi viết cấu hình Docker / Compose / Shell script**:
    - Luôn xem xét: *"Nếu service này chạy trên VPS Frankfurt và Kafka/Consul ở VPS Singapore, cấu hình này có chạy được không?"* Nếu câu trả lời là CÓ, cấu hình đó mới đạt chuẩn!
+6. **Không bao giờ tạo cơ chế Fallback biến**:
+   - Khi viết Docker Compose, Shell script, Spring YAML hay cấu hình hệ thống, AI tuyệt đối không sử dụng cascading/chained fallback `:-${...}` hoặc gán giá trị mặc định cho các credential bảo mật. Luôn dùng cú pháp fail-fast `${BIEN:?BIEN is required}`.
