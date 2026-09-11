@@ -29,3 +29,6 @@
 [submodule "e2e-tests"]
 	path = e2e-tests
 	url = https://github.com/phungle-vip/ridehub-e2e-tests.git
+[submodule "infra/orchestration"]
+	path = infra/orchestration
+	url = https://github.com/phungle-vip/ridehub-orchestration.git
