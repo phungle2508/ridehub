@@ -101,7 +101,7 @@ Tất cả AI Coding Assistants và Developers tham gia dự án **BẮT BUỘC*
 👉 [**`AGENTS.md`**](AGENTS.md) (hoặc [**`GEMINI.md`**](GEMINI.md))
 
 * **Submodule Autonomy**: Độc lập hoàn toàn về Git, build và vòng đời; không import chéo mã nguồn.
-* **JDL Code Hygiene**: Mã nguồn nền tảng sinh tự động từ `doc/ridehub.jdl`. Hạn chế sửa trực tiếp CRUD auto-gen; bảo vệ code custom bằng `.jhipsterignore` và cấu trúc Side-by-Side (`custom/`).
-  > 📘 **Người mới bắt đầu?** Xem cẩm nang chi tiết: [**`doc/guides/JDL_DEVELOPMENT_GUIDE.md`**](doc/guides/JDL_DEVELOPMENT_GUIDE.md) để tránh bị ghi đè mất code khi cập nhật JDL.
+* **JDL Code Hygiene**: Mã nguồn nền tảng sinh tự động từ `docs/jdl/ridehub.jdl`. Hạn chế sửa trực tiếp CRUD auto-gen; bảo vệ code custom bằng `.jhipsterignore` và cấu trúc Side-by-Side (`custom/`).
+  > 📘 **Người mới bắt đầu?** Xem cẩm nang chi tiết: [**`docs/guides/JDL_DEVELOPMENT_GUIDE.md`**](docs/guides/JDL_DEVELOPMENT_GUIDE.md) để tránh bị ghi đè mất code khi cập nhật JDL.
 * **Database per Service**: Mỗi service sở hữu database riêng, cấm truy cập chéo DB.
 * **Multi-VPS First**: Không hardcode localhost hay container nội bộ; định tuyến FQDN qua HTTPS và Consul Service Discovery; sẵn sàng phân tán dịch vụ trên nhiều máy chủ độc lập.
