@@ -145,3 +145,84 @@ Chuyển các service nội bộ sang chế độ không mở cổng Host (hoặ
 ```
 - Không có bất kỳ Inbound Port nào lắng nghe trực tiếp trên IP Public của VPS.
 - Hệ thống đạt **Chuẩn Zero Trust Tuyệt Đối (Zero Inbound Ports Exposed)**.
+
+---
+
+## 5. TODO Hạ Tầng & Bảo Mật
+
+Phần này là danh sách công việc cần thực hiện tiếp theo. Trạng thái hiện tại ở các bảng phía trên vẫn phản ánh compose đang có trong repository; không coi một port là đã an toàn chỉ vì Cloud Firewall hiện đang chặn nó.
+
+### 5.1. Network Security
+
+- [ ] Không expose trực tiếp infrastructure ra Internet nếu không cần.
+- [ ] Giữ giao tiếp nội bộ giữa các container qua Docker network; không dùng host port cho luồng east-west.
+- [ ] Chỉ cho phép các endpoint quản trị đi qua Cloudflare Access và WARP/Private Network khi phù hợp.
+- [ ] Duy trì nguyên tắc deny-by-default ở cả Cloud Firewall và Host Firewall.
+- [ ] Kiểm kê lại sau mỗi thay đổi compose bằng `docker compose config` và `ss -lntup`.
+
+Các port đang cần kiểm tra và xử lý trong compose hiện tại:
+
+| Port | Dịch vụ/nguồn cấu hình | Việc cần làm |
+| :--- | :--- | :--- |
+| `6379` | Redis | Bỏ publish host; chỉ cho phép truy cập từ service cần Redis hoặc mạng quản trị được kiểm soát. |
+| `9093` | Kafka OAuth/SASL_SSL | Xác nhận client cần truy cập từ ngoài Docker network; nếu có, chỉ allowlist qua WARP/VPN và kiểm tra listener. |
+| `9094` | Kafka external SSL | Kiểm tra listener, TLS và allowlist trước khi đóng hoặc giới hạn port. Không mở plaintext. |
+| `8500` | Consul UI/API | Bỏ publish host; truy cập qua Nginx/Cloudflare Access hoặc mạng quản trị riêng. |
+| `9200` | Elasticsearch | Bỏ publish host; không để Elasticsearch không xác thực trên public interface. |
+| `9090` | Prometheus | Bỏ publish host; UI và remote-write chỉ dùng mạng nội bộ hoặc đường quản trị bảo vệ. |
+| `3100` | Loki | Bỏ publish host; Promtail gửi log qua Docker network hoặc endpoint private có kiểm soát. |
+| `1080` | SOCKS5 proxy | Đóng public ngay; nếu còn cần, bắt buộc authentication, allowlist nguồn và giới hạn mục đích sử dụng. |
+| `3000` | Grafana | Bỏ publish host; truy cập qua Nginx và Cloudflare Access. |
+| `8080`, `8082`-`8085` | Gateway và microservices | Không publish từng service; chỉ expose qua `ms-nginx`/gateway theo đúng tuyến truy cập. |
+
+Lưu ý: các mapping `127.0.0.1:80:80`, `127.0.0.1:8088:80` và MySQL bind vào `127.0.0.1` đã giảm phạm vi truy cập trên host, nhưng vẫn cần kiểm tra route Docker, firewall và các network interface thực tế.
+
+### 5.2. Cloudflare Front Door
+
+Luồng truy cập mong muốn:
+
+```text
+Internet
+  |
+  v
+Cloudflare Edge / WAF / Access
+  |
+  v
+Cloudflare Tunnel (cloudflared)
+  |
+  +--> vps-infra Nginx :80 --> Keycloak, Consul, Vault, Grafana, Loki, Prometheus,
+  |                          Kafka UI, RedisInsight, Reposilite
+  |
+  +--> vps-microservices Nginx :8088 --> Gateway :8080 --> Microservices
+                          |
+                          +--> private Docker network
+```
+
+- [ ] Chỉ công bố các hostname thực sự cần thiết trong Cloudflare Tunnel.
+- [ ] Đặt Cloudflare Access trước Consul, Vault, Grafana, Prometheus, Loki, Kafka UI, RedisInsight và các trang quản trị khác.
+- [ ] Giữ API Gateway là public only khi endpoint đã có xác thực, rate limit, audit log và CORS policy phù hợp.
+- [ ] Không dùng Cloudflare Access như lớp thay thế cho authentication của ứng dụng hoặc Kafka TLS/SASL.
+- [ ] Kiểm tra mỗi ingress rule trỏ đúng service nội bộ: `nginx:80` cho infrastructure và `ms-nginx:80` cho microservices.
+- [ ] Đảm bảo tunnel connector chỉ tạo kết nối outbound; không publish metrics port `2000` ra Internet.
+- [ ] Kiểm tra origin headers, health check và timeout sau khi thay đổi route.
+
+### 5.3. Kiểm tra Kafka trước khi đóng port
+
+Trước khi bỏ `9093`/`9094`, cần xác định tất cả client đang dùng broker nào và listener nào. Kiểm tra tối thiểu:
+
+- Listener nội bộ giữa container và listener dành cho client ngoài Docker network.
+- TLS certificate/SAN, truststore, SASL/OAuth và ACL tương ứng.
+- Các biến `KAFKA_BROKERS`, bootstrap server trong Consul/Vault và cấu hình của Kafka UI.
+- Khả năng kết nối từ WARP/VPN nếu Kafka vẫn cần được truy cập từ một mạng quản trị riêng.
+
+Không thay port bằng `expose` một cách máy móc nếu client nằm ở VPS khác. Với mô hình multi-VPS, luồng Layer 4 phải đi qua địa chỉ định tuyến được, TLS hoặc mạng overlay riêng; không dựa vào tên container hay `host-gateway`.
+
+### 5.4. Tiêu chí hoàn tất
+
+- [ ] Public scan vào IP VPS không thấy các port infrastructure và microservices không cần thiết.
+- [ ] Chỉ các cổng quản trị được allowlist cho WARP/VPN; SOCKS5 không public.
+- [ ] Domain public đi qua Cloudflare Tunnel và route vào Nginx, không đi thẳng vào container.
+- [ ] Admin UI yêu cầu Cloudflare Access và xác thực ứng dụng phù hợp.
+- [ ] Redis, Elasticsearch, Consul, Prometheus và Loki không lắng nghe trên public interface.
+- [ ] Kafka listener và firewall rule được kiểm thử từ đúng từng loại client trước và sau thay đổi.
+- [ ] Lưu lại bằng chứng kiểm tra: `docker compose config`, `docker compose ps`, `ss -lntup`, firewall rules và kết quả scan từ bên ngoài VPS.
