@@ -75,7 +75,7 @@ Hệ thống tách biệt rõ ràng giữa Schema/Contract và Code client dùng
 * **`infra/shared/ridehub-contract`**: Nguồn sự thật duy nhất (SSOT) cho Avro Schemas, OpenAPI Specs.
 * **`infra/shared/ridehub-shared`**: Chứa Feign Clients sinh tự động, Kafka utilities, Security Interceptors (phân phối qua Maven Registry: `https://repo.phungvip.io.vn`).
 
-> 👉 Chi tiết quy trình cập nhật schema & build shared lib: [**`infra/shared/CONTRACT_WORKFLOW_GUIDE.txt`**](infra/shared/CONTRACT_WORKFLOW_GUIDE.txt)
+> 👉 Chi tiết quy trình cập nhật schema, fast-dev loop & build shared lib: xem tại [**Grafana Developer Docs**](https://grafana.phungvip.io.vn/d/ridehub-dev-docs) (Mục 3 & Mục 5).
 
 ---
 
